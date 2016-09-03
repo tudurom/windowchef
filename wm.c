@@ -1252,8 +1252,10 @@ group_activate(uint32_t group) {
 
 	for (item = win_list; item != NULL; item = item->next) {
 		client = item->data;
-		if (client->group == group)
+		if (client->group == group) {
 			xcb_map_window(conn, client->window);
+			set_focused(client);
+		}
 	}
 	group_in_use[group] = true;
 }
