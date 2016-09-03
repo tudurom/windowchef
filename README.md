@@ -29,11 +29,21 @@ Features
 --------
 
 * Move, teleport, enlarge/shrink and resize windows
-* Window groups
-* Simple and stylish solid-color border. Width can be configured
-* Teleport windows in the corners or in the middle of the screen
-* Add gaps around the monitor
+* Maximize windows vertically/horizontally/fully
+	* Supports maximizing via EWMH
+* Close windows (either killing them or via ICCCM)
 * Put windows in a virtual grid.
+* Snap windows in the corners or in the middle of the screen
+* Cycle windows forwards and backwards
+* cwm-like window groups
+	* Add or remove windows to a group
+	* Activate/Deactivate/Toggle a group
+* Simple and stylish solid-color border. Width can be configured
+* Gaps around the monitor
+
+### Soon to come
+
+- [ ] Infinite number of borders
 
 ### Groups
 
