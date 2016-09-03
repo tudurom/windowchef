@@ -757,8 +757,8 @@ move_window(xcb_window_t win, int16_t x, int16_t y)
 static void
 resize_window_absolute(xcb_window_t win, uint16_t w, uint16_t h)
 {
-	uint16_t val[2];
-	uint16_t mask = XCB_CONFIG_WINDOW_WIDTH
+	uint32_t val[2];
+	uint32_t mask = XCB_CONFIG_WINDOW_WIDTH
 				  | XCB_CONFIG_WINDOW_HEIGHT;
 
 	val[0] = w;
