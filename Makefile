@@ -8,7 +8,7 @@ NAME_DEFINES = -D__NAME__=\"$(__NAME__)\" \
 SRC = list.c wm.c client.c
 OBJ = $(SRC:.c=.o)
 BIN = $(__NAME__) $(__NAME_CLIENT__)
-CFLAGS += $(NAME_DEFINES) -DD
+CFLAGS += $(NAME_DEFINES)
 
 all: $(BIN)
 

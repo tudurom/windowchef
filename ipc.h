@@ -1,3 +1,5 @@
+/* See the LICENSE file for copyright and license details. */
+
 #ifndef _WM_IPC_H
 #define _WM_IPC_H
 

@@ -1,3 +1,5 @@
+/* See the LICENSE file for copyright and license details. */
+
 #ifndef _TYPES_H
 #define _TYPES_H
 
@@ -41,6 +43,7 @@ struct conf {
     uint32_t focus_color, unfocus_color;
     enum cursor_position cursor_position;
     uint32_t groups;
+    bool sloppy_focus;
 };
 
 #endif

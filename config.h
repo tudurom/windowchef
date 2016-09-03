@@ -1,3 +1,5 @@
+/* See the LICENSE file for copyright and license details. */
+
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
@@ -7,5 +9,6 @@
 #define GAP 20
 #define CURSOR_POSITION CENTER
 #define GROUPS 4
+#define SLOPPY_FOCUS true
 
 #endif

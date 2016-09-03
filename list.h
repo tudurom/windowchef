@@ -1,3 +1,5 @@
+/* See the LICENSE file for copyright and license details. */
+
 #ifndef _LIST_H
 #define _LIST_H
 

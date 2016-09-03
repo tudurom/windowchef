@@ -1,3 +1,5 @@
+/* See the LICENSE file for copyright and license details. */
+
 #include <xcb/xcb.h>
 #include <xcb/xcb_icccm.h>
 #include <xcb/xcb_ewmh.h>
@@ -218,6 +220,7 @@ setup(void)
 	conf.gap             = GAP;
 	conf.cursor_position = CURSOR_POSITION;
 	conf.groups          = GROUPS;
+	conf.sloppy_focus    = SLOPPY_FOCUS;
 
 	group_in_use = malloc(conf.groups * sizeof(bool));
 	for (uint32_t i = 0; i < conf.groups; i++)
@@ -1434,6 +1437,8 @@ event_enter_notify(xcb_generic_event_t *ev)
 	xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *)ev;
 	struct client *client;
 
+	if (conf.sloppy_focus == false)
+		return;
 	if (e->mode == XCB_NOTIFY_MODE_NORMAL ||
 			e->mode == XCB_NOTIFY_MODE_UNGRAB) {
 		if (focused_win != NULL && e->event == focused_win->window)
@@ -1501,8 +1506,10 @@ event_map_notify(xcb_generic_event_t *ev)
 	xcb_map_notify_event_t *e = (xcb_map_notify_event_t *)ev;
 	struct client *client = find_client(&e->window);
 
-	if (client != NULL)
+	if (client != NULL) {
 		client->mapped = true;
+		set_focused(client);
+	}
 }
 
 /*

@@ -1,3 +1,5 @@
+/* See the LICENSE file for copyright and license details. */
+
 #include <stdlib.h>
 
 #include "list.h"
