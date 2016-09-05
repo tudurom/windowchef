@@ -195,13 +195,14 @@ setup(void)
 	xcb_ewmh_set_number_of_desktops(ewmh, 0, GROUPS);
 
 	xcb_atom_t supported_atoms[] = {
-		ewmh->_NET_SUPPORTED              , ewmh->_NET_WM_DESKTOP      ,
-		ewmh->_NET_NUMBER_OF_DESKTOPS     , ewmh->_NET_CURRENT_DESKTOP ,
-		ewmh->_NET_ACTIVE_WINDOW          , ewmh->_NET_WM_STATE        ,
-		ewmh->_NET_WM_STATE_FULLSCREEN    , ewmh->_NET_WM_NAME         ,
-		ewmh->_NET_WM_ICON_NAME           , ewmh->_NET_WM_WINDOW_TYPE  ,
-		ewmh->_NET_WM_WINDOW_TYPE_DOCK    , ewmh->_NET_WM_PID          ,
-		ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR ,
+		ewmh->_NET_SUPPORTED               , ewmh->_NET_WM_DESKTOP              ,
+		ewmh->_NET_NUMBER_OF_DESKTOPS      , ewmh->_NET_CURRENT_DESKTOP         ,
+		ewmh->_NET_ACTIVE_WINDOW           , ewmh->_NET_WM_STATE                ,
+		ewmh->_NET_WM_STATE_FULLSCREEN     , ewmh->_NET_WM_STATE_MAXIMIZED_VERT ,
+		ewmh->_NET_WM_STATE_MAXIMIZED_HORZ , ewmh->_NET_WM_NAME                 ,
+		ewmh->_NET_WM_ICON_NAME            , ewmh->_NET_WM_WINDOW_TYPE          ,
+		ewmh->_NET_WM_WINDOW_TYPE_DOCK     , ewmh->_NET_WM_PID                  ,
+		ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR  ,
 	};
 	xcb_ewmh_set_supported(ewmh, scrno, sizeof(supported_atoms) / sizeof(xcb_atom_t), supported_atoms);
 
@@ -867,10 +868,17 @@ static void
 maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mon_width, uint16_t mon_height)
 {
 	uint32_t values[1];
+	xcb_atom_t state[] = {
+		ewmh->_NET_WM_STATE_FULLSCREEN,
+		XCB_NONE
+	};
 
-	if ((client->max_width != 0 && mon_width > client->max_width)
+	if (client == NULL || (client->max_width != 0 && mon_width > client->max_width)
 			|| (client->max_height != 0 && mon_height > client->max_height))
 		return;
+
+	if (client->vmaxed || client->hmaxed)
+		unmaximize_window(client);
 
 	/* maximized windows don't have borders */
 	values[0] = 0;
@@ -888,12 +896,21 @@ maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mo
 	teleport_window(client->window, client->geom.x, client->geom.y);
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
 	client->maxed = true;
+	xcb_ewmh_set_wm_state(ewmh, client->window, 2, state);
 }
 
 static void
 hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width) {
-	if (client->max_width != 0 && mon_width > client->max_width)
+	if (client == NULL || (client->max_width != 0 && mon_width > client->max_width))
 		return;
+
+	xcb_atom_t state[] = {
+		ewmh->_NET_WM_STATE_MAXIMIZED_HORZ,
+		XCB_NONE
+	};
+
+	if (client->maxed || client->vmaxed)
+		unmaximize_window(client);
 
 	if (client->geom.width != mon_width)
 		save_original_size(client);
@@ -904,12 +921,22 @@ hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width) {
 	teleport_window(client->window, client->geom.x, client->geom.y);
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
 	client->hmaxed = true;
+
+	xcb_ewmh_set_wm_state(ewmh, client->window, 2, state);
 }
 
 static void
 vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height) {
-	if (client->max_height != 0 && mon_height > client->max_height)
+	if (client == NULL || (client->max_height != 0 && mon_height > client->max_height))
 		return;
+
+	xcb_atom_t state[] = {
+		ewmh->_NET_WM_STATE_MAXIMIZED_VERT,
+		XCB_NONE
+	};
+
+	if (client->maxed || client->hmaxed)
+		unmaximize_window(client);
 
 	if (client->geom.height != mon_height)
 		save_original_size(client);
@@ -921,10 +948,15 @@ vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height) {
 	teleport_window(client->window, client->geom.x, client->geom.y);
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
 	client->vmaxed = true;
+	xcb_ewmh_set_wm_state(ewmh, client->window, 2, state);
 }
 
 static void
 unmaximize_window(struct client *client) {
+	xcb_atom_t state[] = {
+		XCB_ICCCM_WM_STATE_NORMAL,
+		XCB_NONE
+	};
 	client->geom.x = client->orig_geom.x;
 	client->geom.y = client->orig_geom.y;
 	client->geom.width = client->orig_geom.width;
@@ -933,6 +965,7 @@ unmaximize_window(struct client *client) {
 
 	teleport_window(client->window, client->geom.x, client->geom.y);
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
+	xcb_ewmh_set_wm_state(ewmh, client->window, 2, state);
 }
 
 static void
@@ -1597,6 +1630,7 @@ event_client_message(xcb_generic_event_t *ev)
 	struct client *client;
 	int16_t mon_x, mon_y;
 	uint16_t mon_w, mon_h;
+	xcb_atom_t action;
 
 	if (e->type == ATOMS[_IPC_ATOM_COMMAND] && e->format == 32) {
 		/* Message from the client */
@@ -1608,29 +1642,52 @@ event_client_message(xcb_generic_event_t *ev)
 	} else if (e->type == ewmh->_NET_WM_STATE && e->format == 32) {
 		/* A window change its state */
 		client = find_client(&e->window);
-		maxed = vmaxed = hmaxed = false;
+		if (client == NULL)
+			return;
+		action = e->data.data32[0];
+		maxed = client->maxed;
+		vmaxed = client->vmaxed;
+		hmaxed = client->hmaxed;
+		get_monitor_size(client, &mon_x, &mon_y, &mon_w, &mon_h);
 		/* We handle only two states at the same time */
 		for (int i = 0; i < 2; i++) {
-			xcb_atom_t state = e->data.data32[i];
-			if (state == ewmh->_NET_WM_STATE_FULLSCREEN)
-				maxed = true;
-			else if (state == ewmh->_NET_WM_STATE_MAXIMIZED_VERT)
-				vmaxed = true;
-			else if (state == ewmh->_NET_WM_STATE_MAXIMIZED_HORZ)
-				hmaxed = true;
-		}
-		/* max/unmax the window if needed */
-		if (client != NULL && (maxed || vmaxed || hmaxed)) {
-			get_monitor_size(client, &mon_x, &mon_y, &mon_w, &mon_h);
-			if (client->maxed || client->vmaxed || client->hmaxed) {
-				unmaximize_window(client);
-				set_focused(client);
-			} else if (maxed) {
-				maximize_window(client, mon_x, mon_y, mon_w, mon_h);
-			} else if (vmaxed) {
-				vmaximize_window(client, mon_y, mon_h);
-			} else if (hmaxed) {
-				hmaximize_window(client, mon_x, mon_w);
+			xcb_atom_t state = e->data.data32[i + 1];
+			bool *var = NULL, *orig = NULL;
+			if (state == ewmh->_NET_WM_STATE_FULLSCREEN) {
+				var = &maxed;
+				orig = &client->maxed;
+			} else if (state == ewmh->_NET_WM_STATE_MAXIMIZED_VERT) {
+				var = &vmaxed;
+				orig = &client->vmaxed;
+			} else if (state == ewmh->_NET_WM_STATE_MAXIMIZED_HORZ) {
+				var = &hmaxed;
+				orig = &client->hmaxed;
+			}
+			if (var != NULL) {
+				if (action == XCB_EWMH_WM_STATE_REMOVE)
+					*var = false;
+				else if (action == XCB_EWMH_WM_STATE_ADD)
+					*var = true;
+				else if (action == XCB_EWMH_WM_STATE_TOGGLE)
+					*var = !(*var);
+
+				/* if the state changed, update */
+				if (*var != *orig) {
+					/* state added */
+					if (*var) {
+						/* reset */
+						unmaximize_window(client);
+						if (var == &maxed)
+							maximize_window(client, mon_x, mon_y, mon_w, mon_h);
+						else if (var == &vmaxed)
+							vmaximize_window(client, mon_y, mon_h);
+						else if (var == &hmaxed)
+							hmaximize_window(client, mon_x, mon_w);
+					} else {
+						unmaximize_window(client);
+						set_focused(client);
+					}
+				}
 			}
 		}
 	}
@@ -1797,7 +1854,7 @@ ipc_window_maximize(uint32_t *d) {
 	if (focused_win == NULL)
 		return;
 
-	if (focused_win->maxed || focused_win->hmaxed || focused_win->vmaxed) {
+	if (focused_win->maxed) {
 		unmaximize_window(focused_win);
 		set_focused(focused_win);
 	} else {
@@ -1821,7 +1878,7 @@ ipc_window_hor_maximize(uint32_t *d)
 
 	was_hmaxed = focused_win->hmaxed;
 
-	if (focused_win->maxed || focused_win->vmaxed || focused_win->hmaxed) {
+	if (focused_win->hmaxed) {
 		unmaximize_window(focused_win);
 		set_focused(focused_win);
 	} else {
@@ -1845,7 +1902,7 @@ ipc_window_ver_maximize(uint32_t *d)
 
 	was_hmaxed = focused_win->hmaxed;
 
-	if (focused_win->maxed || focused_win->vmaxed || focused_win->hmaxed) {
+	if (focused_win->vmaxed) {
 		unmaximize_window(focused_win);
 		set_focused(focused_win);
 	} else {
