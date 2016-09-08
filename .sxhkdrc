@@ -39,3 +39,6 @@ super + ctrl + r
 
 super + Return
   urxvt
+
+super + {Insert,Prior,Delete,Next,End}
+  waitron window_snap {0,1,2,3,4}
