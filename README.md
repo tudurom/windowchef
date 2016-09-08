@@ -44,6 +44,8 @@ Features
 ### Soon to come
 
 - [ ] Infinite number of borders
+- [ ] Move windows with the mouse
+- [ ] Resize windows with the mouse
 
 ### Groups
 
