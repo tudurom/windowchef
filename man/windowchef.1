@@ -1,0 +1,124 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WINDOWCHEF" "1" "September 2016" "" "Windowchef Manual"
+.
+.SH "NAME"
+\fBwindowchef\fR \- A static window cooker
+.
+.SH "SYNOPSIS"
+\fBwindowchef\fR [\-v]
+.
+.SH "DESCRIPTION"
+\fBwindowchef\fR is a stacking window manager that doesn\'t handle keyboard or pointer inputs\. It is controlled by \fBwaitron\fR and configured by editing the \fBconfig\.h\fR file and recompiling\.
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-v\fR
+Print version information\.
+.
+.SH "COMMANDS"
+.
+.TP
+\fBwindow_move\fR \fIx\fR \fIy\fR
+Move the focused window \fIy\fR pixels horizontally and \fIy\fR pixels vertically\.
+.
+.TP
+\fBwindow_move_absolute\fR \fIx\fR \fIy\fR
+Move the focused window to the position given by \fIx\fR and \fIy\fR\.
+.
+.TP
+\fBwindow_resize\fR \fIx\fR \fIy\fR
+Resize the focused window based on the relative pixel values \fIx\fR and \fIy\fR\.
+.
+.TP
+\fBwindow_resize_absolute\fR \fIwidth\fR \fIheight\fR
+Resize the focused window up to \fIwidth\fR and \fIheight\fR\.
+.
+.TP
+\fBwindow_maximize\fR
+Hide the border and maximize the focused window on the current monitor\. Execute it again after maximizing to revert the state of the window\.
+.
+.TP
+\fBwindow_hor_maximize\fR
+Horizontally maximize the focused window on the current monitor, preserving its \fIx\fR component\. Leaves a gap at the left and right of the monitor that can be configured\. Execute it again after maximizing to revert the state of the window\.
+.
+.TP
+\fBwindow_ver_maximize\fR
+Vertically maximize the focused window on the current monitor, preserving its \fIy\fR component\. Leaves a gap at the top and bottom of the monitor whose width can be configured\. Execute it again after maximizing to revert the state of the window\.
+.
+.TP
+\fBwindow_close\fR
+Closes the focused window\.
+.
+.TP
+\fBwindow_put_in_grid\fR \fIgrid_width\fR \fIgrid_height\fR \fIcell_x\fR \fIcell_y\fR
+Moves and resizes the focused windows accordingly to fit in a cell defined by the \fIcell_x\fR and \fIcell_y\fR coordinates in a virtual grid with width \fIgrid_width\fR and height \fIgrid_height\fR on the current monitor\.
+.
+.TP
+\fBwindow_snap\fR \fIpos\fR
+Snap the window on the screen in a position defined by \fIpos\fR\. \fIpos\fR can be:
+.
+.IP
+\fB0\fR for top\-left\.
+.
+.IP
+\fB1\fR for to\-right\.
+.
+.IP
+\fB2\fR for bottom\-left\.
+.
+.IP
+\fB3\fR for bottom\-right\.
+.
+.IP
+\fB4\fR for the middle\.
+.
+.TP
+\fBwindow_cycle\fR
+Cycle through mapped windows\.
+.
+.TP
+\fBwindow_rev_cycle\fR
+Reverse cycle through mapped windows\.
+.
+.TP
+\fBgroup_add_window\fR \fIgroup_nr\fR
+Add the focused window to the \fIgroup_nr\fR group\.
+.
+.IP
+Group numbers start from 0 and end at \fIGROUPS_NO\fR \- 1\.
+.
+.TP
+\fBgroup_remove_window\fR
+Remove the focused window from its current group\.
+.
+.TP
+\fBgroup_activate\fR \fIgroup_nr\fR
+Map all windows that belong to the \fIgroup_nr\fR group\.
+.
+.TP
+\fBgroup_deactivate\fR \fIgroup_nr\fR
+Unmap all windows that belong to the \fIgroup_nr\fR group\.
+.
+.TP
+\fBgroup_toggle\fR \fIgroup_nr\fR
+Toggle the \fIgroup_nr\fR group\.
+.
+.TP
+\fBwm_quit\fR \fIexit_status\fR
+Quit windowchef with exit_status \fIexit_status\fR\.
+.
+.TP
+\fBwm_change_number_of_groups\fR \fInumber_of_groups\fR
+Change the number of maximum groups to \fInumber_of_groups\fR\.
+.
+.IP
+Windows that belong to a group that has a \fIgroup_nr\fR greater or equal to \fInumber_of_groups\fR will become orphaned\.
+.
+.SH "AUTHOR"
+Tudor Roman \fB<tudurom at gmail dot com>\fR
+.
+.SH "DISCLAIMER"
+I deleted all the manpages from my system by mistake while writing this thing\.

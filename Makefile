@@ -29,6 +29,7 @@ $(OBJ): common.h list.h ipc.h types.h config.h
 install: all
 	install $(__NAME__) $(DESTDIR)$(PREFIX)/bin/$(__NAME__)
 	install $(__NAME_CLIENT__) $(DESTDIR)$(PREFIX)/bin/$(__NAME_CLIENT__)
+	cd ./man; $(MAKE) install
 
 clean:
 	rm -f $(OBJ) $(BIN)
