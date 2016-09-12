@@ -897,6 +897,7 @@ maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mo
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
 	client->maxed = true;
 	xcb_ewmh_set_wm_state(ewmh, client->window, 2, state);
+	set_focused_no_raise(client);
 }
 
 static void
