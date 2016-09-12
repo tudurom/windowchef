@@ -17,13 +17,15 @@ Windowchef is written in C with the help of the XCB library for
 communicating with the X server. It supports randr and a subset of ewmh and
 icccm.
 
-### Dependencies
+Usage
+-----
 
-Windowchef depends on `xcb` to communicate with the X11 server, `xcb-randr` to
-gather information about connected displays and `xcb-util-wm` for ewmh and icccm helper functions.
+See the bundled `.sxhkdrc` and `config.h` for an example of a basic
+configuration.
 
-I couldn't find compiled documentation for `xcb-util-wm` so I compiled it and
-put it on my website [here](http://thetudor.ddns.net/res).
+You can configure windowchef by editing the `config.h` file.
+
+Additionally, you can read the man page (`windowchef(1)`).
 
 Features
 --------
@@ -84,6 +86,15 @@ information about the state of the window manager through ewmh properties.
 
 Tested with [lemonbar](https://github.com/lemonboy/bar).
 
+Dependencies
+------------
+
+Windowchef depends on `xcb` to communicate with the X11 server, `xcb-randr` to
+gather information about connected displays and `xcb-util-wm` for ewmh and icccm helper functions.
+
+I couldn't find compiled documentation for `xcb-util-wm` so I compiled it and
+put it on my website [here](http://thetudor.ddns.net/res).
+
 Building windowchef and installing it
 -------------------------------------
 
@@ -98,11 +109,6 @@ $ sudo make install
 ```
 The `Makefile` respects the `DESTDIR` and `PREFIX` variables.
 
-Configuring
------------
-
-For now configuration is made by editing the `config.h` file. There's not much
-you can modify.
 
 Thanks
 ------
