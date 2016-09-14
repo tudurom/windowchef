@@ -33,5 +33,10 @@ install: all
 	install $(__NAME_CLIENT__) $(DESTDIR)$(PREFIX)/bin/$(__NAME_CLIENT__)
 	cd ./man; $(MAKE) install
 
+uninstall:
+	rm -f $(__NAME__) $(DESTDIR)$(PREFIX)/bin/$(__NAME__)
+	rm -f $(__NAME_CLIENT__) $(DESTDIR)$(PREFIX)/bin/$(__NAME_CLIENT__)
+	cd ./man; $(MAKE) uninstall
+
 clean:
 	rm -f $(OBJ) $(BIN)
