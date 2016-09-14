@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='content-type' value='text/html;charset=utf8'>
+  <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
+  <title>waitron(1) - A client for windowchef(1)</title>
+  <style type='text/css' media='all'>
+  /* style: man */
+  body#manpage {margin:0}
+  .mp {max-width:100ex;padding:0 9ex 1ex 4ex}
+  .mp p,.mp pre,.mp ul,.mp ol,.mp dl {margin:0 0 20px 0}
+  .mp h2 {margin:10px 0 0 0}
+  .mp > p,.mp > pre,.mp > ul,.mp > ol,.mp > dl {margin-left:8ex}
+  .mp h3 {margin:0 0 0 4ex}
+  .mp dt {margin:0;clear:left}
+  .mp dt.flush {float:left;width:8ex}
+  .mp dd {margin:0 0 0 9ex}
+  .mp h1,.mp h2,.mp h3,.mp h4 {clear:left}
+  .mp pre {margin-bottom:20px}
+  .mp pre+h2,.mp pre+h3 {margin-top:22px}
+  .mp h2+pre,.mp h3+pre {margin-top:5px}
+  .mp img {display:block;margin:auto}
+  .mp h1.man-title {display:none}
+  .mp,.mp code,.mp pre,.mp tt,.mp kbd,.mp samp,.mp h3,.mp h4 {font-family:monospace;font-size:14px;line-height:1.42857142857143}
+  .mp h2 {font-size:16px;line-height:1.25}
+  .mp h1 {font-size:20px;line-height:2}
+  .mp {text-align:justify;background:#fff}
+  .mp,.mp code,.mp pre,.mp pre code,.mp tt,.mp kbd,.mp samp {color:#131211}
+  .mp h1,.mp h2,.mp h3,.mp h4 {color:#030201}
+  .mp u {text-decoration:underline}
+  .mp code,.mp strong,.mp b {font-weight:bold;color:#131211}
+  .mp em,.mp var {font-style:italic;color:#232221;text-decoration:none}
+  .mp a,.mp a:link,.mp a:hover,.mp a code,.mp a pre,.mp a tt,.mp a kbd,.mp a samp {color:#0000ff}
+  .mp b.man-ref {font-weight:normal;color:#434241}
+  .mp pre {padding:0 4ex}
+  .mp pre code {font-weight:normal;color:#434241}
+  .mp h2+pre,h3+pre {padding-left:0}
+  ol.man-decor,ol.man-decor li {margin:3px 0 10px 0;padding:0;float:left;width:33%;list-style-type:none;text-transform:uppercase;color:#999;letter-spacing:1px}
+  ol.man-decor {width:100%}
+  ol.man-decor li.tl {text-align:left}
+  ol.man-decor li.tc {text-align:center;letter-spacing:4px}
+  ol.man-decor li.tr {text-align:right;float:right}
+  </style>
+</head>
+<!--
+  The following styles are deprecated and will be removed at some point:
+  div#man, div#man ol.man, div#man ol.head, div#man ol.man.
+
+  The .man-page, .man-decor, .man-head, .man-foot, .man-title, and
+  .man-navigation should be used instead.
+-->
+<body id='manpage'>
+  <div class='mp' id='man'>
+
+  <div class='man-navigation' style='display:none'>
+    <a href="#NAME">NAME</a>
+    <a href="#SYNOPSIS">SYNOPSIS</a>
+    <a href="#DESCRIPTION">DESCRIPTION</a>
+    <a href="#OPTIONS">OPTIONS</a>
+    <a href="#COMMANDS">COMMANDS</a>
+    <a href="#CONFIGURING">CONFIGURING</a>
+    <a href="#SEE-ALSO">SEE ALSO</a>
+    <a href="#AUTHOR">AUTHOR</a>
+  </div>
+
+  <ol class='man-decor man-head man head'>
+    <li class='tl'>waitron(1)</li>
+    <li class='tc'>Windowchef Manual</li>
+    <li class='tr'>waitron(1)</li>
+  </ol>
+
+  <h2 id="NAME">NAME</h2>
+<p class="man-name">
+  <code>waitron</code> - <span class="man-whatis">A client for <span class="man-ref">windowchef<span class="s">(1)</span></span></span>
+</p>
+
+<h2 id="SYNOPSIS">SYNOPSIS</h2>
+
+<p><code>waitron</code> [-h] <var>command</var> [<var>args</var>...]</p>
+
+<h2 id="DESCRIPTION">DESCRIPTION</h2>
+
+<p><code>waitron</code> is the client for <span class="man-ref">windowchef<span class="s">(1)</span></span>. It sends a given command to
+<span class="man-ref">windowchef<span class="s">(1)</span></span> as an X client message. As a result, <code>waitron</code> doesn't print
+anything on <code>stdout</code>.</p>
+
+<h2 id="OPTIONS">OPTIONS</h2>
+
+<dl>
+<dt class="flush"><code>-h</code></dt><dd>  Print usage and version information.</dd>
+</dl>
+
+
+<h2 id="COMMANDS">COMMANDS</h2>
+
+<dl>
+<dt><code>window_move</code> <var>x</var> <var>y</var></dt><dd><p>  Move the focused window <var>y</var> pixels horizontally and <var>y</var> pixels
+  vertically.</p></dd>
+<dt><code>window_move_absolute</code> <var>x</var> <var>y</var></dt><dd><p>  Move the focused window to the position given by <var>x</var> and <var>y</var>.</p></dd>
+<dt><code>window_resize</code> <var>x</var> <var>y</var></dt><dd><p>  Resize the focused window based on the relative pixel values <var>x</var> and <var>y</var>.</p></dd>
+<dt><code>window_resize_absolute</code> <var>width</var> <var>height</var></dt><dd><p>  Resize the focused window up to <var>width</var> and <var>height</var>.</p></dd>
+<dt><code>window_maximize</code></dt><dd><p>  Hide the border and maximize the focused window on the current monitor.
+  Execute it again after maximizing to revert the state of the window.</p></dd>
+<dt><code>window_hor_maximize</code></dt><dd><p>  Horizontally maximize the focused window on the current monitor, preserving
+  its <var>x</var> component. Leaves a gap at the left and right of the monitor that
+  can be configured. Execute it again after maximizing to revert the state of the window.</p></dd>
+<dt><code>window_ver_maximize</code></dt><dd><p>  Vertically maximize the focused window on the current monitor, preserving
+  its <var>y</var> component. Leaves a gap at the top and bottom of the monitor whose
+  width can be configured. Execute it again after maximizing to revert the state of the window.</p></dd>
+<dt><code>window_close</code></dt><dd><p>  Closes the focused window.</p></dd>
+<dt><code>window_put_in_grid</code> <var>grid_width</var> <var>grid_height</var> <var>cell_x</var> <var>cell_y</var></dt><dd><p>  Moves and resizes the focused windows accordingly to fit in a cell defined
+  by the <var>cell_x</var> and <var>cell_y</var> coordinates in a virtual grid with width
+  <var>grid_width</var> and height <var>grid_height</var> on the current monitor.</p></dd>
+<dt><code>window_snap</code> <var>pos</var></dt><dd><p>  Snap the window on the screen in a position defined by <var>pos</var>. <var>pos</var> can be:</p>
+
+<p>  <code>0</code> for top-left.</p>
+
+<p>  <code>1</code> for to-right.</p>
+
+<p>  <code>2</code> for bottom-left.</p>
+
+<p>  <code>3</code> for bottom-right.</p>
+
+<p>  <code>4</code> for the middle.</p></dd>
+<dt><code>window_cycle</code></dt><dd><p>  Cycle through mapped windows.</p></dd>
+<dt><code>window_rev_cycle</code></dt><dd><p>  Reverse cycle through mapped windows.</p></dd>
+<dt><code>group_add_window</code> <var>group_nr</var></dt><dd><p>  Add the focused window to the <var>group_nr</var> group.</p>
+
+<p>  Group numbers start from 0 and end at <var>GROUPS_NO</var> - 1.</p></dd>
+<dt><code>group_remove_window</code></dt><dd><p>  Remove the focused window from its current group.</p></dd>
+<dt><code>group_activate</code> <var>group_nr</var></dt><dd><p>  Map all windows that belong to the <var>group_nr</var> group.</p></dd>
+<dt><code>group_deactivate</code> <var>group_nr</var></dt><dd><p>  Unmap all windows that belong to the <var>group_nr</var> group.</p></dd>
+<dt><code>group_toggle</code> <var>group_nr</var></dt><dd><p>  Toggle the <var>group_nr</var> group.</p></dd>
+<dt><code>wm_quit</code> <var>exit_status</var></dt><dd><p>  Quit windowchef with exit_status <var>exit_status</var>.</p></dd>
+<dt><code>wm_change_number_of_groups</code> <var>number_of_groups</var></dt><dd><p>  Change the number of maximum groups to <var>number_of_groups</var>.</p>
+
+<p>  Windows that belong to a group that has a <var>group_nr</var> greater or equal to
+  <var>number_of_groups</var> will become orphaned.</p></dd>
+<dt><code>wm_config</code> <var>key</var> [<var>value</var>...]</dt><dd><p>  See <a href="#CONFIGURING" title="CONFIGURING" data-bare-link="true">CONFIGURING</a>.</p></dd>
+</dl>
+
+
+<h2 id="CONFIGURING">CONFIGURING</h2>
+
+<p>Configuring is done using the <code>wm_config</code> command. Possible configuration keys
+are:</p>
+
+<dl>
+<dt><code>border_width</code> <var>width</var></dt><dd><p>  Sets the border width to <var>width</var> pixels.</p></dd>
+<dt><code>color_focused</code>, <code>color_unfocused</code> <var>color</var></dt><dd><p>  Sets the border color to <var>color</var> for the focused and unfocused state respectively.
+  <var>color</var> is a hexadecimal value that may or may not start witht he <code>0x</code>
+  prefix. Example: <code>0x1234ef</code>.</p></dd>
+<dt><code>gap_width</code> <var>width</var></dt><dd><p>  Sets the window gap value to <var>width</var>.</p></dd>
+<dt><code>cursor_position</code> <var>pos</var></dt><dd><p>  Sets the position of the cursor when moving or resizing windows. Possible
+  values for <var>pos</var> are:</p>
+
+<p>  <code>topleft</code></p>
+
+<p>  <code>topright</code></p>
+
+<p>  <code>bottomleft</code></p>
+
+<p>  <code>bottomright</code></p>
+
+<p>  <code>middle</code></p></dd>
+<dt><code>groups_nr</code> <var>nr</var></dt><dd><p>  Sets the number of groups to <var>nr</var>. If <var>nr</var> is less than the current number
+  of groups, window that belong to groups whose numbers are greater than <var>nr</var>
+  will be mapped to screen and assigned to the null group.</p></dd>
+<dt><code>enable_sloppy_focus</code> <var>enable</var></dt><dd><p>  Enable sloppy focus. <var>enable</var> can be <code>true</code>, <code>t</code>, <code>yes</code>, <code>y</code>, <code>1</code>, <code>false</code>,
+  <code>f</code>, <code>no</code>, <code>n</code> or <code>0</code>.</p></dd>
+</dl>
+
+
+<h2 id="SEE-ALSO">SEE ALSO</h2>
+
+<p><span class="man-ref">windowchef<span class="s">(1)</span></span>, <span class="man-ref">sxhkd<span class="s">(1)</span></span></p>
+
+<h2 id="AUTHOR">AUTHOR</h2>
+
+<p>Tudor Roman <code>&lt;tudurom at gmail dot com></code></p>
+
+
+  <ol class='man-decor man-foot man foot'>
+    <li class='tl'></li>
+    <li class='tc'>September 2016</li>
+    <li class='tr'>waitron(1)</li>
+  </ol>
+
+  </div>
+</body>
+</html>

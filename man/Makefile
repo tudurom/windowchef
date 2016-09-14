@@ -1,12 +1,15 @@
 include ../config.mk
 
-MAN = windowchef.1
+MAN = windowchef.1 \
+	  waitron.1
 MANUAL = "Windowchef Manual"
 
 .POSIX:
 
-page:
-	ronn --manual=$(MANUAL) $(MAN).md
+all: $(MAN)
+
+%.1: *.1.md
+	ronn --manual=$(MANUAL) $@.md
 
 clean:
 	rm *.1

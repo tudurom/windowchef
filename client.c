@@ -3,16 +3,67 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <stdbool.h>
 #include <xcb/xcb.h>
 #include <err.h>
 #include <errno.h>
 
 #include "ipc.h"
+#include "common.h"
 
-#ifndef __NAME_CLIENT__
-#define __NAME_CLIENT__ "client"
-#endif
+static bool fn_offset(uint32_t *, int, char **);
+static bool fn_naturals(uint32_t *, int, char **);
+static bool fn_bool(uint32_t *, int, char **);
+static bool fn_config(uint32_t *, int, char **);
+static bool fn_hex(uint32_t *, int, char **);
+
+struct Command {
+	char *string_command;
+	enum IPCCommand command;
+	int argc;
+	bool (*handler)(uint32_t *, int , char **);
+};
+
+struct ConfigEntry {
+	char *key;
+	enum IPCConfig config;
+	bool (*handler)(uint32_t *, int, char **);
+};
+
+/* vim-tabularize is cool, i swear */
+static struct Command c[] = {
+	{ "window_move"            , IPCWindowMove           ,  2 , fn_offset   } ,
+	{ "window_move_absolute"   , IPCWindowMoveAbsolute   ,  2 , fn_offset   } ,
+	{ "window_resize"          , IPCWindowResize         ,  2 , fn_offset   } ,
+	{ "window_resize_absolute" , IPCWindowResizeAbsolute ,  2 , fn_naturals } ,
+	{ "window_maximize"        , IPCWindowMaximize       ,  0 , NULL        } ,
+	{ "window_hor_maximize"    , IPCWindowHorMaximize    ,  0 , NULL        } ,
+	{ "window_ver_maximize"    , IPCWindowVerMaximize    ,  0 , NULL        } ,
+	{ "window_close"           , IPCWindowClose          ,  0 , NULL        } ,
+	{ "window_put_in_grid"     , IPCWindowPutInGrid      ,  4 , fn_naturals } ,
+	{ "window_snap"            , IPCWindowSnap           ,  1 , fn_naturals } ,
+	{ "window_cycle"           , IPCWindowCycle          ,  0 , NULL        } ,
+	{ "window_rev_cycle"       , IPCWindowRevCycle       ,  0 , NULL        } ,
+	{ "group_add_window"       , IPCGroupAddWindow       ,  1 , fn_naturals } ,
+	{ "group_remove_window"    , IPCGroupRemoveWindow    ,  0 , NULL        } ,
+	{ "group_activate"         , IPCGroupActivate        ,  1 , fn_naturals } ,
+	{ "group_deactivate"       , IPCGroupDeactivate      ,  1 , fn_naturals } ,
+	{ "group_toggle"           , IPCGroupToggle          ,  1 , fn_naturals } ,
+	{ "wm_quit"                , IPCWMQuit               ,  1 , fn_naturals } ,
+	{ "wm_change_nr_of_groups" , IPCWMChangeNrOfGroups   ,  1 , fn_naturals } ,
+	{ "wm_config"              , IPCWMConfig             ,  2 , fn_config   },
+};
+
+static struct ConfigEntry configs[] = {
+	{ "border_width"        , IPCConfigBorderWidth       , fn_naturals } ,
+	{ "color_focused"       , IPCConfigColorFocused      , fn_hex} ,
+	{ "color_unfocused"     , IPCConfigColorUnfocused    , fn_hex} ,
+	{ "gap_width"           , IPCConfigGapWidth          , fn_naturals } ,
+	{ "cursor_position"     , IPCConfigCursorPosition    , fn_naturals } ,
+	{ "groups_nr"           , IPCConfigGroupsNr          , fn_naturals } ,
+	{ "enable_sloppy_focus" , IPCConfigEnableSloppyFocus , fn_bool     } ,
+};
 
 static bool
 fn_offset(uint32_t *data, int argc, char **argv)
@@ -51,36 +102,66 @@ fn_naturals(uint32_t *data, int argc, char **argv)
 		return true;
 }
 
-struct Command {
-	char *string_command;
-	enum IPCCommand command;
-	int argc;
-	bool (*handler)(uint32_t *, int , char **);
-};
+static bool
+fn_bool(uint32_t *data, int argc, char **argv) {
+	int i = 0;
+	char *arg;
+	do {
+		arg = argv[i];
+		if (strcasecmp(argv[i], "true")
+					|| strcasecmp(arg, "yes")
+					|| strcasecmp(arg, "t")
+					|| strcasecmp(arg, "y")
+					|| strcasecmp(arg, "1"))
+				data[i] = true;
+		else
+			data[i] = false;
+	} while (i < argc);
 
-/* vim-tabularize is cool, i swear */
-static struct Command c[] = {
-	{ "window_move"            , IPCWindowMove           , 2 , fn_offset   }  ,
-	{ "window_move_absolute"   , IPCWindowMoveAbsolute   , 2 , fn_offset   }  ,
-	{ "window_resize"          , IPCWindowResize         , 2 , fn_offset   }  ,
-	{ "window_resize_absolute" , IPCWindowResizeAbsolute , 2 , fn_naturals }  ,
-	{ "window_maximize"        , IPCWindowMaximize       , 0 , NULL        } ,
-	{ "window_hor_maximize"    , IPCWindowHorMaximize    , 0 , NULL        } ,
-	{ "window_ver_maximize"    , IPCWindowVerMaximize    , 0 , NULL        } ,
-	{ "window_close"           , IPCWindowClose          , 0 , NULL        } ,
-	{ "window_put_in_grid"     , IPCWindowPutInGrid      , 4 , fn_naturals } ,
-	{ "window_snap"            , IPCWindowSnap           , 1 , fn_naturals } ,
-	{ "window_cycle"           , IPCWindowCycle          , 0 , NULL        } ,
-	{ "window_rev_cycle"       , IPCWindowRevCycle       , 0 , NULL        } ,
-	{ "group_add_window"       , IPCGroupAddWindow       , 1 , fn_naturals } ,
-	{ "group_remove_window"    , IPCGroupRemoveWindow    , 0 , NULL        } ,
-	{ "group_activate"         , IPCGroupActivate        , 1 , fn_naturals } ,
-	{ "group_deactivate"       , IPCGroupDeactivate      , 1 , fn_naturals } ,
-	{ "group_toggle"           , IPCGroupToggle          , 1 , fn_naturals } ,
-	{ "wm_quit"                , IPCWMQuit               , 1 , fn_naturals } ,
-	{ "wm_change_nr_of_groups" , IPCWMChangeNrOfGroups   , 1 , fn_naturals } ,
+	return true;
+}
 
-};
+static bool
+fn_config(uint32_t *data, int argc, char **argv) {
+	char *key, *value;
+	bool status;
+	int i;
+
+	key = argv[0];
+	value = argv[1];
+
+	i = 0;
+	while (i < NR_IPC_CONFIGS && strcmp(key, configs[i].key) != 0)
+		i++;
+
+	if (i < NR_IPC_CONFIGS) {
+		/* XXX: hardcoded value */
+		data[0] = configs[i].config;
+		status = (configs[i].handler)(data + 1, argc - 1, argv + 1);
+
+		if (status == false)
+			errx(EXIT_FAILURE, "malformed input");
+	} else {
+		errx(EXIT_FAILURE, "no such config key");
+	}
+	return true;
+}
+
+static bool
+fn_hex(uint32_t *data, int argc, char **argv)
+{
+	int i = 0;
+	do {
+		errno = 0;
+		data[i] = strtol(argv[i], NULL, 16);
+		i++;
+	} while (i < argc && errno == 0);
+
+	if (errno != 0)
+		return false;
+	else
+		return true;
+}
 
 xcb_connection_t *conn;
 xcb_screen_t *scr;
@@ -137,10 +218,11 @@ send_command(struct Command *c, int argc, char **argv)
 }
 
 void
-usage()
+usage(char *name)
 {
-	fprintf(stderr, "Usage: %s <command> [args]...\n", __NAME_CLIENT__);
-
+	fprintf(stderr, "Usage: %s <command> [args...]\n", name);
+	fprintf(stderr, "\n");
+	fprintf(stderr, "%s %s\n", __NAME_CLIENT__, __THIS_VERSION__);
 	exit(1);
 }
 
@@ -149,10 +231,11 @@ int main(int argc, char **argv)
 	int i;
 	int command_argc;
 	char **command_argv;
-	init_xcb(&conn);
 
-	if (argc == 1)
-		usage();
+	if (argc == 1 || (argc == 2 && strcmp(argv[1], "-h") == 0))
+		usage(argv[0]);
+
+	init_xcb(&conn);
 
 	/* argc - program name - command to send */
 	command_argc = argc - 2;
@@ -163,11 +246,13 @@ int main(int argc, char **argv)
 		i++;
 
 	if (i < NR_IPC_COMMANDS) {
-		if (command_argc < c[i].argc)
-			errx(EXIT_FAILURE, "not enough argmuents");
-		else if (command_argc > c[i].argc)
-			warnx("too many arguments");
-		else
+		if (c[i].argc != -1) {
+			if (command_argc < c[i].argc)
+				errx(EXIT_FAILURE, "not enough argmuents");
+			else if (command_argc > c[i].argc)
+				warnx("too many arguments");
+		}
+		if (c[i].argc == -1 || command_argc == c[i].argc)
 			send_command(&c[i], command_argc, command_argv);
 
 	} else {

@@ -3,7 +3,7 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#define BORDER_WIDTH 3
+#define BORDER_WIDTH 5
 /* colors are HTML colors that start in "0x" instead of "#" */
 #define COLOR_FOCUS 0x3d637d
 #define COLOR_UNFOCUS 0x003b4f

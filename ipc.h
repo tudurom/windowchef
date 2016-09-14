@@ -28,7 +28,19 @@ enum IPCCommand {
 	IPCGroupToggle,
 	IPCWMQuit,
 	IPCWMChangeNrOfGroups,
-	NR_IPC_COMMANDS,
+	IPCWMConfig,
+	NR_IPC_COMMANDS
+};
+
+enum IPCConfig {
+	IPCConfigBorderWidth,
+	IPCConfigColorFocused,
+	IPCConfigColorUnfocused,
+	IPCConfigGapWidth,
+	IPCConfigCursorPosition,
+	IPCConfigGroupsNr,
+	IPCConfigEnableSloppyFocus,
+	NR_IPC_CONFIGS
 };
 
 enum SnapPosition {

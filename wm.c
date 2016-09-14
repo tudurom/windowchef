@@ -19,10 +19,6 @@
 #include "types.h"
 #include "config.h"
 
-#ifndef __NAME__
-#define __NAME__ "wm"
-#endif
-
 #define EVENT_MASK(ev) ((ev & ~0x80))
 /* XCB event with the biggest values */
 #define LAST_XCB_EVENT XCB_GET_MODIFIER_MAPPING
@@ -138,6 +134,9 @@ static void ipc_group_deactivate(uint32_t *);
 static void ipc_group_toggle(uint32_t *);
 static void ipc_wm_quit(uint32_t *);
 static void ipc_wm_change_nr_of_groups(uint32_t *);
+static void ipc_wm_config(uint32_t *);
+
+static void usage(char *);
 
 /*
  * Gracefully disconnect.
@@ -1720,6 +1719,7 @@ register_ipc_handlers(void)
 	ipc_handlers[IPCGroupToggle]          = ipc_group_toggle;
 	ipc_handlers[IPCWMQuit]               = ipc_wm_quit;
 	ipc_handlers[IPCWMChangeNrOfGroups]   = ipc_wm_change_nr_of_groups;
+	ipc_handlers[IPCWMConfig]             = ipc_wm_config;
 }
 
 static void
@@ -2036,7 +2036,7 @@ void ipc_window_rev_cycle(uint32_t *d)
 static void
 ipc_group_add_window(uint32_t *d) {
 	if (focused_win != NULL)
-		group_add_window(focused_win, d[0]);
+		group_add_window(focused_win, d[0] - 1);
 }
 
 static void
@@ -2048,17 +2048,17 @@ ipc_group_remove_window(uint32_t *d) {
 
 static void
 ipc_group_activate(uint32_t *d) {
-	group_activate(d[0]);
+	group_activate(d[0] - 1);
 }
 
 static void
 ipc_group_deactivate(uint32_t *d) {
-	group_activate(d[0]);
+	group_activate(d[0] - 1);
 }
 
 static void
 ipc_group_toggle(uint32_t *d) {
-	group_toggle(d[0]);
+	group_toggle(d[0] - 1);
 }
 
 static void
@@ -2074,8 +2074,56 @@ ipc_wm_change_nr_of_groups(uint32_t *d)
 	change_nr_of_groups(d[0]);
 }
 
-int main(int argc, char **argv)
+static void
+ipc_wm_config(uint32_t *d)
 {
+	enum IPCConfig key;
+	uint32_t value;
+
+	key = d[0];
+	value = d[1];
+
+	switch (key) {
+		case IPCConfigBorderWidth:
+			conf.border_width = value;
+			break;
+		case IPCConfigColorFocused:
+			conf.focus_color = value;
+			break;
+		case IPCConfigColorUnfocused:
+			conf.unfocus_color = value;
+			break;
+		case IPCConfigGapWidth:
+			conf.gap = value;
+			break;
+		case IPCConfigCursorPosition:
+			conf.cursor_position = value;
+			break;
+		case IPCConfigGroupsNr:
+			change_nr_of_groups(value);
+			break;
+		case IPCConfigEnableSloppyFocus:
+			conf.sloppy_focus = value;
+			break;
+		default:
+			break;
+	}
+}
+
+static void
+usage(char *name)
+{
+	fprintf(stderr, "Usage: %s [-h]\n", name);
+	fprintf(stderr, "\n");
+	fprintf(stderr, "%s %s\n", __NAME__, __THIS_VERSION__);
+
+	exit(EXIT_FAILURE);
+}
+
+int main(int argc, char *argv[])
+{
+	if (argc == 2 && strcmp(argv[1], "-h") == 0)
+		usage(argv[0]);
 	atexit(cleanup);
 
 	register_event_handlers();

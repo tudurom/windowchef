@@ -57,9 +57,9 @@
     <a href="#SYNOPSIS">SYNOPSIS</a>
     <a href="#DESCRIPTION">DESCRIPTION</a>
     <a href="#OPTIONS">OPTIONS</a>
-    <a href="#COMMANDS">COMMANDS</a>
+    <a href="#SEE-ALSO">SEE ALSO</a>
     <a href="#AUTHOR">AUTHOR</a>
-    <a href="#DISCLAIMER">DISCLAIMER</a>
+    <a href="#DERP">DERP</a>
   </div>
 
   <ol class='man-decor man-head man head'>
@@ -75,76 +75,32 @@
 
 <h2 id="SYNOPSIS">SYNOPSIS</h2>
 
-<p><code>windowchef</code> [-v]</p>
+<p><code>windowchef</code> [-h]</p>
 
 <h2 id="DESCRIPTION">DESCRIPTION</h2>
 
 <p><code>windowchef</code> is a stacking window manager that doesn't handle keyboard or
-pointer inputs. It is controlled by <code>waitron</code> and configured by editing the
-<code>config.h</code> file and recompiling.</p>
+pointer inputs. It is controlled and configured by <code>waitron</code>.</p>
 
 <h2 id="OPTIONS">OPTIONS</h2>
 
 <dl>
-<dt class="flush"><code>-v</code></dt><dd>  Print version information.</dd>
+<dt class="flush"><code>-h</code></dt><dd>  Print usage and version information.</dd>
 </dl>
 
 
-<h2 id="COMMANDS">COMMANDS</h2>
+<h2 id="SEE-ALSO">SEE ALSO</h2>
 
-<dl>
-<dt><code>window_move</code> <var>x</var> <var>y</var></dt><dd><p>  Move the focused window <var>y</var> pixels horizontally and <var>y</var> pixels
-  vertically.</p></dd>
-<dt><code>window_move_absolute</code> <var>x</var> <var>y</var></dt><dd><p>  Move the focused window to the position given by <var>x</var> and <var>y</var>.</p></dd>
-<dt><code>window_resize</code> <var>x</var> <var>y</var></dt><dd><p>  Resize the focused window based on the relative pixel values <var>x</var> and <var>y</var>.</p></dd>
-<dt><code>window_resize_absolute</code> <var>width</var> <var>height</var></dt><dd><p>  Resize the focused window up to <var>width</var> and <var>height</var>.</p></dd>
-<dt><code>window_maximize</code></dt><dd><p>  Hide the border and maximize the focused window on the current monitor.
-  Execute it again after maximizing to revert the state of the window.</p></dd>
-<dt><code>window_hor_maximize</code></dt><dd><p>  Horizontally maximize the focused window on the current monitor, preserving
-  its <var>x</var> component. Leaves a gap at the left and right of the monitor that
-  can be configured. Execute it again after maximizing to revert the state of the window.</p></dd>
-<dt><code>window_ver_maximize</code></dt><dd><p>  Vertically maximize the focused window on the current monitor, preserving
-  its <var>y</var> component. Leaves a gap at the top and bottom of the monitor whose
-  width can be configured. Execute it again after maximizing to revert the state of the window.</p></dd>
-<dt><code>window_close</code></dt><dd><p>  Closes the focused window.</p></dd>
-<dt><code>window_put_in_grid</code> <var>grid_width</var> <var>grid_height</var> <var>cell_x</var> <var>cell_y</var></dt><dd><p>  Moves and resizes the focused windows accordingly to fit in a cell defined
-  by the <var>cell_x</var> and <var>cell_y</var> coordinates in a virtual grid with width
-  <var>grid_width</var> and height <var>grid_height</var> on the current monitor.</p></dd>
-<dt><code>window_snap</code> <var>pos</var></dt><dd><p>  Snap the window on the screen in a position defined by <var>pos</var>. <var>pos</var> can be:</p>
-
-<p>  <code>0</code> for top-left.</p>
-
-<p>  <code>1</code> for to-right.</p>
-
-<p>  <code>2</code> for bottom-left.</p>
-
-<p>  <code>3</code> for bottom-right.</p>
-
-<p>  <code>4</code> for the middle.</p></dd>
-<dt><code>window_cycle</code></dt><dd><p>  Cycle through mapped windows.</p></dd>
-<dt><code>window_rev_cycle</code></dt><dd><p>  Reverse cycle through mapped windows.</p></dd>
-<dt><code>group_add_window</code> <var>group_nr</var></dt><dd><p>  Add the focused window to the <var>group_nr</var> group.</p>
-
-<p>  Group numbers start from 0 and end at <var>GROUPS_NO</var> - 1.</p></dd>
-<dt><code>group_remove_window</code></dt><dd><p>  Remove the focused window from its current group.</p></dd>
-<dt><code>group_activate</code> <var>group_nr</var></dt><dd><p>  Map all windows that belong to the <var>group_nr</var> group.</p></dd>
-<dt><code>group_deactivate</code> <var>group_nr</var></dt><dd><p>  Unmap all windows that belong to the <var>group_nr</var> group.</p></dd>
-<dt><code>group_toggle</code> <var>group_nr</var></dt><dd><p>  Toggle the <var>group_nr</var> group.</p></dd>
-<dt><code>wm_quit</code> <var>exit_status</var></dt><dd><p>  Quit windowchef with exit_status <var>exit_status</var>.</p></dd>
-<dt><code>wm_change_number_of_groups</code> <var>number_of_groups</var></dt><dd><p>  Change the number of maximum groups to <var>number_of_groups</var>.</p>
-
-<p>  Windows that belong to a group that has a <var>group_nr</var> greater or equal to
-  <var>number_of_groups</var> will become orphaned.</p></dd>
-</dl>
-
+<p><span class="man-ref">waitron<span class="s">(1)</span></span>, <span class="man-ref">sxhkd<span class="s">(1)</span></span>, <span class="man-ref">xinit<span class="s">(1)</span></span></p>
 
 <h2 id="AUTHOR">AUTHOR</h2>
 
 <p>Tudor Roman <code>&lt;tudurom at gmail dot com></code></p>
 
-<h2 id="DISCLAIMER">DISCLAIMER</h2>
+<h2 id="DERP">DERP</h2>
 
-<p>I deleted all the manpages from my system by mistake while writing this thing.</p>
+<p>I deleted all the manpages from my system by mistake while writing this manual
+page.</p>
 
 
   <ol class='man-decor man-foot man foot'>

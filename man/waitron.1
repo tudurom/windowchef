@@ -1,0 +1,170 @@
+.\" generated with Ronn/v0.7.3
+.\" http://github.com/rtomayko/ronn/tree/0.7.3
+.
+.TH "WAITRON" "1" "September 2016" "" "Windowchef Manual"
+.
+.SH "NAME"
+\fBwaitron\fR \- A client for windowchef(1)
+.
+.SH "SYNOPSIS"
+\fBwaitron\fR [\-h] \fIcommand\fR [\fIargs\fR\.\.\.]
+.
+.SH "DESCRIPTION"
+\fBwaitron\fR is the client for windowchef(1)\. It sends a given command to windowchef(1) as an X client message\. As a result, \fBwaitron\fR doesn\'t print anything on \fBstdout\fR\.
+.
+.SH "OPTIONS"
+.
+.TP
+\fB\-h\fR
+Print usage and version information\.
+.
+.SH "COMMANDS"
+.
+.TP
+\fBwindow_move\fR \fIx\fR \fIy\fR
+Move the focused window \fIy\fR pixels horizontally and \fIy\fR pixels vertically\.
+.
+.TP
+\fBwindow_move_absolute\fR \fIx\fR \fIy\fR
+Move the focused window to the position given by \fIx\fR and \fIy\fR\.
+.
+.TP
+\fBwindow_resize\fR \fIx\fR \fIy\fR
+Resize the focused window based on the relative pixel values \fIx\fR and \fIy\fR\.
+.
+.TP
+\fBwindow_resize_absolute\fR \fIwidth\fR \fIheight\fR
+Resize the focused window up to \fIwidth\fR and \fIheight\fR\.
+.
+.TP
+\fBwindow_maximize\fR
+Hide the border and maximize the focused window on the current monitor\. Execute it again after maximizing to revert the state of the window\.
+.
+.TP
+\fBwindow_hor_maximize\fR
+Horizontally maximize the focused window on the current monitor, preserving its \fIx\fR component\. Leaves a gap at the left and right of the monitor that can be configured\. Execute it again after maximizing to revert the state of the window\.
+.
+.TP
+\fBwindow_ver_maximize\fR
+Vertically maximize the focused window on the current monitor, preserving its \fIy\fR component\. Leaves a gap at the top and bottom of the monitor whose width can be configured\. Execute it again after maximizing to revert the state of the window\.
+.
+.TP
+\fBwindow_close\fR
+Closes the focused window\.
+.
+.TP
+\fBwindow_put_in_grid\fR \fIgrid_width\fR \fIgrid_height\fR \fIcell_x\fR \fIcell_y\fR
+Moves and resizes the focused windows accordingly to fit in a cell defined by the \fIcell_x\fR and \fIcell_y\fR coordinates in a virtual grid with width \fIgrid_width\fR and height \fIgrid_height\fR on the current monitor\.
+.
+.TP
+\fBwindow_snap\fR \fIpos\fR
+Snap the window on the screen in a position defined by \fIpos\fR\. \fIpos\fR can be:
+.
+.IP
+\fB0\fR for top\-left\.
+.
+.IP
+\fB1\fR for to\-right\.
+.
+.IP
+\fB2\fR for bottom\-left\.
+.
+.IP
+\fB3\fR for bottom\-right\.
+.
+.IP
+\fB4\fR for the middle\.
+.
+.TP
+\fBwindow_cycle\fR
+Cycle through mapped windows\.
+.
+.TP
+\fBwindow_rev_cycle\fR
+Reverse cycle through mapped windows\.
+.
+.TP
+\fBgroup_add_window\fR \fIgroup_nr\fR
+Add the focused window to the \fIgroup_nr\fR group\.
+.
+.IP
+Group numbers start from 0 and end at \fIGROUPS_NO\fR \- 1\.
+.
+.TP
+\fBgroup_remove_window\fR
+Remove the focused window from its current group\.
+.
+.TP
+\fBgroup_activate\fR \fIgroup_nr\fR
+Map all windows that belong to the \fIgroup_nr\fR group\.
+.
+.TP
+\fBgroup_deactivate\fR \fIgroup_nr\fR
+Unmap all windows that belong to the \fIgroup_nr\fR group\.
+.
+.TP
+\fBgroup_toggle\fR \fIgroup_nr\fR
+Toggle the \fIgroup_nr\fR group\.
+.
+.TP
+\fBwm_quit\fR \fIexit_status\fR
+Quit windowchef with exit_status \fIexit_status\fR\.
+.
+.TP
+\fBwm_change_number_of_groups\fR \fInumber_of_groups\fR
+Change the number of maximum groups to \fInumber_of_groups\fR\.
+.
+.IP
+Windows that belong to a group that has a \fIgroup_nr\fR greater or equal to \fInumber_of_groups\fR will become orphaned\.
+.
+.TP
+\fBwm_config\fR \fIkey\fR [\fIvalue\fR\.\.\.]
+See \fICONFIGURING\fR\.
+.
+.SH "CONFIGURING"
+Configuring is done using the \fBwm_config\fR command\. Possible configuration keys are:
+.
+.TP
+\fBborder_width\fR \fIwidth\fR
+Sets the border width to \fIwidth\fR pixels\.
+.
+.TP
+\fBcolor_focused\fR, \fBcolor_unfocused\fR \fIcolor\fR
+Sets the border color to \fIcolor\fR for the focused and unfocused state respectively\. \fIcolor\fR is a hexadecimal value that may or may not start witht he \fB0x\fR prefix\. Example: \fB0x1234ef\fR\.
+.
+.TP
+\fBgap_width\fR \fIwidth\fR
+Sets the window gap value to \fIwidth\fR\.
+.
+.TP
+\fBcursor_position\fR \fIpos\fR
+Sets the position of the cursor when moving or resizing windows\. Possible values for \fIpos\fR are:
+.
+.IP
+\fBtopleft\fR
+.
+.IP
+\fBtopright\fR
+.
+.IP
+\fBbottomleft\fR
+.
+.IP
+\fBbottomright\fR
+.
+.IP
+\fBmiddle\fR
+.
+.TP
+\fBgroups_nr\fR \fInr\fR
+Sets the number of groups to \fInr\fR\. If \fInr\fR is less than the current number of groups, window that belong to groups whose numbers are greater than \fInr\fR will be mapped to screen and assigned to the null group\.
+.
+.TP
+\fBenable_sloppy_focus\fR \fIenable\fR
+Enable sloppy focus\. \fIenable\fR can be \fBtrue\fR, \fBt\fR, \fByes\fR, \fBy\fR, \fB1\fR, \fBfalse\fR, \fBf\fR, \fBno\fR, \fBn\fR or \fB0\fR\.
+.
+.SH "SEE ALSO"
+windowchef(1), sxhkd(1)
+.
+.SH "AUTHOR"
+Tudor Roman \fB<tudurom at gmail dot com>\fR

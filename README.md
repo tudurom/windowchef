@@ -1,6 +1,12 @@
 Windowchef
 ==========
 
+Disclaimer
+----------
+
+This software is a work in progress and may [break your workflow](https://xkcd.com/1172/) (yeah, it's that one xkcd comic, everyone
+knows it).
+
 Cooking windows since 2016
 --------------------------
 

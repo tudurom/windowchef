@@ -9,4 +9,12 @@
 #define DMSG(fmt, ...)
 #endif
 
+#ifndef __NAME__
+#define __NAME__ "wm"
+#endif
+
+#ifndef __THIS_VERSION__
+#define __THIS_VERSION__ ""
+#endif
+
 #endif
