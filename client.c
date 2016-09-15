@@ -11,12 +11,14 @@
 
 #include "ipc.h"
 #include "common.h"
+#include "types.h"
 
 static bool fn_offset(uint32_t *, int, char **);
 static bool fn_naturals(uint32_t *, int, char **);
 static bool fn_bool(uint32_t *, int, char **);
 static bool fn_config(uint32_t *, int, char **);
 static bool fn_hex(uint32_t *, int, char **);
+static bool fn_curpos(uint32_t *, int, char **);
 
 struct Command {
 	char *string_command;
@@ -57,10 +59,10 @@ static struct Command c[] = {
 
 static struct ConfigEntry configs[] = {
 	{ "border_width"        , IPCConfigBorderWidth       , fn_naturals } ,
-	{ "color_focused"       , IPCConfigColorFocused      , fn_hex} ,
-	{ "color_unfocused"     , IPCConfigColorUnfocused    , fn_hex} ,
+	{ "color_focused"       , IPCConfigColorFocused      , fn_hex      } ,
+	{ "color_unfocused"     , IPCConfigColorUnfocused    , fn_hex      } ,
 	{ "gap_width"           , IPCConfigGapWidth          , fn_naturals } ,
-	{ "cursor_position"     , IPCConfigCursorPosition    , fn_naturals } ,
+	{ "cursor_position"     , IPCConfigCursorPosition    , fn_curpos   } ,
 	{ "groups_nr"           , IPCConfigGroupsNr          , fn_naturals } ,
 	{ "enable_sloppy_focus" , IPCConfigEnableSloppyFocus , fn_bool     } ,
 };
@@ -108,14 +110,15 @@ fn_bool(uint32_t *data, int argc, char **argv) {
 	char *arg;
 	do {
 		arg = argv[i];
-		if (strcasecmp(argv[i], "true")
-					|| strcasecmp(arg, "yes")
-					|| strcasecmp(arg, "t")
-					|| strcasecmp(arg, "y")
-					|| strcasecmp(arg, "1"))
+		if (strcasecmp(argv[i], "true")       == 0
+					|| strcasecmp(arg, "yes") == 0
+					|| strcasecmp(arg, "t")   == 0
+					|| strcasecmp(arg, "y")   == 0
+					|| strcasecmp(arg, "1")   == 0)
 				data[i] = true;
 		else
 			data[i] = false;
+		i++;
 	} while (i < argc);
 
 	return true;
@@ -161,6 +164,31 @@ fn_hex(uint32_t *data, int argc, char **argv)
 		return false;
 	else
 		return true;
+}
+
+static bool
+fn_curpos(uint32_t *data, int argc, char **argv)
+{
+	char *pos = argv[0];
+	enum position snap_pos;
+
+	if (strcasecmp(pos, "topleft") == 0)
+		snap_pos = TOP_LEFT;
+	else if (strcasecmp(pos, "topright") == 0)
+		snap_pos = TOP_RIGHT;
+	else if (strcasecmp(pos, "bottomleft") == 0)
+		snap_pos = BOTTOM_LEFT;
+	else if (strcasecmp(pos, "bottomright") == 0)
+		snap_pos = BOTTOM_RIGHT;
+	else if (strcasecmp(pos, "middle") == 0)
+		snap_pos = CENTER;
+	else
+		return false;
+
+	(void)(argc);
+	data[0] = snap_pos;
+
+	return true;
 }
 
 xcb_connection_t *conn;

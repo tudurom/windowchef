@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include "common.h"
 #include "ipc.h"
@@ -137,6 +138,8 @@ static void ipc_wm_change_nr_of_groups(uint32_t *);
 static void ipc_wm_config(uint32_t *);
 
 static void usage(char *);
+static void load_defaults(void);
+static void load_config(char *);
 
 /*
  * Gracefully disconnect.
@@ -213,14 +216,6 @@ setup(void)
 		ATOMS[i] = get_atom(atom_names[i]);
 
 	randr_base = setup_randr();
-
-	conf.border_width    = BORDER_WIDTH;
-	conf.focus_color     = COLOR_FOCUS;
-	conf.unfocus_color   = COLOR_UNFOCUS;
-	conf.gap             = GAP;
-	conf.cursor_position = CURSOR_POSITION;
-	conf.groups          = GROUPS;
-	conf.sloppy_focus    = SLOPPY_FOCUS;
 
 	group_in_use = malloc(conf.groups * sizeof(bool));
 	for (uint32_t i = 0; i < conf.groups; i++)
@@ -1075,19 +1070,20 @@ center_pointer(struct client *client)
 
 	switch (conf.cursor_position) {
 	case TOP_LEFT:
-		cur_x = 0;
-		cur_y = 0;
+		cur_x = -conf.border_width;
+		cur_y = -conf.border_width;
 		break;
 	case TOP_RIGHT:
-		cur_x = client->geom.width;
-		cur_y = 0;
+		cur_x = client->geom.width + conf.border_width;
+		cur_y = 0 - conf.border_width;
 		break;
 	case BOTTOM_LEFT:
-		cur_x = client->geom.width;
+		cur_x = 0 - conf.border_width;
+		cur_y = client->geom.height + conf.border_width;
 		break;
 	case BOTTOM_RIGHT:
-		cur_x = client->geom.width;
-		cur_y = client->geom.height;
+		cur_x = client->geom.width + conf.border_width;
+		cur_y = client->geom.height + conf.border_width;
 		break;
 	case CENTER:
 		cur_x = client->geom.width / 2;
@@ -1981,27 +1977,27 @@ ipc_window_snap(uint32_t *d)
 	get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
 
 	switch (mode) {
-		case SnapTopLeft:
+		case TOP_LEFT:
 			win_x = mon_x + conf.gap;
 			win_y = mon_y + conf.gap;
 			break;
 
-		case SnapTopRight:
+		case TOP_RIGHT:
 			win_x = mon_x + mon_w - conf.gap - win_w;
 			win_y = mon_y + conf.gap;
 			break;
 
-		case SnapBottomLeft:
+		case BOTTOM_LEFT:
 			win_x = mon_x + conf.gap;
 			win_y = mon_y + mon_h - conf.gap - win_h;
 			break;
 
-		case SnapBottomRight:
+		case BOTTOM_RIGHT:
 			win_x = mon_x + mon_w - conf.gap - win_w;
 			win_y = mon_y + mon_h - conf.gap - win_h;
 			break;
 
-		case SnapMiddle:
+		case CENTER:
 			win_x = mon_x + (mon_w - win_w) / 2;
 			win_y = mon_y + (mon_h - win_h) / 2;
 			break;
@@ -2120,16 +2116,62 @@ usage(char *name)
 	exit(EXIT_FAILURE);
 }
 
+static void
+load_defaults(void)
+{
+	conf.border_width    = BORDER_WIDTH;
+	conf.focus_color     = COLOR_FOCUS;
+	conf.unfocus_color   = COLOR_UNFOCUS;
+	conf.gap             = GAP;
+	conf.cursor_position = CURSOR_POSITION;
+	conf.groups          = GROUPS;
+	conf.sloppy_focus    = SLOPPY_FOCUS;
+}
+
+static void
+load_config(char *config_path)
+{
+	if (fork() == 0) {
+		setsid();
+		DMSG("loading %s\n", config_path);
+		execl(config_path, config_path, NULL);
+		errx(EXIT_FAILURE, "fork");
+	}
+}
+
 int main(int argc, char *argv[])
 {
-	if (argc == 2 && strcmp(argv[1], "-h") == 0)
-		usage(argv[0]);
+	int opt;
+	char *config_path = malloc(MAXLEN * sizeof(char));
+	config_path[0] = '\0';
+	while ((opt = getopt(argc, argv, "hc:")) != -1) {
+		switch (opt) {
+			case 'h':
+				usage(argv[0]);
+				break;
+			case 'c':
+				snprintf(config_path, MAXLEN * sizeof(char), "%s", optarg);
+				break;
+		}
+	}
 	atexit(cleanup);
 
 	register_event_handlers();
 	register_ipc_handlers();
 	if (setup() < 0)
 		errx(EXIT_FAILURE, "error connecting to X");
+	/* if not set, get path of the rc file */
+	if (config_path[0] == '\0') {
+		char *xdg_home = getenv("XDG_CONFIG_HOME");
+		if (xdg_home != NULL)
+			snprintf(config_path, MAXLEN * sizeof(char), "%s/%s/%s", xdg_home, __NAME__, __CONFIG_NAME__);
+		else
+			snprintf(config_path, MAXLEN * sizeof(char), "%s/%s/%s/%s", getenv("HOME"), ".config",
+					__NAME__, __CONFIG_NAME__);
+	}
+	/* execute config file */
+	load_defaults();
+	load_config(config_path);
 	run();
 
 	return exit_code;

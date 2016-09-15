@@ -3,7 +3,9 @@
 #ifndef _TYPES_H
 #define _TYPES_H
 
-enum cursor_position {
+#include <xcb/randr.h>
+
+enum position {
 	BOTTOM_LEFT,
 	BOTTOM_RIGHT,
 	TOP_LEFT,
@@ -41,7 +43,7 @@ struct monitor {
 struct conf {
     int8_t border_width, gap;
     uint32_t focus_color, unfocus_color;
-    enum cursor_position cursor_position;
+    enum position cursor_position;
     uint32_t groups;
     bool sloppy_focus;
 };

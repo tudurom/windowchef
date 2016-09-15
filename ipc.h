@@ -43,12 +43,4 @@ enum IPCConfig {
 	NR_IPC_CONFIGS
 };
 
-enum SnapPosition {
-	SnapTopLeft = 0,
-	SnapTopRight,
-	SnapBottomLeft,
-	SnapBottomRight,
-	SnapMiddle,
-};
-
 #endif
