@@ -1327,6 +1327,7 @@ change_nr_of_groups(uint32_t groups) {
 		for (item = win_list; item != NULL; item = item->next) {
 			client = item->data;
 			if (client->group >= groups) {
+				group_activate(client->group);
 				client->group = NULL_GROUP;
 				update_wm_desktop(client);
 			}
