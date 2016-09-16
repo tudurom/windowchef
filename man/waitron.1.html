@@ -57,6 +57,7 @@
     <a href="#SYNOPSIS">SYNOPSIS</a>
     <a href="#DESCRIPTION">DESCRIPTION</a>
     <a href="#OPTIONS">OPTIONS</a>
+    <a href="#COMMON-DEFINITIONS">COMMON DEFINITIONS</a>
     <a href="#COMMANDS">COMMANDS</a>
     <a href="#CONFIGURING">CONFIGURING</a>
     <a href="#SEE-ALSO">SEE ALSO</a>
@@ -91,6 +92,16 @@ anything on <code>stdout</code>.</p>
 </dl>
 
 
+<h2 id="COMMON-DEFINITIONS">COMMON DEFINITIONS</h2>
+
+<dl>
+<dt><code>POSITION</code></dt><dd><p>  topleft | topright | bottomleft | bottomright | middle</p></dd>
+<dt class="flush"><code>BOOL</code></dt><dd><p>  true values: <code>true</code> | <code>t</code> | <code>yes</code> | <code>y</code> | <code>1</code></p>
+
+<p>  false values: <code>false</code> | <code>f</code> | <code>no</code> | <code>n</code> | <code>0</code></p></dd>
+</dl>
+
+
 <h2 id="COMMANDS">COMMANDS</h2>
 
 <dl>
@@ -111,17 +122,7 @@ anything on <code>stdout</code>.</p>
 <dt><code>window_put_in_grid</code> <var>grid_width</var> <var>grid_height</var> <var>cell_x</var> <var>cell_y</var></dt><dd><p>  Moves and resizes the focused windows accordingly to fit in a cell defined
   by the <var>cell_x</var> and <var>cell_y</var> coordinates in a virtual grid with width
   <var>grid_width</var> and height <var>grid_height</var> on the current monitor.</p></dd>
-<dt><code>window_snap</code> <var>pos</var></dt><dd><p>  Snap the window on the screen in a position defined by <var>pos</var>. <var>pos</var> can be:</p>
-
-<p>  <code>0</code> for top-left.</p>
-
-<p>  <code>1</code> for to-right.</p>
-
-<p>  <code>2</code> for bottom-left.</p>
-
-<p>  <code>3</code> for bottom-right.</p>
-
-<p>  <code>4</code> for the middle.</p></dd>
+<dt><code>window_snap</code> <var>POSITION</var></dt><dd><p>  Snap the window on the screen in a position defined by <var>POSITION</var>.</p></dd>
 <dt><code>window_cycle</code></dt><dd><p>  Cycle through mapped windows.</p></dd>
 <dt><code>window_rev_cycle</code></dt><dd><p>  Reverse cycle through mapped windows.</p></dd>
 <dt><code>group_add_window</code> <var>group_nr</var></dt><dd><p>  Add the focused window to the <var>group_nr</var> group.</p>
@@ -151,23 +152,12 @@ are:</p>
   <var>color</var> is a hexadecimal value that may or may not start witht he <code>0x</code>
   prefix. Example: <code>0x1234ef</code>.</p></dd>
 <dt><code>gap_width</code> <var>width</var></dt><dd><p>  Sets the window gap value to <var>width</var>.</p></dd>
-<dt><code>cursor_position</code> <var>pos</var></dt><dd><p>  Sets the position of the cursor when moving or resizing windows. Possible
-  values for <var>pos</var> are:</p>
-
-<p>  <code>topleft</code></p>
-
-<p>  <code>topright</code></p>
-
-<p>  <code>bottomleft</code></p>
-
-<p>  <code>bottomright</code></p>
-
-<p>  <code>middle</code></p></dd>
+<dt><code>cursor_position</code> <var>POSITION</var></dt><dd><p>  Sets the position of the cursor when moving or resizing windows. Possible
+  values for <var>pos</var> are:</p></dd>
 <dt><code>groups_nr</code> <var>nr</var></dt><dd><p>  Sets the number of groups to <var>nr</var>. If <var>nr</var> is less than the current number
   of groups, window that belong to groups whose numbers are greater than <var>nr</var>
   will be mapped to screen and assigned to the null group.</p></dd>
-<dt><code>enable_sloppy_focus</code> <var>enable</var></dt><dd><p>  Enable sloppy focus. <var>enable</var> can be <code>true</code>, <code>t</code>, <code>yes</code>, <code>y</code>, <code>1</code>, <code>false</code>,
-  <code>f</code>, <code>no</code>, <code>n</code> or <code>0</code>.</p></dd>
+<dt><code>enable_sloppy_focus</code> <var>BOOL</var></dt><dd><p>  Enable sloppy focus.</p></dd>
 </dl>
 
 

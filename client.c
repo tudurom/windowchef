@@ -13,12 +13,15 @@
 #include "common.h"
 #include "types.h"
 
+xcb_connection_t *conn;
+xcb_screen_t *scr;
+
 static bool fn_offset(uint32_t *, int, char **);
 static bool fn_naturals(uint32_t *, int, char **);
 static bool fn_bool(uint32_t *, int, char **);
 static bool fn_config(uint32_t *, int, char **);
 static bool fn_hex(uint32_t *, int, char **);
-static bool fn_curpos(uint32_t *, int, char **);
+static bool fn_position(uint32_t *, int, char **);
 
 struct Command {
 	char *string_command;
@@ -44,7 +47,7 @@ static struct Command c[] = {
 	{ "window_ver_maximize"    , IPCWindowVerMaximize    ,  0 , NULL        } ,
 	{ "window_close"           , IPCWindowClose          ,  0 , NULL        } ,
 	{ "window_put_in_grid"     , IPCWindowPutInGrid      ,  4 , fn_naturals } ,
-	{ "window_snap"            , IPCWindowSnap           ,  1 , fn_naturals } ,
+	{ "window_snap"            , IPCWindowSnap           ,  1 , fn_position } ,
 	{ "window_cycle"           , IPCWindowCycle          ,  0 , NULL        } ,
 	{ "window_rev_cycle"       , IPCWindowRevCycle       ,  0 , NULL        } ,
 	{ "group_add_window"       , IPCGroupAddWindow       ,  1 , fn_naturals } ,
@@ -62,7 +65,7 @@ static struct ConfigEntry configs[] = {
 	{ "color_focused"       , IPCConfigColorFocused      , fn_hex      } ,
 	{ "color_unfocused"     , IPCConfigColorUnfocused    , fn_hex      } ,
 	{ "gap_width"           , IPCConfigGapWidth          , fn_naturals } ,
-	{ "cursor_position"     , IPCConfigCursorPosition    , fn_curpos   } ,
+	{ "cursor_position"     , IPCConfigCursorPosition    , fn_position   } ,
 	{ "groups_nr"           , IPCConfigGroupsNr          , fn_naturals } ,
 	{ "enable_sloppy_focus" , IPCConfigEnableSloppyFocus , fn_bool     } ,
 };
@@ -167,7 +170,7 @@ fn_hex(uint32_t *data, int argc, char **argv)
 }
 
 static bool
-fn_curpos(uint32_t *data, int argc, char **argv)
+fn_position(uint32_t *data, int argc, char **argv)
 {
 	char *pos = argv[0];
 	enum position snap_pos;
@@ -190,9 +193,6 @@ fn_curpos(uint32_t *data, int argc, char **argv)
 
 	return true;
 }
-
-xcb_connection_t *conn;
-xcb_screen_t *scr;
 
 static void
 init_xcb(xcb_connection_t **conn)

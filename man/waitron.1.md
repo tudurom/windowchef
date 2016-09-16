@@ -16,6 +16,16 @@ anything on `stdout`.
 * `-h`:
 	Print usage and version information.
 
+## COMMON DEFINITIONS
+
+* `POSITION`:
+	topleft | topright | bottomleft | bottomright | middle
+
+* `BOOL`:
+	true values: `true` | `t` | `yes` | `y` | `1`
+
+	false values: `false` | `f` | `no` | `n` | `0`
+
 ## COMMANDS
 
 * `window_move` <x> <y>:
@@ -53,18 +63,8 @@ anything on `stdout`.
 	by the <cell_x> and <cell_y> coordinates in a virtual grid with width
 	<grid_width> and height <grid_height> on the current monitor.
 
-* `window_snap` <pos>:
-	Snap the window on the screen in a position defined by <pos>. <pos> can be:
-
-	`0` for top-left.
-
-	`1` for to-right.
-
-	`2` for bottom-left.
-
-	`3` for bottom-right.
-
-	`4` for the middle.
+* `window_snap` <POSITION>:
+	Snap the window on the screen in a position defined by <POSITION>.
 
 * `window_cycle`:
 	Cycle through mapped windows.
@@ -117,28 +117,17 @@ are:
 * `gap_width` <width>:
 	Sets the window gap value to <width>.
 
-* `cursor_position` <pos>:
+* `cursor_position` <POSITION>:
 	Sets the position of the cursor when moving or resizing windows. Possible
 	values for <pos> are:
-
-	`topleft`
-
-	`topright`
-
-	`bottomleft`
-
-	`bottomright`
-
-	`middle`
 
 * `groups_nr` <nr>:
 	Sets the number of groups to <nr>. If <nr> is less than the current number
 	of groups, window that belong to groups whose numbers are greater than <nr>
 	will be mapped to screen and assigned to the null group.
 
-* `enable_sloppy_focus` <enable>:
-	Enable sloppy focus. <enable> can be `true`, `t`, `yes`, `y`, `1`, `false`,
-	`f`, `no`, `n` or `0`.
+* `enable_sloppy_focus` <BOOL>:
+	Enable sloppy focus.
 
 ## SEE ALSO
 

@@ -31,8 +31,8 @@ alt + Tab
 alt + shift + Tab
   waitron window_rev_cycle
 
-super + {_,shift +}{1-6}
-  waitron {group_toggle,group_add_window} {1-6}
+super + {_,shift +}{1-4}
+  waitron {group_toggle,group_add_window} {1-4}
 
 super + ctrl + r
   waitron group_remove_window
@@ -41,4 +41,4 @@ super + Return
   urxvt
 
 super + {Insert,Prior,Delete,Next,End}
-  waitron window_snap {0,1,2,3,4}
+  waitron window_snap {topleft,topright,bottomleft,bottomright,middle}
