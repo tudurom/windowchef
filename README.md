@@ -48,6 +48,8 @@ Features
 	* Activate/Deactivate/Toggle a group
 * Simple and stylish solid-color border. Width can be configured
 * Gaps around the monitor
+* Configuration script. Windowchef loads a given script at startup that can be
+	used for configuration with waitron.
 
 ### Soon to come
 
@@ -71,7 +73,7 @@ groups or toggle them.
 You can tell windowchef to move and resize a window so it can fit in a cell
 of a virtual grid. The user specifies the size of the grid and the
 coordinates of the cell the window will sit in. For example, I can define a 3x3
-grid and put my window in the cell at `x = 1`, `y = 2`:
+grid and put my window in the cell at `x = 0`, `y = 2`:
 
 ```
 +-----------------------+
