@@ -1,9 +1,9 @@
 #!/bin/sh
 
-waitron wm_config border_width 10
-waitron wm_config color_focused 0x3d637d
-waitron wm_config color_unfocused 0x003b4f
+waitron wm_config border_width 5
+waitron wm_config color_focused 0x97a293
+waitron wm_config color_unfocused 0x393638
 waitron wm_config gap_width 20
-waitron wm_config cursor_position bottomleft
+waitron wm_config cursor_position middle
 waitron wm_config groups_nr 4
 waitron wm_config enable_sloppy_focus true
