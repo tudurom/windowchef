@@ -2135,7 +2135,7 @@ load_config(char *config_path)
 		setsid();
 		DMSG("loading %s\n", config_path);
 		execl(config_path, config_path, NULL);
-		errx(EXIT_FAILURE, "fork");
+		errx(EXIT_FAILURE, "couldn't load config file");
 	}
 }
 

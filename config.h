@@ -5,8 +5,8 @@
 
 #define BORDER_WIDTH 5
 /* colors are HTML colors that start in "0x" instead of "#" */
-#define COLOR_FOCUS 0x3d637d
-#define COLOR_UNFOCUS 0x003b4f
+#define COLOR_FOCUS 0x97a293
+#define COLOR_UNFOCUS 0x393638
 /* gap between the window and the edge of the monitor
  * when snapping or vertically/horizontally maximizing window */
 #define GAP 20

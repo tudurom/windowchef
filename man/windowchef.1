@@ -12,17 +12,27 @@
 .SH "DESCRIPTION"
 \fBwindowchef\fR is a stacking window manager that doesn\'t handle keyboard or pointer inputs\. It is controlled and configured by \fBwaitron\fR\.
 .
+.P
+At startup, \fBwindowchef\fR runs a script located at \fB$XDG_CONFIG_HOME/windowchef/windowchefrc\fR (\fB$XDG_CONFIG_HOME\fR is usually \fB~/\.config\fR)\. The path of the config file can be overridden with the \fB\-c\fR flag\.
+.
 .SH "OPTIONS"
 .
 .TP
 \fB\-h\fR
 Print usage and version information\.
 .
+.TP
+\fB\-c\fR \fIconfig_path\fR
+Load script from \fIconfig_path\fR instead of \fB$XDG_CONFIG_HOME/windowchef/windowchefrc\fR\.
+.
 .SH "SEE ALSO"
 waitron(1), sxhkd(1), xinit(1)
 .
 .SH "AUTHOR"
 Tudor Roman \fB<tudurom at gmail dot com>\fR
+.
+.P
+The default color scheme that comes with \fBwindowchef\fR is 5725 \fIhttps://github\.com/dkeg/crayolo#5725\fR by dkeg\.
 .
 .SH "DERP"
 I deleted all the manpages from my system by mistake while writing this manual page\.

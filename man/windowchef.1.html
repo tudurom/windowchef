@@ -82,10 +82,17 @@
 <p><code>windowchef</code> is a stacking window manager that doesn't handle keyboard or
 pointer inputs. It is controlled and configured by <code>waitron</code>.</p>
 
+<p>At startup,
+<code>windowchef</code> runs a script located at <code>$XDG_CONFIG_HOME/windowchef/windowchefrc</code>
+(<code>$XDG_CONFIG_HOME</code> is usually <code>~/.config</code>). The path of the config file can be
+overridden with the <code>-c</code> flag.</p>
+
 <h2 id="OPTIONS">OPTIONS</h2>
 
 <dl>
-<dt class="flush"><code>-h</code></dt><dd>  Print usage and version information.</dd>
+<dt class="flush"><code>-h</code></dt><dd><p>  Print usage and version information.</p></dd>
+<dt><code>-c</code> <var>config_path</var></dt><dd><p>  Load script from <var>config_path</var> instead of
+  <code>$XDG_CONFIG_HOME/windowchef/windowchefrc</code>.</p></dd>
 </dl>
 
 
@@ -96,6 +103,8 @@ pointer inputs. It is controlled and configured by <code>waitron</code>.</p>
 <h2 id="AUTHOR">AUTHOR</h2>
 
 <p>Tudor Roman <code>&lt;tudurom at gmail dot com></code></p>
+
+<p>The default color scheme that comes with <code>windowchef</code> is <a href="https://github.com/dkeg/crayolo#5725">5725</a> by dkeg.</p>
 
 <h2 id="DERP">DERP</h2>
 
