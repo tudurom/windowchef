@@ -1502,8 +1502,11 @@ event_map_request(xcb_generic_event_t *ev)
 	if (find_client(&e->window) != NULL)
 		return;
 
+	xcb_map_window(conn, e->window);
 	client = setup_window(e->window);
 
+	if (client == NULL)
+		return;
 	if (!client->geom.set_by_user) {
 		if (!get_pointer_location(&scr->root, &client->geom.x, &client->geom.y))
 			client->geom.x = client->geom.y = 0;
@@ -1521,7 +1524,6 @@ event_map_request(xcb_generic_event_t *ev)
 
 	fit_on_screen(client);
 
-	xcb_map_window(conn, client->window);
 	xcb_change_property(conn, XCB_PROP_MODE_REPLACE, client->window,
 			ewmh->_NET_WM_STATE, ewmh->_NET_WM_STATE, 32, 2, data);
 
