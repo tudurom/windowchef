@@ -991,26 +991,38 @@ cycle_window(struct client *client)
 static void
 rcycle_window(struct client *client)
 {
-	struct list_item *item;
+	struct list_item *item = NULL;
 	struct list_item *last_item;
+	struct list_item *client_item;
 	struct client *data;
 
+	if (win_list == NULL || client == NULL)
+		return;
+
+	/* find item of client */
 	item = win_list;
-	if (client != NULL) {
-		while (item != NULL && item->data != client)
-			item = item->next;
+	while (item != NULL && item->data != client)
+		item = item->next;
 
+	if (item == NULL)
+		return;
+
+	client_item = item;
+
+	/* find last window */
+	item = win_list;
+	while (item != NULL) {
 		last_item = item;
-		while (last_item->next != NULL)
-			last_item = last_item->next;
-
-		do {
-			item = item->prev;
-			if (item == NULL)
-				item = last_item;
-			data = item->data;
-		} while (item != NULL && !data->mapped);
+		item = item->next;
 	}
+
+	item = client_item;
+	do {
+		item = item->prev;
+		if (item == NULL)
+			item = last_item;
+		data = item->data;
+	} while (!data->mapped);
 
 	if (item != NULL && item->data != client)
 		set_focused(item->data);
