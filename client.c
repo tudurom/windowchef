@@ -50,6 +50,7 @@ static struct Command c[] = {
 	{ "window_snap"            , IPCWindowSnap           ,  1 , fn_position } ,
 	{ "window_cycle"           , IPCWindowCycle          ,  0 , NULL        } ,
 	{ "window_rev_cycle"       , IPCWindowRevCycle       ,  0 , NULL        } ,
+	{ "window_focus"           , IPCWindowFocus          ,  1 , fn_hex      } ,
 	{ "group_add_window"       , IPCGroupAddWindow       ,  1 , fn_naturals } ,
 	{ "group_remove_window"    , IPCGroupRemoveWindow    ,  0 , NULL        } ,
 	{ "group_activate"         , IPCGroupActivate        ,  1 , fn_naturals } ,

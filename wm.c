@@ -128,6 +128,7 @@ static void ipc_window_put_in_grid(uint32_t *);
 static void ipc_window_snap(uint32_t *);
 static void ipc_window_cycle(uint32_t *);
 static void ipc_window_rev_cycle(uint32_t *);
+static void ipc_window_focus(uint32_t *);
 static void ipc_group_add_window(uint32_t *);
 static void ipc_group_remove_window(uint32_t *);
 static void ipc_group_activate(uint32_t *);
@@ -895,7 +896,8 @@ maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mo
 }
 
 static void
-hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width) {
+hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width)
+{
 	if (client == NULL || (client->max_width != 0 && mon_width > client->max_width))
 		return;
 
@@ -921,7 +923,8 @@ hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width) {
 }
 
 static void
-vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height) {
+vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height)
+{
 	if (client == NULL || (client->max_height != 0 && mon_height > client->max_height))
 		return;
 
@@ -947,7 +950,8 @@ vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height) {
 }
 
 static void
-unmaximize_window(struct client *client) {
+unmaximize_window(struct client *client)
+{
 	xcb_atom_t state[] = {
 		XCB_ICCCM_WM_STATE_NORMAL,
 		XCB_NONE
@@ -1154,7 +1158,8 @@ get_geometry(xcb_window_t *win, int16_t *x, int16_t *y, uint16_t *width, uint16_
  */
 
 static void
-set_borders(struct client *client, uint32_t color) {
+set_borders(struct client *client, uint32_t color)
+{
 	if (client == NULL)
 		return;
 	uint32_t values[1];
@@ -1264,13 +1269,15 @@ update_client_list(void)
 }
 
 static void
-update_wm_desktop(struct client *client) {
+update_wm_desktop(struct client *client)
+{
 	if (client != NULL)
 		xcb_ewmh_set_wm_desktop(ewmh, client->window, client->group);
 }
 
 static void
-group_add_window(struct client *client, uint32_t group) {
+group_add_window(struct client *client, uint32_t group)
+{
 	if (client != NULL && group < conf.groups) {
 		client->group = group;
 		update_wm_desktop(client);
@@ -1279,7 +1286,8 @@ group_add_window(struct client *client, uint32_t group) {
 }
 
 static void
-group_remove_window(struct client *client) {
+group_remove_window(struct client *client)
+{
 	if (client != NULL) {
 		client->group = NULL_GROUP;
 		update_wm_desktop(client);
@@ -1302,7 +1310,8 @@ group_activate(uint32_t group) {
 }
 
 static void
-group_deactivate(uint32_t group) {
+group_deactivate(uint32_t group)
+{
 	struct list_item *item;
 	struct client *client;
 
@@ -1315,7 +1324,8 @@ group_deactivate(uint32_t group) {
 }
 
 static void
-group_toggle(uint32_t group) {
+group_toggle(uint32_t group)
+{
 	if (group_in_use[group])
 		group_deactivate(group);
 	else
@@ -1323,7 +1333,8 @@ group_toggle(uint32_t group) {
 }
 
 static void
-change_nr_of_groups(uint32_t groups) {
+change_nr_of_groups(uint32_t groups)
+{
 	bool *copy = malloc(groups * sizeof(bool));
 	uint32_t until = groups < conf.groups ? groups : conf.groups;
 	struct list_item *item;
@@ -1359,13 +1370,14 @@ register_event_handlers(void)
 		events[i] = NULL;
 
 	events[XCB_CONFIGURE_REQUEST] = event_configure_request;
-	events[XCB_DESTROY_NOTIFY] = event_destroy_notify;
-	events[XCB_ENTER_NOTIFY] = event_enter_notify;
-	events[XCB_MAP_REQUEST] = event_map_request;
-	events[XCB_MAP_NOTIFY] = event_map_notify;
-	events[XCB_UNMAP_NOTIFY] = event_unmap_notify;
-	events[XCB_CLIENT_MESSAGE] = event_client_message;
-	events[XCB_CONFIGURE_NOTIFY] = event_configure_notify;
+	events[XCB_DESTROY_NOTIFY]    = event_destroy_notify;
+	events[XCB_ENTER_NOTIFY]      = event_enter_notify;
+	events[XCB_MAP_REQUEST]       = event_map_request;
+	events[XCB_MAP_NOTIFY]        = event_map_notify;
+	events[XCB_UNMAP_NOTIFY]      = event_unmap_notify;
+	events[XCB_CLIENT_MESSAGE]    = event_client_message;
+	events[XCB_CONFIGURE_NOTIFY]  = event_configure_notify;
+	events[XCB_CIRCULATE_REQUEST] = event_circulate_request;
 }
 
 /*
@@ -1723,6 +1735,7 @@ register_ipc_handlers(void)
 	ipc_handlers[IPCWindowSnap]           = ipc_window_snap;
 	ipc_handlers[IPCWindowCycle]          = ipc_window_cycle;
 	ipc_handlers[IPCWindowRevCycle]       = ipc_window_rev_cycle;
+	ipc_handlers[IPCWindowFocus]          = ipc_window_focus;
 	ipc_handlers[IPCGroupAddWindow]       = ipc_group_add_window;
 	ipc_handlers[IPCGroupRemoveWindow]    = ipc_group_remove_window;
 	ipc_handlers[IPCGroupActivate]        = ipc_group_activate;
@@ -1858,7 +1871,8 @@ ipc_window_resize_absolute(uint32_t *d)
 }
 
 static void
-ipc_window_maximize(uint32_t *d) {
+ipc_window_maximize(uint32_t *d)
+{
 	(void)(d);
 	int16_t mon_x, mon_y;
 	uint16_t mon_w, mon_h;
@@ -2045,35 +2059,50 @@ void ipc_window_rev_cycle(uint32_t *d)
 }
 
 static void
-ipc_group_add_window(uint32_t *d) {
+ipc_window_focus(uint32_t *d)
+{
+	struct client *client = find_client(&d[0]);
+
+	if (client != NULL)
+		set_focused(client);
+}
+
+static void
+ipc_group_add_window(uint32_t *d)
+{
 	if (focused_win != NULL)
 		group_add_window(focused_win, d[0] - 1);
 }
 
 static void
-ipc_group_remove_window(uint32_t *d) {
+ipc_group_remove_window(uint32_t *d)
+{
 	(void)(d);
 	if (focused_win != NULL)
 		group_remove_window(focused_win);
 }
 
 static void
-ipc_group_activate(uint32_t *d) {
+ipc_group_activate(uint32_t *d)
+{
 	group_activate(d[0] - 1);
 }
 
 static void
-ipc_group_deactivate(uint32_t *d) {
+ipc_group_deactivate(uint32_t *d)
+{
 	group_activate(d[0] - 1);
 }
 
 static void
-ipc_group_toggle(uint32_t *d) {
+ipc_group_toggle(uint32_t *d)
+{
 	group_toggle(d[0] - 1);
 }
 
 static void
-ipc_wm_quit(uint32_t *d) {
+ipc_wm_quit(uint32_t *d)
+{
 	uint32_t code = d[0];
 	halt = true;
 	exit_code = code;

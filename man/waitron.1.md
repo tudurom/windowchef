@@ -72,6 +72,10 @@ anything on `stdout`.
 * `window_rev_cycle`:
 	Reverse cycle through mapped windows.
 
+* `window_focus` <id>:
+	Focus window by <id>. The <id> can be found using pfw(1) or lsw(1) from
+	[wmutils](https://github.com/wmutils/core/).
+
 * `group_add_window` <group_nr>:
 	Add the focused window to the <group_nr> group.
 
@@ -131,7 +135,7 @@ are:
 
 ## SEE ALSO
 
-windowchef(1), sxhkd(1)
+windowchef(1), sxhkd(1), wmutils(1), pfw(1), lsw(1)
 
 ## AUTHOR
 

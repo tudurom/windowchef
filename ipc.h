@@ -21,6 +21,7 @@ enum IPCCommand {
 	IPCWindowSnap,
 	IPCWindowCycle,
 	IPCWindowRevCycle,
+	IPCWindowFocus,
 	IPCGroupAddWindow,
 	IPCGroupRemoveWindow,
 	IPCGroupActivate,
