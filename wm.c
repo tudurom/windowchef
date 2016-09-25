@@ -114,6 +114,7 @@ static void event_unmap_notify(xcb_generic_event_t *);
 static void event_configure_notify(xcb_generic_event_t *);
 static void event_circulate_request(xcb_generic_event_t *);
 static void event_client_message(xcb_generic_event_t *);
+static void event_focus_out(xcb_generic_event_t *);
 static void register_ipc_handlers(void);
 static void ipc_window_move(uint32_t *);
 static void ipc_window_move_absolute(uint32_t *);
@@ -178,8 +179,8 @@ setup(void)
 	focused_win = NULL;
 
 	mask = XCB_CW_EVENT_MASK;
-	values[0] = XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY | \
-		XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT;
+	values[0] = XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY
+		| XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT;
 	xcb_generic_error_t *e = xcb_request_check(conn,
 			xcb_change_window_attributes_checked(conn, scr->root,
 				mask, values));
@@ -539,7 +540,7 @@ setup_window(xcb_window_t win)
 	}
 
 	/* subscribe to events */
-	values[0] = XCB_EVENT_MASK_ENTER_WINDOW;
+	values[0] = XCB_EVENT_MASK_ENTER_WINDOW | XCB_EVENT_MASK_FOCUS_CHANGE;
 	xcb_change_window_attributes(conn, win, XCB_CW_EVENT_MASK, values);
 
 	/* in case of fire */
@@ -1378,6 +1379,7 @@ register_event_handlers(void)
 	events[XCB_CLIENT_MESSAGE]    = event_client_message;
 	events[XCB_CONFIGURE_NOTIFY]  = event_configure_notify;
 	events[XCB_CIRCULATE_REQUEST] = event_circulate_request;
+	events[XCB_FOCUS_OUT]         = event_focus_out;
 }
 
 /*
@@ -1495,17 +1497,14 @@ event_enter_notify(xcb_generic_event_t *ev)
 
 	if (conf.sloppy_focus == false)
 		return;
-	if (e->mode == XCB_NOTIFY_MODE_NORMAL ||
-			e->mode == XCB_NOTIFY_MODE_UNGRAB) {
-		if (focused_win != NULL && e->event == focused_win->window)
-			return;
 
-		client = find_client(&e->event);
-		if (client == NULL || client->maxed)
-			return;
+	if (focused_win != NULL && e->event == focused_win->window)
+		return;
 
+	client = find_client(&e->event);
+
+	if (client != NULL && !client->maxed)
 		set_focused_no_raise(client);
-	}
 }
 
 /*
@@ -1713,6 +1712,26 @@ event_client_message(xcb_generic_event_t *ev)
 				}
 			}
 		}
+	}
+}
+
+static void
+event_focus_out(xcb_generic_event_t *ev)
+{
+	(void)(ev);
+	xcb_get_input_focus_reply_t *focus = xcb_get_input_focus_reply(conn,
+			xcb_get_input_focus(conn), NULL);
+	struct client *client = NULL;
+
+	if (focused_win != NULL && focus->focus == focused_win->window)
+		return;
+
+	if (focus->focus == scr->root) {
+		focused_win = NULL;
+	} else {
+		client = find_client(&focus->focus);
+		if (client != NULL)
+			set_focused_no_raise(client);
 	}
 }
 
