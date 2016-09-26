@@ -15,7 +15,7 @@ pointer inputs. A third party program (like `sxhkd`) is needed in order to
 translate keyboard and pointer events to `waitron` commands.
 
 Waitron is a program that sends commands to the window manager through X client
-messages. Waitron doesn't print anything on success. The commands and the
+messages. It doesn't print anything on success. The commands and the
 parameters are fed as program arguments and waitron delivers them to the
 windowchef.
 
@@ -26,12 +26,13 @@ icccm.
 Usage
 -----
 
-See the bundled `.sxhkdrc` and `config.h` for an example of a basic
-configuration.
+See the bundled `.sxhkdrc` and `.windowchefrc` for an example of a basic
+configuration. Additionally, you can read the manual page (`windowchef(1)`).
 
-You can configure windowchef by editing the `config.h` file.
+The default configuration file is `~/.config/bspwm/bspwmrc`. It is usually
+a shell script that calls `waitron wm_config` for configuration. See the
+manual page for `waitron(1)` for details regarding this topic.
 
-Additionally, you can read the man page (`windowchef(1)`).
 
 Features
 --------
@@ -39,7 +40,7 @@ Features
 * Move, teleport, enlarge/shrink and resize windows
 * Maximize windows vertically/horizontally/fully
 	* Supports maximizing via EWMH
-* Close windows (either killing them or via ICCCM)
+* Close windows (either by killing them or via ICCCM)
 * Put windows in a virtual grid.
 * Snap windows in the corners or in the middle of the screen
 * Cycle windows forwards and backwards
@@ -50,12 +51,11 @@ Features
 * Gaps around the monitor
 * Configuration script. Windowchef loads a given script at startup that can be
 	used for configuration with waitron.
+* 100% compatible with window management utilities (e.g. [wmutils](https://github.com/wmutils/)). Windowchef will update its internal state if programs attempt to manage windows. It also applies the correct window decorations when a program focuses a window. This makes it possible to use it as a "backend" with wm utilities.
 
 ### Soon to come
 
-- [ ] Infinite number of borders
-- [ ] Move windows with the mouse
-- [ ] Resize windows with the mouse
+- [ ] Configurable number of borders
 
 ### Groups
 
