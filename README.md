@@ -29,7 +29,7 @@ Usage
 See the bundled `.sxhkdrc` and `.windowchefrc` for an example of a basic
 configuration. Additionally, you can read the manual page (`windowchef(1)`).
 
-The default configuration file is `~/.config/bspwm/bspwmrc`. It is usually
+The default configuration file is `~/.config/windowchef/windowchefrc`. It is usually
 a shell script that calls `waitron wm_config` for configuration. See the
 manual page for `waitron(1)` for details regarding this topic.
 
