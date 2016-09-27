@@ -420,9 +420,14 @@ add_monitor(xcb_randr_output_t mon, char *name, int16_t x, int16_t y, uint16_t w
 	struct list_item *item;
 	struct monitor *monitor = malloc(sizeof(struct monitor));
 
-	item = list_add_item(&mon_list);
-	if (item == NULL || monitor == NULL)
+	if (monitor == NULL)
 		return NULL;
+
+	item = list_add_item(&mon_list);
+	if (item == NULL) {
+		free(monitor);
+		return NULL;
+	}
 
 	item->data = monitor;
 	monitor->item = item;
