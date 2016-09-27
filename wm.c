@@ -2237,5 +2237,7 @@ int main(int argc, char *argv[])
 	load_config(config_path);
 	run();
 
+	free(config_path);
+
 	return exit_code;
 }
