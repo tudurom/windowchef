@@ -184,8 +184,10 @@ setup(void)
 	xcb_generic_error_t *e = xcb_request_check(conn,
 			xcb_change_window_attributes_checked(conn, scr->root,
 				mask, values));
-	if (e != NULL)
+	if (e != NULL) {
+		free(e);
 		errx(EXIT_FAILURE, "Another window manager is already running.");
+	}
 
 	/* initialize ewmh variables */
 	ewmh = calloc(1, sizeof(xcb_ewmh_connection_t));
@@ -2056,7 +2058,7 @@ ipc_window_snap(uint32_t *d)
 			break;
 
 		default:
-		 	return;
+			return;
 	}
 
 	focused_win->geom.x = win_x;
