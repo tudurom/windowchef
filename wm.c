@@ -2226,6 +2226,8 @@ int main(int argc, char *argv[])
 
 	register_event_handlers();
 	register_ipc_handlers();
+	load_defaults();
+
 	if (setup() < 0)
 		errx(EXIT_FAILURE, "error connecting to X");
 	/* if not set, get path of the rc file */
@@ -2238,7 +2240,6 @@ int main(int argc, char *argv[])
 					__NAME__, __CONFIG_NAME__);
 	}
 	/* execute config file */
-	load_defaults();
 	load_config(config_path);
 	run();
 
