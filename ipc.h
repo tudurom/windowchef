@@ -28,7 +28,6 @@ enum IPCCommand {
 	IPCGroupDeactivate,
 	IPCGroupToggle,
 	IPCWMQuit,
-	IPCWMChangeNrOfGroups,
 	IPCWMConfig,
 	NR_IPC_COMMANDS
 };

@@ -136,7 +136,6 @@ static void ipc_group_activate(uint32_t *);
 static void ipc_group_deactivate(uint32_t *);
 static void ipc_group_toggle(uint32_t *);
 static void ipc_wm_quit(uint32_t *);
-static void ipc_wm_change_nr_of_groups(uint32_t *);
 static void ipc_wm_config(uint32_t *);
 
 static void usage(char *);
@@ -1349,13 +1348,10 @@ change_nr_of_groups(uint32_t groups)
 	for (uint32_t i = 0; i < until; i++)
 		copy[i] = group_in_use[i];
 
-	free(group_in_use);
-	group_in_use = copy;
-
 	if (groups < conf.groups)
 		for (item = win_list; item != NULL; item = item->next) {
 			client = item->data;
-			if (client->group >= groups) {
+			if (client->group != NULL_GROUP && client->group >= groups) {
 				group_activate(client->group);
 				client->group = NULL_GROUP;
 				update_wm_desktop(client);
@@ -1363,7 +1359,8 @@ change_nr_of_groups(uint32_t groups)
 		}
 
 	conf.groups = groups;
-
+	free(group_in_use);
+	group_in_use = copy;
 }
 /*
  * Adds X event handlers to the array.
@@ -1766,7 +1763,6 @@ register_ipc_handlers(void)
 	ipc_handlers[IPCGroupDeactivate]      = ipc_group_deactivate;
 	ipc_handlers[IPCGroupToggle]          = ipc_group_toggle;
 	ipc_handlers[IPCWMQuit]               = ipc_wm_quit;
-	ipc_handlers[IPCWMChangeNrOfGroups]   = ipc_wm_change_nr_of_groups;
 	ipc_handlers[IPCWMConfig]             = ipc_wm_config;
 }
 
@@ -2130,12 +2126,6 @@ ipc_wm_quit(uint32_t *d)
 	uint32_t code = d[0];
 	halt = true;
 	exit_code = code;
-}
-
-static void
-ipc_wm_change_nr_of_groups(uint32_t *d)
-{
-	change_nr_of_groups(d[0]);
 }
 
 static void

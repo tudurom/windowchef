@@ -57,7 +57,6 @@ static struct Command c[] = {
 	{ "group_deactivate"       , IPCGroupDeactivate      ,  1 , fn_naturals } ,
 	{ "group_toggle"           , IPCGroupToggle          ,  1 , fn_naturals } ,
 	{ "wm_quit"                , IPCWMQuit               ,  1 , fn_naturals } ,
-	{ "wm_change_nr_of_groups" , IPCWMChangeNrOfGroups   ,  1 , fn_naturals } ,
 	{ "wm_config"              , IPCWMConfig             ,  2 , fn_config   },
 };
 
