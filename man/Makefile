@@ -6,7 +6,9 @@ MANUAL = "Windowchef Manual"
 
 .POSIX:
 
-all: $(MAN)
+all: build
+
+build: $(MAN)
 
 %.1: *.1.md
 	ronn --manual=$(MANUAL) $@.md
@@ -15,7 +17,7 @@ clean:
 	rm *.1
 	rm *.1.html
 
-install: $(MAN)
+install:
 	mkdir -p $(DESTDIR)$(MANDIR)/
 	cp -f $(MAN) $(DESTDIR)$(MANDIR)/
 
