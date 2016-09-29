@@ -205,7 +205,7 @@ setup(void)
 		ewmh->_NET_WM_STATE_MAXIMIZED_HORZ , ewmh->_NET_WM_NAME                 ,
 		ewmh->_NET_WM_ICON_NAME            , ewmh->_NET_WM_WINDOW_TYPE          ,
 		ewmh->_NET_WM_WINDOW_TYPE_DOCK     , ewmh->_NET_WM_PID                  ,
-		ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR  ,
+		ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR  , ewmh->_NET_WM_WINDOW_TYPE_DESKTOP  ,
 	};
 	xcb_ewmh_set_supported(ewmh, scrno, sizeof(supported_atoms) / sizeof(xcb_atom_t), supported_atoms);
 
@@ -532,8 +532,9 @@ setup_window(xcb_window_t win)
 		unsigned int i = 0;
 		/* if the window is a toolbar or a dock, map it and ignore it */
 		while (i < win_type.atoms_len &&
-			(atom = win_type.atoms[i]) != ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR &&
-			atom != ewmh->_NET_WM_WINDOW_TYPE_DOCK)
+			(atom = win_type.atoms[i]) != ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR
+			&& atom != ewmh->_NET_WM_WINDOW_TYPE_DOCK
+			&& atom != ewmh->_NET_WM_WINDOW_TYPE_DESKTOP)
 			i++;
 
 		if (i < win_type.atoms_len) {
