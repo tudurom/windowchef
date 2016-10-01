@@ -122,8 +122,7 @@ are:
 	Sets the window gap value to <width>.
 
 * `cursor_position` <POSITION>:
-	Sets the position of the cursor when moving or resizing windows. Possible
-	values for <pos> are:
+	Sets the position of the cursor when moving or resizing windows.
 
 * `groups_nr` <nr>:
 	Sets the number of groups to <nr>. If <nr> is less than the current number

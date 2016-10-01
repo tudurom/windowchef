@@ -27,6 +27,7 @@ enum IPCCommand {
 	IPCGroupActivate,
 	IPCGroupDeactivate,
 	IPCGroupToggle,
+	IPCBorderSet,
 	IPCWMQuit,
 	IPCWMConfig,
 	NR_IPC_COMMANDS
@@ -40,6 +41,7 @@ enum IPCConfig {
 	IPCConfigCursorPosition,
 	IPCConfigGroupsNr,
 	IPCConfigEnableSloppyFocus,
+	IPCConfigNrOfBorders,
 	NR_IPC_CONFIGS
 };
 

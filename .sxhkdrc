@@ -1,44 +1,44 @@
 super + {h,j,k,l}
-  waitron window_move {-20 0, 0 20, 0 -20, 20 0}
+  ./waitron window_move {-20 0, 0 20, 0 -20, 20 0}
 
 super + alt + {h,j,k,l}
-  waitron window_resize {-20 0, 0 20, 0 -20, 20 0}
+  ./waitron window_resize {-20 0, 0 20, 0 -20, 20 0}
 
 super + shift + {h,j,k,l}
-  waitron window_move {-50 0, 0 50, 0 -50, 50 0}
+  ./waitron window_move {-50 0, 0 50, 0 -50, 50 0}
 
 super + shift + alt + {h,j,k,l}
-  waitron window_resize {-50 0, 0 50, 0 -50, 50 0}
+  ./waitron window_resize {-50 0, 0 50, 0 -50, 50 0}
 
 super + alt + Escape
-  waitron wm_quit 0
+  ./waitron wm_quit 0
 
 super + f
-  waitron window_maximize
+  ./waitron window_maximize
 
 super + w
-  waitron window_close
+  ./waitron window_close
 
 super + b
-  waitron window_hor_maximize
+  ./waitron window_hor_maximize
 
 super + v
-  waitron window_ver_maximize
+  ./waitron window_ver_maximize
 
 alt + Tab
-  waitron window_cycle
+  ./waitron window_cycle
 
 alt + shift + Tab
-  waitron window_rev_cycle
+  ./waitron window_rev_cycle
 
 super + {_,shift +}{1-4}
-  waitron {group_toggle,group_add_window} {1-4}
+  ./waitron {group_toggle,group_add_window} {1-4}
 
 super + ctrl + r
-  waitron group_remove_window
+  ./waitron group_remove_window
 
 super + Return
   urxvt
 
 super + {Insert,Prior,Delete,Next,End}
-  waitron window_snap {topleft,topright,bottomleft,bottomright,middle}
+  ./waitron window_snap {topleft,topright,bottomleft,bottomright,middle}
