@@ -62,6 +62,7 @@ anything on `stdout`.
 	Moves and resizes the focused windows accordingly to fit in a cell defined
 	by the <cell_x> and <cell_y> coordinates in a virtual grid with width
 	<grid_width> and height <grid_height> on the current monitor.
+	Gaps around the windows in the grid can be added along with monitor gaps.
 
 * `window_snap` <POSITION>:
 	Snap the window on the screen in a position defined by <POSITION>.
@@ -120,6 +121,9 @@ are:
 
 * `gap_width` <width>:
 	Sets the window gap value to <width>.
+
+* `grid_gap_width` <width>:
+	Sets the window gap value used in virtual grids to <width>.
 
 * `cursor_position` <POSITION>:
 	Sets the position of the cursor when moving or resizing windows.

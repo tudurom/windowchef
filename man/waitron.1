@@ -67,7 +67,7 @@ Closes the focused window\.
 .
 .TP
 \fBwindow_put_in_grid\fR \fIgrid_width\fR \fIgrid_height\fR \fIcell_x\fR \fIcell_y\fR
-Moves and resizes the focused windows accordingly to fit in a cell defined by the \fIcell_x\fR and \fIcell_y\fR coordinates in a virtual grid with width \fIgrid_width\fR and height \fIgrid_height\fR on the current monitor\.
+Moves and resizes the focused windows accordingly to fit in a cell defined by the \fIcell_x\fR and \fIcell_y\fR coordinates in a virtual grid with width \fIgrid_width\fR and height \fIgrid_height\fR on the current monitor\. Gaps around the windows in the grid can be added along with monitor gaps\.
 .
 .TP
 \fBwindow_snap\fR \fIPOSITION\fR
@@ -137,6 +137,10 @@ Sets the border color to \fIcolor\fR for the focused and unfocused state respect
 .TP
 \fBgap_width\fR \fIwidth\fR
 Sets the window gap value to \fIwidth\fR\.
+.
+.TP
+\fBgrid_gap_width\fR \fIwidth\fR
+Sets the window gap value used in virtual grids to \fIwidth\fR\.
 .
 .TP
 \fBcursor_position\fR \fIPOSITION\fR
