@@ -73,6 +73,14 @@ anything on `stdout`.
 * `window_rev_cycle`:
 	Reverse cycle through mapped windows.
 
+* `window_cycle_in_group`:
+	Cycle trough mapped windows that belong to the same group as the
+	focused window.
+
+* `window_rev_cycle_in_group`:
+	Reverse cycle through mapped windows that belong to the same group as the
+	focused window.
+
 * `window_focus` <id>:
 	Focus window by <id>. The <id> can be found using pfw(1) or lsw(1) from
 	[wmutils](https://github.com/wmutils/core/).
