@@ -993,12 +993,10 @@ cycle_window(struct client *client)
 	struct list_item *item;
 	struct client *data;
 
-	if (client == NULL)
-		return;
-
 	item = win_list;
-	while (item != NULL && item->data != client)
-		item = item->next;
+	if (client != NULL)
+			while (item != NULL && item->data != client)
+				item = item->next;
 
 	/* if item is not found item will be null
 	 * and we'll get a nice segmentation fault. may the debugger be with you */
@@ -1022,18 +1020,8 @@ rcycle_window(struct client *client)
 	struct list_item *client_item;
 	struct client *data;
 
-	if (win_list == NULL || client == NULL)
+	if (win_list == NULL)
 		return;
-
-	/* find item of client */
-	item = win_list;
-	while (item != NULL && item->data != client)
-		item = item->next;
-
-	if (item == NULL)
-		return;
-
-	client_item = item;
 
 	/* find last window */
 	item = win_list;
@@ -1041,6 +1029,16 @@ rcycle_window(struct client *client)
 		last_item = item;
 		item = item->next;
 	}
+
+	/* find item of client */
+	item = win_list;
+	while (item != NULL && item->data != client)
+		item = item->next;
+
+	if (item == NULL)
+		item = last_item;
+
+	client_item = item;
 
 	item = client_item;
 	do {
