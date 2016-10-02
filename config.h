@@ -13,6 +13,8 @@
  * when snapping or vertically/horizontally maximizing window */
 #define GAP 20
 
+#define GRID_GAP 5
+
 /* where to place the cursor when moving/resizing the window */
 #define CURSOR_POSITION CENTER
 

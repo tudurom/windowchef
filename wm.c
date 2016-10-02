@@ -86,6 +86,8 @@ static void vmaximize_window(struct client *, int16_t, uint16_t);
 static void unmaximize_window(struct client *);
 static void cycle_window(struct client *);
 static void rcycle_window(struct client *);
+static void cycle_window_in_group(struct client *);
+static void rcycle_window_in_group(struct client *);
 static void save_original_size(struct client *);
 static xcb_atom_t get_atom(char *);
 static bool get_pointer_location(xcb_window_t *, int16_t *, int16_t *);
@@ -132,6 +134,8 @@ static void ipc_window_put_in_grid(uint32_t *);
 static void ipc_window_snap(uint32_t *);
 static void ipc_window_cycle(uint32_t *);
 static void ipc_window_rev_cycle(uint32_t *);
+static void ipc_window_cycle_in_group(uint32_t *);
+static void ipc_window_rev_cycle_in_group(uint32_t *);
 static void ipc_window_focus(uint32_t *);
 static void ipc_group_add_window(uint32_t *);
 static void ipc_group_remove_window(uint32_t *);
@@ -989,10 +993,12 @@ cycle_window(struct client *client)
 	struct list_item *item;
 	struct client *data;
 
+	if (client == NULL)
+		return;
+
 	item = win_list;
-	if (client != NULL)
-		while (item != NULL && item->data != client)
-			item = item->next;
+	while (item != NULL && item->data != client)
+		item = item->next;
 
 	/* if item is not found item will be null
 	 * and we'll get a nice segmentation fault. may the debugger be with you */
@@ -1002,7 +1008,7 @@ cycle_window(struct client *client)
 			if (item == NULL)
 				item = win_list;
 			data = item->data;
-		} while (item != NULL && !data->mapped);
+		} while (!data->mapped);
 
 	if (item != NULL && item->data != client)
 		set_focused(item->data);
@@ -1045,6 +1051,70 @@ rcycle_window(struct client *client)
 	} while (!data->mapped);
 
 	if (item != NULL && item->data != client)
+		set_focused(item->data);
+}
+
+static void
+cycle_window_in_group(struct client *client)
+{
+	struct list_item *item;
+	struct client *data;
+
+	if (client == NULL)
+		return;
+
+	item = win_list;
+	while (item != NULL && item->data != client)
+		item = item->next;
+	if (item != NULL)
+		do {
+			item = item->next;
+			if (item == NULL)
+				item = win_list;
+			data = item->data;
+		} while (!data->mapped || data->group != client->group);
+
+	if (item != NULL && data != client && data->group == client->group)
+		set_focused(item->data);
+}
+
+static void
+rcycle_window_in_group(struct client *client)
+{
+	struct list_item *item = NULL;
+	struct list_item *last_item;
+	struct list_item *client_item;
+	struct client *data;
+
+	if (win_list == NULL || client == NULL)
+		return;
+
+	/* find item of client */
+	item = win_list;
+	while (item != NULL && item->data != client)
+		item = item->next;
+
+	if (item == NULL)
+		return;
+
+	client_item = item;
+
+	/* find last window */
+	item = win_list;
+	while (item != NULL) {
+		last_item = item;
+		item = item->next;
+	}
+
+	item = client_item;
+	do {
+		item = item->prev;
+		if (item == NULL)
+			item = last_item;
+		data = item->data;
+	} while (!data->mapped || data->group != client->group);
+
+	if (item != NULL && data != client && data->group == client->group)
 		set_focused(item->data);
 }
 
@@ -1794,26 +1864,28 @@ event_focus_out(xcb_generic_event_t *ev)
 static void
 register_ipc_handlers(void)
 {
-	ipc_handlers[IPCWindowMove]           = ipc_window_move;
-	ipc_handlers[IPCWindowMoveAbsolute]   = ipc_window_move_absolute;
-	ipc_handlers[IPCWindowResize]         = ipc_window_resize;
-	ipc_handlers[IPCWindowResizeAbsolute] = ipc_window_resize_absolute;
-	ipc_handlers[IPCWindowMaximize]       = ipc_window_maximize;
-	ipc_handlers[IPCWindowHorMaximize]    = ipc_window_hor_maximize;
-	ipc_handlers[IPCWindowVerMaximize]    = ipc_window_ver_maximize;
-	ipc_handlers[IPCWindowClose]          = ipc_window_close;
-	ipc_handlers[IPCWindowPutInGrid]      = ipc_window_put_in_grid;
-	ipc_handlers[IPCWindowSnap]           = ipc_window_snap;
-	ipc_handlers[IPCWindowCycle]          = ipc_window_cycle;
-	ipc_handlers[IPCWindowRevCycle]       = ipc_window_rev_cycle;
-	ipc_handlers[IPCWindowFocus]          = ipc_window_focus;
-	ipc_handlers[IPCGroupAddWindow]       = ipc_group_add_window;
-	ipc_handlers[IPCGroupRemoveWindow]    = ipc_group_remove_window;
-	ipc_handlers[IPCGroupActivate]        = ipc_group_activate;
-	ipc_handlers[IPCGroupDeactivate]      = ipc_group_deactivate;
-	ipc_handlers[IPCGroupToggle]          = ipc_group_toggle;
-	ipc_handlers[IPCWMQuit]               = ipc_wm_quit;
-	ipc_handlers[IPCWMConfig]             = ipc_wm_config;
+	ipc_handlers[IPCWindowMove]            = ipc_window_move;
+	ipc_handlers[IPCWindowMoveAbsolute]    = ipc_window_move_absolute;
+	ipc_handlers[IPCWindowResize]          = ipc_window_resize;
+	ipc_handlers[IPCWindowResizeAbsolute]  = ipc_window_resize_absolute;
+	ipc_handlers[IPCWindowMaximize]        = ipc_window_maximize;
+	ipc_handlers[IPCWindowHorMaximize]     = ipc_window_hor_maximize;
+	ipc_handlers[IPCWindowVerMaximize]     = ipc_window_ver_maximize;
+	ipc_handlers[IPCWindowClose]           = ipc_window_close;
+	ipc_handlers[IPCWindowPutInGrid]       = ipc_window_put_in_grid;
+	ipc_handlers[IPCWindowSnap]            = ipc_window_snap;
+	ipc_handlers[IPCWindowCycle]           = ipc_window_cycle;
+	ipc_handlers[IPCWindowRevCycle]        = ipc_window_rev_cycle;
+	ipc_handlers[IPCWindowCycleInGroup]    = ipc_window_cycle_in_group;
+	ipc_handlers[IPCWindowRevCycleInGroup] = ipc_window_rev_cycle_in_group;
+	ipc_handlers[IPCWindowFocus]           = ipc_window_focus;
+	ipc_handlers[IPCGroupAddWindow]        = ipc_group_add_window;
+	ipc_handlers[IPCGroupRemoveWindow]     = ipc_group_remove_window;
+	ipc_handlers[IPCGroupActivate]         = ipc_group_activate;
+	ipc_handlers[IPCGroupDeactivate]       = ipc_group_deactivate;
+	ipc_handlers[IPCGroupToggle]           = ipc_group_toggle;
+	ipc_handlers[IPCWMQuit]                = ipc_wm_quit;
+	ipc_handlers[IPCWMConfig]              = ipc_wm_config;
 }
 
 static void
@@ -2040,15 +2112,15 @@ ipc_window_put_in_grid(uint32_t *d)
 	}
 
 	get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
-	step_x = mon_w / grid_width;
-	step_y = mon_h / grid_height;
+	step_x = (mon_w - 2 * conf.gap) / grid_width;
+	step_y = (mon_h - 2 * conf.gap) / grid_height;
 	DMSG("%d %d %d %d %d %d\n", grid_width, grid_height, grid_x, grid_y, step_x, step_y);
 
-	focused_win->geom.width = step_x;
-	focused_win->geom.height = step_y;
+	focused_win->geom.width = step_x - 2 * conf.grid_gap;
+	focused_win->geom.height = step_y - 2 * conf.grid_gap;
 
-	focused_win->geom.x = mon_x + grid_x * step_x;
-	focused_win->geom.y = mon_y + grid_y * step_y;
+	focused_win->geom.x = mon_x + conf.gap + grid_x * (step_x + conf.grid_gap) - conf.border_width;
+	focused_win->geom.y = mon_y + conf.gap + grid_y * (step_y + conf.grid_gap) - conf.border_width;
 
 	teleport_window(focused_win->window, focused_win->geom.x, focused_win->geom.y);
 	resize_window_absolute(focused_win->window, focused_win->geom.width, focused_win->geom.height);
@@ -2129,6 +2201,24 @@ void ipc_window_rev_cycle(uint32_t *d)
 }
 
 static void
+ipc_window_cycle_in_group(uint32_t *d)
+{
+	(void)(d);
+
+	if (focused_win == NULL)
+		return;
+
+	cycle_window_in_group(focused_win);
+}
+static void
+ipc_window_rev_cycle_in_group(uint32_t *d)
+{
+	(void)(d);
+
+	rcycle_window_in_group(focused_win);
+}
+
+static void
 ipc_window_focus(uint32_t *d)
 {
 	struct client *client = find_client(&d[0]);
@@ -2200,6 +2290,8 @@ ipc_wm_config(uint32_t *d)
 		case IPCConfigGapWidth:
 			conf.gap = value;
 			break;
+		case IPCConfigGridGapWidth:
+			conf.grid_gap = value;
 		case IPCConfigCursorPosition:
 			conf.cursor_position = value;
 			break;
@@ -2231,6 +2323,7 @@ load_defaults(void)
 	conf.focus_color     = COLOR_FOCUS;
 	conf.unfocus_color   = COLOR_UNFOCUS;
 	conf.gap             = GAP;
+	conf.grid_gap        = GRID_GAP;
 	conf.cursor_position = CURSOR_POSITION;
 	conf.groups          = GROUPS;
 	conf.sloppy_focus    = SLOPPY_FOCUS;
