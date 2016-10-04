@@ -46,12 +46,6 @@ struct conf {
     enum position cursor_position;
     uint32_t groups;
     bool sloppy_focus;
-    uint8_t borders;
-};
-
-struct border {
-	int8_t width;
-	uint32_t color;
 };
 
 #endif

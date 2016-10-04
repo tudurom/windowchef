@@ -41,7 +41,6 @@ static int  randr_base;
 static bool halt;
 static int  exit_code;
 static bool *group_in_use;
-static struct border *borders_in_use;
 /* list of all windows. NULL is the empty list */
 static struct list_item *win_list   = NULL;
 static struct list_item *mon_list   = NULL;
@@ -96,7 +95,6 @@ static struct client * find_client(xcb_window_t *);
 static bool get_geometry(xcb_window_t *, int16_t *, int16_t *, uint16_t *, uint16_t *);
 static void set_borders(struct client *client, uint32_t);
 static bool is_mapped(xcb_window_t);
-static uint16_t get_border_width(xcb_window_t);
 static void free_window(struct client *);
 static void add_to_client_list(xcb_window_t);
 static void update_client_list(void);
@@ -107,8 +105,6 @@ static void group_activate(uint32_t);
 static void group_deactivate(uint32_t);
 static void group_toggle(uint32_t);
 static void change_nr_of_groups(uint32_t);
-static void change_nr_of_borders(uint8_t);
-static void border_modify(uint8_t, uint8_t, uint32_t);
 static void register_event_handlers(void);
 static void event_configure_request(xcb_generic_event_t *);
 static void event_destroy_notify(xcb_generic_event_t *);
@@ -230,12 +226,6 @@ setup(void)
 	group_in_use = malloc(conf.groups * sizeof(bool));
 	for (uint32_t i = 0; i < conf.groups; i++)
 		group_in_use[i] = false;
-
-	borders_in_use = malloc(conf.groups * sizeof(struct border));
-	for (uint8_t i = 0; i < conf.borders; i++) {
-		borders_in_use[i].color = 0xffffff;
-		borders_in_use[i].width = 0;
-	}
 	return 0;
 }
 
@@ -752,12 +742,11 @@ static void
 move_window(xcb_window_t win, int16_t x, int16_t y)
 {
 	int16_t win_x, win_y;
-	uint16_t win_w, win_h, win_b;
+	uint16_t win_w, win_h;
 
 	if (!is_mapped(win) || win == scr->root)
 		return;
 
-	win_b = get_border_width(win);
 	get_geometry(&win, &win_x, &win_y, &win_w, &win_h);
 
 	win_x += x;
@@ -1277,23 +1266,6 @@ is_mapped(xcb_window_t win)
 }
 
 /*
- * Returns the widht of the window border in pixels.
- */
-
-static uint16_t
-get_border_width(xcb_window_t win)
-{
-	xcb_get_geometry_reply_t *r = xcb_get_geometry_reply(conn,
-			xcb_get_geometry(conn, win),
-			NULL);
-	uint16_t w = r->border_width;
-
-	free(r);
-
-	return w;
-}
-
-/*
  * Deletes and frees a client from the list.
  */
 
@@ -1441,43 +1413,6 @@ change_nr_of_groups(uint32_t groups)
 	conf.groups = groups;
 	free(group_in_use);
 	group_in_use = copy;
-}
-
-static void
-change_nr_of_borders(uint8_t border_nr)
-{
-	uint8_t to = border_nr < conf.borders ? border_nr : conf.borders;
-
-	if (border_nr >= conf.borders)
-		return;
-
-	struct border *new_borders;
-	new_borders = malloc(border_nr * sizeof(struct border));
-
-	if (new_borders == NULL)
-		return;
-
-	for (uint8_t i = 0; i < to; i++)
-		new_borders[i] = borders_in_use[i];
-
-	if (border_nr > conf.borders)
-		for (uint8_t i = to; i < border_nr; i++) {
-			new_borders[i].width = 0;
-			new_borders[i].color = 0xffffff;
-		}
-
-	free(borders_in_use);
-	borders_in_use = new_borders;
-}
-
-static void
-border_modify(uint8_t border_nr, uint8_t width, uint32_t color)
-{
-	if (border_nr >= conf.borders)
-		return;
-
-	borders_in_use[border_nr].width = width;
-	borders_in_use[border_nr].color = color;
 }
 
 /*
@@ -2330,7 +2265,6 @@ load_defaults(void)
 	conf.cursor_position = CURSOR_POSITION;
 	conf.groups          = GROUPS;
 	conf.sloppy_focus    = SLOPPY_FOCUS;
-	conf.borders         = 1;
 }
 
 static void

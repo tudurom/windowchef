@@ -55,7 +55,7 @@ Features
 
 ### Soon to come
 
-- [ ] Configurable number of borders
+- Nothing yet.
 
 ### Groups
 
