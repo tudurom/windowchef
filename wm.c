@@ -2110,15 +2110,20 @@ ipc_window_put_in_grid(uint32_t *d)
 	}
 
 	get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
-	step_x = (mon_w - 2 * conf.gap) / grid_width;
-	step_y = (mon_h - 2 * conf.gap) / grid_height;
+	/* width and height of windows in the grid */
+	step_x = (mon_w - (grid_width - 1) * conf.grid_gap
+			- grid_width * 2 * conf.border_width - 2 * conf.gap) / grid_width;
+	step_y = (mon_h - (grid_width - 1) * conf.grid_gap
+			- grid_width * 2 * conf.border_width - 2 * conf.gap) / grid_height;
 	DMSG("%d %d %d %d %d %d\n", grid_width, grid_height, grid_x, grid_y, step_x, step_y);
 
-	focused_win->geom.width = step_x - 2 * conf.grid_gap;
-	focused_win->geom.height = step_y - 2 * conf.grid_gap;
+	focused_win->geom.width = step_x;
+	focused_win->geom.height = step_y;
 
-	focused_win->geom.x = mon_x + conf.gap + grid_x * (step_x + conf.grid_gap) - conf.border_width;
-	focused_win->geom.y = mon_y + conf.gap + grid_y * (step_y + conf.grid_gap) - conf.border_width;
+	focused_win->geom.x = mon_x + conf.gap
+		+ grid_x * (conf.grid_gap + 2 * conf.border_width + step_x);
+	focused_win->geom.y = mon_y + conf.gap
+		+ grid_y * (conf.grid_gap + 2 * conf.border_width + step_y);
 
 	teleport_window(focused_win->window, focused_win->geom.x, focused_win->geom.y);
 	resize_window_absolute(focused_win->window, focused_win->geom.width, focused_win->geom.height);
