@@ -26,6 +26,9 @@ anything on `stdout`.
 
 	false values: `false` | `f` | `no` | `n` | `0`
 
+* `MOUSE`:
+	move | resize
+
 ## COMMANDS
 
 * `window_move` <x> <y>:
@@ -101,6 +104,15 @@ anything on `stdout`.
 
 * `group_toggle` <group_nr>:
 	Toggle the <group_nr> group.
+
+* `mouse_start` <MOUSE>:
+	Start tracking the pointer to move/resize the mouse.
+
+* `mouse_stop`:
+	Stop tracking the pointer.
+
+* `mouse_toggle` <MOUSE>:
+	If already tracking, stop. Else, track.
 
 * `wm_quit` <exit_status>:
 	Quit windowchef with exit_status <exit_status>.

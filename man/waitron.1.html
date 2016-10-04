@@ -99,6 +99,7 @@ anything on <code>stdout</code>.</p>
 <dt class="flush"><code>BOOL</code></dt><dd><p>  true values: <code>true</code> | <code>t</code> | <code>yes</code> | <code>y</code> | <code>1</code></p>
 
 <p>  false values: <code>false</code> | <code>f</code> | <code>no</code> | <code>n</code> | <code>0</code></p></dd>
+<dt class="flush"><code>MOUSE</code></dt><dd><p>  move | resize</p></dd>
 </dl>
 
 
@@ -139,6 +140,9 @@ anything on <code>stdout</code>.</p>
 <dt><code>group_activate</code> <var>group_nr</var></dt><dd><p>  Map all windows that belong to the <var>group_nr</var> group.</p></dd>
 <dt><code>group_deactivate</code> <var>group_nr</var></dt><dd><p>  Unmap all windows that belong to the <var>group_nr</var> group.</p></dd>
 <dt><code>group_toggle</code> <var>group_nr</var></dt><dd><p>  Toggle the <var>group_nr</var> group.</p></dd>
+<dt><code>mouse_start</code> <var>MOUSE</var></dt><dd><p>  Start tracking the pointer to move/resize the mouse.</p></dd>
+<dt><code>mouse_stop</code></dt><dd><p>  Stop tracking the pointer.</p></dd>
+<dt><code>mouse_toggle</code> <var>MOUSE</var></dt><dd><p>  If already tracking, stop. Else, track.</p></dd>
 <dt><code>wm_quit</code> <var>exit_status</var></dt><dd><p>  Quit windowchef with exit_status <var>exit_status</var>.</p></dd>
 <dt><code>wm_change_number_of_groups</code> <var>number_of_groups</var></dt><dd><p>  Change the number of maximum groups to <var>number_of_groups</var>.</p>
 

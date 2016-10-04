@@ -42,3 +42,6 @@ super + Return
 
 super + {Insert,Prior,Delete,Next,End}
   ./waitron window_snap {topleft,topright,bottomleft,bottomright,middle}
+
+super + {_,alt +}t
+  ./waitron mouse_toggle {move,resize}

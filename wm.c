@@ -30,7 +30,7 @@ enum { WM_DELETE_WINDOW, _IPC_ATOM_COMMAND, NR_ATOMS };
 
 /* connection to the X server */
 static xcb_connection_t *conn;
-static xcb_ewmh_connection_t*ewmh;
+static xcb_ewmh_connection_t *ewmh;
 static xcb_screen_t *scr;
 static struct client *focused_win;
 static struct conf conf;
@@ -40,7 +40,10 @@ static int scrno;
 static int  randr_base;
 static bool halt;
 static int  exit_code;
-static bool *group_in_use;
+static bool *group_in_use = NULL;
+static enum mouse_mode current_mouse_mode = MOUSE_NONE;
+static struct client * hovered_client = NULL;
+static bool hovering_mouse = false;
 /* list of all windows. NULL is the empty list */
 static struct list_item *win_list   = NULL;
 static struct list_item *mon_list   = NULL;
@@ -105,6 +108,9 @@ static void group_activate(uint32_t);
 static void group_deactivate(uint32_t);
 static void group_toggle(uint32_t);
 static void change_nr_of_groups(uint32_t);
+static void mouse_start(enum mouse_mode);
+static void mouse_stop(void);
+static void mouse_toggle(enum mouse_mode);
 static void register_event_handlers(void);
 static void event_configure_request(xcb_generic_event_t *);
 static void event_destroy_notify(xcb_generic_event_t *);
@@ -116,6 +122,7 @@ static void event_configure_notify(xcb_generic_event_t *);
 static void event_circulate_request(xcb_generic_event_t *);
 static void event_client_message(xcb_generic_event_t *);
 static void event_focus_out(xcb_generic_event_t *);
+static void event_motion_notify(xcb_generic_event_t *);
 static void register_ipc_handlers(void);
 static void ipc_window_move(uint32_t *);
 static void ipc_window_move_absolute(uint32_t *);
@@ -138,6 +145,9 @@ static void ipc_group_remove_window(uint32_t *);
 static void ipc_group_activate(uint32_t *);
 static void ipc_group_deactivate(uint32_t *);
 static void ipc_group_toggle(uint32_t *);
+static void ipc_mouse_start(uint32_t *);
+static void ipc_mouse_stop(uint32_t *);
+static void ipc_mouse_toggle(uint32_t *);
 static void ipc_wm_quit(uint32_t *);
 static void ipc_wm_config(uint32_t *);
 
@@ -152,12 +162,14 @@ static void load_config(char *);
 static void
 cleanup(void)
 {
+	xcb_set_input_focus(conn, XCB_NONE, XCB_INPUT_FOCUS_POINTER_ROOT,
+			XCB_CURRENT_TIME);
 	if (ewmh != NULL)
 		xcb_ewmh_connection_wipe(ewmh);
-	if (conn != NULL)
-		xcb_disconnect(conn);
 	if (win_list != NULL)
 		list_delete_all_items(&win_list);
+	if (conn != NULL)
+		xcb_disconnect(conn);
 }
 
 /*
@@ -1415,6 +1427,43 @@ change_nr_of_groups(uint32_t groups)
 	group_in_use = copy;
 }
 
+static void
+mouse_start(enum mouse_mode mode)
+{
+	hovering_mouse = true;
+	xcb_query_pointer_reply_t *ptr;
+	ptr = xcb_query_pointer_reply(conn,
+			xcb_query_pointer(conn, scr->root), NULL);
+	hovered_client = find_client(&ptr->child);
+	if (hovered_client != NULL && ptr != NULL) {
+		current_mouse_mode = mode;
+		xcb_grab_pointer(conn, false, scr->root,
+				XCB_EVENT_MASK_BUTTON_RELEASE
+				| XCB_EVENT_MASK_BUTTON_MOTION
+				| XCB_EVENT_MASK_POINTER_MOTION_HINT,
+				XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
+				XCB_NONE, XCB_NONE, XCB_CURRENT_TIME);
+	}
+}
+
+static void
+mouse_stop(void)
+{
+	hovering_mouse = false;
+	current_mouse_mode = MOUSE_NONE;
+	xcb_ungrab_pointer(conn, XCB_CURRENT_TIME);
+	hovered_client = NULL;
+}
+
+static void
+mouse_toggle(enum mouse_mode mode)
+{
+	if (hovering_mouse)
+		mouse_stop();
+	else
+		mouse_start(mode);
+}
+
 /*
  * Adds X event handlers to the array.
  */
@@ -1435,6 +1484,7 @@ register_event_handlers(void)
 	events[XCB_CONFIGURE_NOTIFY]  = event_configure_notify;
 	events[XCB_CIRCULATE_REQUEST] = event_circulate_request;
 	events[XCB_FOCUS_OUT]         = event_focus_out;
+	events[XCB_MOTION_NOTIFY]     = event_motion_notify;
 }
 
 /*
@@ -1790,6 +1840,54 @@ event_focus_out(xcb_generic_event_t *ev)
 	}
 }
 
+static void
+event_motion_notify(xcb_generic_event_t *ev)
+{
+	int16_t to_x, to_y;
+
+	(void)(ev);
+	xcb_query_pointer_reply_t *ptr;
+	ptr = xcb_query_pointer_reply(conn,
+			xcb_query_pointer(conn, scr->root), NULL);
+
+	if (hovered_client == NULL || ptr == NULL)
+		return;
+
+	switch (current_mouse_mode) {
+		case MOUSE_MOVE:
+			if (ptr->root_x + hovered_client->geom.width / 2
+					> scr->width_in_pixels - 2 * conf.border_width)
+				to_x = scr->width_in_pixels - hovered_client->geom.width
+					- 2 * conf.border_width;
+			else
+				to_x = ptr->root_x - hovered_client->geom.width / 2;
+
+			if (ptr->root_y + hovered_client->geom.height / 2
+					> scr->height_in_pixels - 2 * conf.border_width)
+				to_y = scr->height_in_pixels - hovered_client->geom.height
+					- 2 * conf.border_width;
+			else
+				to_y = ptr->root_y - hovered_client->geom.height / 2;
+
+			if (ptr->root_x < hovered_client->geom.width / 2)
+				to_x = 0;
+			if (ptr->root_y < hovered_client->geom.height / 2)
+				to_y = 0;
+
+			teleport_window(hovered_client->window, to_x, to_y);
+			hovered_client->geom.x = to_x;
+			hovered_client->geom.y = to_y;
+			break;
+
+		case MOUSE_RESIZE:
+			resize_window_absolute(hovered_client->window,
+					ptr->root_x - hovered_client->geom.x,
+					ptr->root_y - hovered_client->geom.y);
+		default:
+			break;
+	}
+}
+
 /*
  * Populates array with functions for handling IPC commands.
  */
@@ -1817,6 +1915,9 @@ register_ipc_handlers(void)
 	ipc_handlers[IPCGroupActivate]         = ipc_group_activate;
 	ipc_handlers[IPCGroupDeactivate]       = ipc_group_deactivate;
 	ipc_handlers[IPCGroupToggle]           = ipc_group_toggle;
+	ipc_handlers[IPCMouseStart]            = ipc_mouse_start;
+	ipc_handlers[IPCMouseStop]             = ipc_mouse_stop;
+	ipc_handlers[IPCMouseToggle]           = ipc_mouse_toggle;
 	ipc_handlers[IPCWMQuit]                = ipc_wm_quit;
 	ipc_handlers[IPCWMConfig]              = ipc_wm_config;
 }
@@ -2196,6 +2297,25 @@ static void
 ipc_group_toggle(uint32_t *d)
 {
 	group_toggle(d[0] - 1);
+}
+
+static void
+ipc_mouse_start(uint32_t *d)
+{
+	mouse_start(d[0]);
+}
+
+static void
+ipc_mouse_stop(uint32_t *d)
+{
+	(void)(d);
+	mouse_stop();
+}
+
+static void
+ipc_mouse_toggle(uint32_t *d)
+{
+	mouse_toggle(d[0]);
 }
 
 static void
