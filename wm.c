@@ -932,8 +932,8 @@ hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width)
 
 	if (client->geom.width != mon_width)
 		save_original_size(client);
-	client->geom.x = mon_x + conf.gap_left - conf.border_width;
-	client->geom.width = mon_width - conf.gap_left - conf.gap_right;
+	client->geom.x = mon_x + conf.gap_left;
+	client->geom.width = mon_width - conf.gap_left - conf.gap_right - 2 * conf.border_width;
 	client->vmaxed = client->maxed = false;
 
 	teleport_window(client->window, client->geom.x, client->geom.y);
@@ -960,8 +960,8 @@ vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height)
 	if (client->geom.height != mon_height)
 		save_original_size(client);
 
-	client->geom.y = mon_y + conf.gap_up - conf.border_width;
-	client->geom.height = mon_height - conf.gap_up - conf.gap_down;
+	client->geom.y = mon_y + conf.gap_up;
+	client->geom.height = mon_height - conf.gap_up - conf.gap_down - 2 * conf.border_width;
 	client->hmaxed = client->maxed = false;
 
 	teleport_window(client->window, client->geom.x, client->geom.y);
