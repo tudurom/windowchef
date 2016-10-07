@@ -932,8 +932,8 @@ hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width)
 
 	if (client->geom.width != mon_width)
 		save_original_size(client);
-	client->geom.x = mon_x + conf.gap - conf.border_width;
-	client->geom.width = mon_width - 2 * conf.gap;
+	client->geom.x = mon_x + conf.gap_left - conf.border_width;
+	client->geom.width = mon_width - conf.gap_left - conf.gap_right;
 	client->vmaxed = client->maxed = false;
 
 	teleport_window(client->window, client->geom.x, client->geom.y);
@@ -960,8 +960,8 @@ vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height)
 	if (client->geom.height != mon_height)
 		save_original_size(client);
 
-	client->geom.y = mon_y + conf.gap - conf.border_width;
-	client->geom.height = mon_height - 2 * conf.gap;
+	client->geom.y = mon_y + conf.gap_up - conf.border_width;
+	client->geom.height = mon_height - conf.gap_up - conf.gap_down;
 	client->hmaxed = client->maxed = false;
 
 	teleport_window(client->window, client->geom.x, client->geom.y);
@@ -1190,6 +1190,7 @@ center_pointer(struct client *client)
 		cur_x = client->geom.width / 2;
 		cur_y = client->geom.height / 2;
 		break;
+	default: break;
 	}
 
 	xcb_warp_pointer(conn, XCB_NONE, client->window, 0, 0, 0, 0, cur_x, cur_y);
@@ -2148,17 +2149,17 @@ ipc_window_put_in_grid(uint32_t *d)
 	get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
 	/* width and height of windows in the grid */
 	step_x = (mon_w - (grid_width - 1) * conf.grid_gap
-			- grid_width * 2 * conf.border_width - 2 * conf.gap) / grid_width;
+			- grid_width * 2 * conf.border_width - conf.gap_left - conf.gap_right) / grid_width;
 	step_y = (mon_h - (grid_width - 1) * conf.grid_gap
-			- grid_width * 2 * conf.border_width - 2 * conf.gap) / grid_height;
+			- grid_width * 2 * conf.border_width - conf.gap_up - conf.gap_down) / grid_height;
 	DMSG("%d %d %d %d %d %d\n", grid_width, grid_height, grid_x, grid_y, step_x, step_y);
 
 	focused_win->geom.width = step_x;
 	focused_win->geom.height = step_y;
 
-	focused_win->geom.x = mon_x + conf.gap
+	focused_win->geom.x = mon_x + conf.gap_left
 		+ grid_x * (conf.grid_gap + 2 * conf.border_width + step_x);
-	focused_win->geom.y = mon_y + conf.gap
+	focused_win->geom.y = mon_y + conf.gap_up
 		+ grid_y * (conf.grid_gap + 2 * conf.border_width + step_y);
 
 	teleport_window(focused_win->window, focused_win->geom.x, focused_win->geom.y);
@@ -2188,23 +2189,23 @@ ipc_window_snap(uint32_t *d)
 
 	switch (mode) {
 		case TOP_LEFT:
-			win_x = mon_x + conf.gap;
-			win_y = mon_y + conf.gap;
+			win_x = mon_x + conf.gap_left;
+			win_y = mon_y + conf.gap_up;
 			break;
 
 		case TOP_RIGHT:
-			win_x = mon_x + mon_w - conf.gap - win_w;
-			win_y = mon_y + conf.gap;
+			win_x = mon_x + mon_w - conf.gap_right - win_w;
+			win_y = mon_y + conf.gap_up;
 			break;
 
 		case BOTTOM_LEFT:
-			win_x = mon_x + conf.gap;
-			win_y = mon_y + mon_h - conf.gap - win_h;
+			win_x = mon_x + conf.gap_left;
+			win_y = mon_y + mon_h - conf.gap_down - win_h;
 			break;
 
 		case BOTTOM_RIGHT:
-			win_x = mon_x + mon_w - conf.gap - win_w;
-			win_y = mon_y + mon_h - conf.gap - win_h;
+			win_x = mon_x + mon_w - conf.gap_right - win_w;
+			win_y = mon_y + mon_h - conf.gap_down - win_h;
 			break;
 
 		case CENTER:
@@ -2330,34 +2331,40 @@ static void
 ipc_wm_config(uint32_t *d)
 {
 	enum IPCConfig key;
-	uint32_t value;
 
 	key = d[0];
-	value = d[1];
 
 	switch (key) {
 		case IPCConfigBorderWidth:
-			conf.border_width = value;
+			conf.border_width = d[1];
 			break;
 		case IPCConfigColorFocused:
-			conf.focus_color = value;
+			conf.focus_color = d[1];
 			break;
 		case IPCConfigColorUnfocused:
-			conf.unfocus_color = value;
+			conf.unfocus_color = d[1];
 			break;
 		case IPCConfigGapWidth:
-			conf.gap = value;
+			switch (d[1]) {
+				case LEFT: conf.gap_left   = d[2]; break;
+				case BOTTOM: conf.gap_down = d[2]; break;
+				case TOP: conf.gap_up      = d[2]; break;
+				case RIGHT: conf.gap_right = d[2]; break;
+				case ALL: conf.gap_left = conf.gap_down
+						  = conf.gap_up = conf.gap_right = d[2];
+				default: break;
+			}
 			break;
 		case IPCConfigGridGapWidth:
-			conf.grid_gap = value;
+			conf.grid_gap = d[1];
 		case IPCConfigCursorPosition:
-			conf.cursor_position = value;
+			conf.cursor_position = d[1];
 			break;
 		case IPCConfigGroupsNr:
-			change_nr_of_groups(value);
+			change_nr_of_groups(d[1]);
 			break;
 		case IPCConfigEnableSloppyFocus:
-			conf.sloppy_focus = value;
+			conf.sloppy_focus = d[1];
 			break;
 		default:
 			break;
@@ -2380,7 +2387,8 @@ load_defaults(void)
 	conf.border_width    = BORDER_WIDTH;
 	conf.focus_color     = COLOR_FOCUS;
 	conf.unfocus_color   = COLOR_UNFOCUS;
-	conf.gap             = GAP;
+	conf.gap_left = conf.gap_down
+		= conf.gap_up = conf.gap_right = GAP;
 	conf.grid_gap        = GRID_GAP;
 	conf.cursor_position = CURSOR_POSITION;
 	conf.groups          = GROUPS;

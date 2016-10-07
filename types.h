@@ -10,7 +10,12 @@ enum position {
 	BOTTOM_RIGHT,
 	TOP_LEFT,
 	TOP_RIGHT,
-	CENTER
+	CENTER,
+	LEFT,
+	BOTTOM,
+	TOP,
+	RIGHT,
+	ALL,
 };
 
 enum mouse_mode {
@@ -47,7 +52,8 @@ struct monitor {
 };
 
 struct conf {
-	int8_t border_width, gap, grid_gap;
+	int8_t border_width, grid_gap;
+	int8_t gap_left, gap_down, gap_up, gap_right;
 	uint32_t focus_color, unfocus_color;
 	enum position cursor_position;
 	uint32_t groups;

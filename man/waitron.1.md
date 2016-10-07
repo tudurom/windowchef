@@ -139,8 +139,9 @@ are:
 	<color> is a hexadecimal value that may or may not start witht he `0x`
 	prefix. Example: `0x1234ef`.
 
-* `gap_width` <width>:
-	Sets the window gap value to <width>.
+* `gap_width` <POSITION> <width>:
+	Sets the window gap at <POSITION> to <width>. <POSITION> can be equal to
+	`all` to set all gaps to <POSITION>.
 
 * `grid_gap_width` <width>:
 	Sets the window gap value used in virtual grids to <width>.

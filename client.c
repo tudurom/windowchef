@@ -23,6 +23,7 @@ static bool fn_config(uint32_t *, int, char **);
 static bool fn_hex(uint32_t *, int, char **);
 static bool fn_position(uint32_t *, int, char **);
 static bool fn_mouse(uint32_t *, int, char **);
+static bool fn_gap(uint32_t *, int, char **);
 
 struct Command {
 	char *string_command;
@@ -63,14 +64,14 @@ static struct Command c[] = {
 	{ "mouse_stop"                , IPCMouseStop             ,  0 , NULL        } ,
 	{ "mouse_toggle"              , IPCMouseToggle           ,  1 , fn_mouse    } ,
 	{ "wm_quit"                   , IPCWMQuit                ,  1 , fn_naturals } ,
-	{ "wm_config"                 , IPCWMConfig              ,  2 , fn_config   },
+	{ "wm_config"                 , IPCWMConfig              , -1 , fn_config   },
 };
 
 static struct ConfigEntry configs[] = {
 	{ "border_width"        , IPCConfigBorderWidth       , fn_naturals } ,
 	{ "color_focused"       , IPCConfigColorFocused      , fn_hex      } ,
 	{ "color_unfocused"     , IPCConfigColorUnfocused    , fn_hex      } ,
-	{ "gap_width"           , IPCConfigGapWidth          , fn_naturals } ,
+	{ "gap_width"           , IPCConfigGapWidth          , fn_gap      } ,
 	{ "grid_gap_width"      , IPCConfigGridGapWidth      , fn_naturals } ,
 	{ "cursor_position"     , IPCConfigCursorPosition    , fn_position } ,
 	{ "groups_nr"           , IPCConfigGroupsNr          , fn_naturals } ,
@@ -148,7 +149,6 @@ fn_config(uint32_t *data, int argc, char **argv) {
 		i++;
 
 	if (i < NR_IPC_CONFIGS) {
-		/* XXX: hardcoded value */
 		data[0] = configs[i].config;
 		status = (configs[i].handler)(data + 1, argc - 1, argv + 1);
 
@@ -192,6 +192,16 @@ fn_position(uint32_t *data, int argc, char **argv)
 		snap_pos = BOTTOM_RIGHT;
 	else if (strcasecmp(pos, "middle") == 0)
 		snap_pos = CENTER;
+	else if (strcasecmp(pos, "left") == 0)
+		snap_pos = LEFT;
+	else if (strcasecmp(pos, "bottom") == 0)
+		snap_pos = BOTTOM;
+	else if (strcasecmp(pos, "top") == 0)
+		snap_pos = TOP;
+	else if (strcasecmp(pos, "right") == 0)
+		snap_pos = RIGHT;
+	else if (strcasecmp(pos, "all") == 0)
+		snap_pos = ALL;
 	else
 		return false;
 
@@ -218,6 +228,18 @@ fn_mouse(uint32_t *data, int argc, char **argv)
 	data[0] = mode;
 
 	return true;
+}
+
+static bool
+fn_gap(uint32_t *data, int argc, char **argv)
+{
+	(void)(argc);
+	bool status = true;
+
+	status = status && fn_position(data, 1, argv);
+	status = status && fn_naturals(data + 1, 1, argv + 1);
+
+	return status;
 }
 
 static void
