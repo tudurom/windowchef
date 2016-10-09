@@ -16,6 +16,7 @@ enum IPCCommand {
 	IPCWindowMaximize,
 	IPCWindowHorMaximize,
 	IPCWindowVerMaximize,
+	IPCWindowMonocle,
 	IPCWindowClose,
 	IPCWindowPutInGrid,
 	IPCWindowSnap,

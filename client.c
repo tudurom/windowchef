@@ -47,6 +47,7 @@ static struct Command c[] = {
 	{ "window_maximize"           , IPCWindowMaximize        ,  0 , NULL        } ,
 	{ "window_hor_maximize"       , IPCWindowHorMaximize     ,  0 , NULL        } ,
 	{ "window_ver_maximize"       , IPCWindowVerMaximize     ,  0 , NULL        } ,
+	{ "window_monocle"            , IPCWindowMonocle         ,  0 , NULL        } ,
 	{ "window_close"              , IPCWindowClose           ,  0 , NULL        } ,
 	{ "window_put_in_grid"        , IPCWindowPutInGrid       ,  4 , fn_naturals } ,
 	{ "window_snap"               , IPCWindowSnap            ,  1 , fn_position } ,

@@ -25,6 +25,9 @@ super + b
 super + v
   ./waitron window_ver_maximize
 
+super + m
+  ./waitron window_monocle
+
 alt + Tab
   ./waitron window_cycle
 

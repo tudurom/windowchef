@@ -58,6 +58,10 @@ anything on `stdout`.
 	its <y> component. Leaves a gap at the top and bottom of the monitor whose
 	width can be configured. Execute it again after maximizing to revert the state of the window.
 
+* `window_monocle`:
+	Puts the window in the "monocled" state: full screen but with borders
+	visible. Monocle mode respects gaps.
+
 * `window_close`:
 	Closes the focused window.
 

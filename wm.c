@@ -80,11 +80,11 @@ static void teleport_window(xcb_window_t, int16_t, int16_t);
 static void move_window(xcb_window_t , int16_t, int16_t);
 static void resize_window_absolute(xcb_window_t, uint16_t, uint16_t);
 static void resize_window(xcb_window_t, int16_t, int16_t);
-static void resize_window_limit(struct client *);
 static void fit_on_screen(struct client *);
 static void maximize_window(struct client *, int16_t, int16_t, uint16_t, uint16_t);
 static void hmaximize_window(struct client *, int16_t, uint16_t);
 static void vmaximize_window(struct client *, int16_t, uint16_t);
+static void monocle_window(struct client *, int16_t, int16_t, uint16_t, uint16_t);
 static void unmaximize_window(struct client *);
 static void cycle_window(struct client *);
 static void rcycle_window(struct client *);
@@ -131,6 +131,7 @@ static void ipc_window_resize_absolute(uint32_t *);
 static void ipc_window_maximize(uint32_t *);
 static void ipc_window_hor_maximize(uint32_t *);
 static void ipc_window_ver_maximize(uint32_t *);
+static void ipc_window_monocle(uint32_t *);
 static void ipc_window_unmaximize(uint32_t *);
 static void ipc_window_close(uint32_t *);
 static void ipc_window_put_in_grid(uint32_t *);
@@ -241,6 +242,10 @@ setup(void)
 	return 0;
 }
 
+/*
+ * Tells the server we want to use randr.
+ */
+
 static int
 setup_randr(void)
 {
@@ -261,6 +266,10 @@ setup_randr(void)
 
 	return base;
 }
+
+/*
+ * Get information regarding randr.
+ */
 
 static void
 get_randr(void)
@@ -283,6 +292,10 @@ get_randr(void)
 	get_outputs(outputs, len, timestamp);
 	free(r);
 }
+
+/*
+ * Gets information about connected outputs.
+ */
 
 static void
 get_outputs(xcb_randr_output_t *outputs, int len, xcb_timestamp_t timestamp)
@@ -377,6 +390,10 @@ get_outputs(xcb_randr_output_t *outputs, int len, xcb_timestamp_t timestamp)
 	}
 }
 
+/*
+ * Finds a monitor in the list.
+ */
+
 struct monitor *
 find_monitor(xcb_randr_output_t mon)
 {
@@ -392,6 +409,10 @@ find_monitor(xcb_randr_output_t mon)
 	else
 		return item->data;
 }
+
+/*
+ * Find a monitor in the list by its coordinates.
+ */
 
 static struct monitor *
 find_monitor_by_coord(int16_t x, int16_t y)
@@ -409,6 +430,10 @@ find_monitor_by_coord(int16_t x, int16_t y)
 
 	return m;
 }
+
+/*
+ * Find cloned (mirrored) outputs.
+ */
 
 struct monitor *
 find_clones(xcb_randr_output_t mon, int16_t x, int16_t y)
@@ -428,6 +453,10 @@ find_clones(xcb_randr_output_t mon, int16_t x, int16_t y)
 	else
 		return clonemon;
 }
+
+/*
+ * Add a monitor to the global monitor list.
+ */
 
 static struct monitor *
 add_monitor(xcb_randr_output_t mon, char *name, int16_t x, int16_t y, uint16_t width, uint16_t height)
@@ -456,6 +485,10 @@ add_monitor(xcb_randr_output_t mon, char *name, int16_t x, int16_t y, uint16_t w
 	return monitor;
 }
 
+/*
+ * Free a monitor from the global monitor list.
+ */
+
 static void
 free_monitor(struct monitor *mon)
 {
@@ -464,6 +497,10 @@ free_monitor(struct monitor *mon)
 	free(mon);
 	list_delete_item(&mon_list, item);
 }
+
+/*
+ * Get information about a certain monitor situated in a window: coordinates and size.
+ */
 
 static void
 get_monitor_size(struct client *client, int16_t *mon_x, int16_t *mon_y, uint16_t *mon_width, uint16_t *mon_height)
@@ -487,6 +524,10 @@ get_monitor_size(struct client *client, int16_t *mon_x, int16_t *mon_y, uint16_t
 	}
 }
 
+/*
+ * Arrange clients on a monitor.
+ */
+
 static void
 arrange_by_monitor(struct monitor *mon)
 {
@@ -502,7 +543,7 @@ arrange_by_monitor(struct monitor *mon)
 }
 
 /*
- * Waits for events and handles them.
+ * Wait for events and handle them.
  */
 
 static void
@@ -578,16 +619,15 @@ setup_window(xcb_window_t win)
 	if (client == NULL)
 		return NULL;
 
+	/* initialize variables */
 	item->data = client;
 	client->item = item;
 	client->window = win;
 	client->geom.x = client->geom.y = client->geom.width
 				   = client->geom.height
-				   = client->min_width = client->min_height
-				   = client->max_width = client->max_height = 0;
-	client->max_width  = scr->width_in_pixels;
-	client->max_height = scr->height_in_pixels;
-	client->maxed   = client->hmaxed = client->vmaxed = client->geom.set_by_user = false;
+				   = client->min_width = client->min_height;
+	client->maxed  = client->hmaxed = client->vmaxed
+		= client->monocled = client->geom.set_by_user = false;
 	client->monitor = NULL;
 	client->mapped  = false;
 	client->group   = NULL_GROUP;
@@ -604,11 +644,6 @@ setup_window(xcb_window_t win)
 	if (hints.flags & XCB_ICCCM_SIZE_HINT_P_MIN_SIZE) {
 		client->min_width = hints.min_width;
 		client->min_height = hints.min_height;
-	}
-
-	if (hints.flags & XCB_ICCCM_SIZE_HINT_P_MAX_SIZE) {
-		client->max_width = hints.max_width;
-		client->max_height = hints.max_height;
 	}
 
 	return client;
@@ -705,8 +740,6 @@ close_window(struct client *client)
 		delete_window(win);
 	else
 		xcb_kill_client(conn, win);
-
-	free_window(client);
 }
 
 /*
@@ -797,14 +830,9 @@ resize_window(xcb_window_t win, int16_t w, int16_t h)
 	resize_window_absolute(win, win_w + w, win_h + h);
 }
 
-static void
-resize_window_limit(struct client *client)
-{
-	int16_t mon_x, mon_y;
-	uint16_t mon_width, mon_height;
-
-	get_monitor_size(client, &mon_x, &mon_y, &mon_width, &mon_height);
-}
+/*
+ * Fit window on screen if too big.
+ */
 
 static void
 fit_on_screen(struct client *client)
@@ -889,11 +917,10 @@ maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mo
 		XCB_NONE
 	};
 
-	if (client == NULL || (client->max_width != 0 && mon_width > client->max_width)
-			|| (client->max_height != 0 && mon_height > client->max_height))
+	if (client == NULL)
 		return;
 
-	if (client->vmaxed || client->hmaxed)
+	if (client->vmaxed || client->hmaxed || client->monocled)
 		unmaximize_window(client);
 
 	/* maximized windows don't have borders */
@@ -907,7 +934,6 @@ maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mo
 	client->geom.y = mon_y;
 	client->geom.width = mon_width;
 	client->geom.height = mon_height;
-	client->vmaxed = client->hmaxed = false;
 
 	teleport_window(client->window, client->geom.x, client->geom.y);
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
@@ -919,7 +945,7 @@ maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mo
 static void
 hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width)
 {
-	if (client == NULL || (client->max_width != 0 && mon_width > client->max_width))
+	if (client == NULL)
 		return;
 
 	xcb_atom_t state[] = {
@@ -927,14 +953,13 @@ hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width)
 		XCB_NONE
 	};
 
-	if (client->maxed || client->vmaxed)
+	if (client->maxed || client->vmaxed || client->monocled)
 		unmaximize_window(client);
 
 	if (client->geom.width != mon_width)
 		save_original_size(client);
 	client->geom.x = mon_x + conf.gap_left;
 	client->geom.width = mon_width - conf.gap_left - conf.gap_right - 2 * conf.border_width;
-	client->vmaxed = client->maxed = false;
 
 	teleport_window(client->window, client->geom.x, client->geom.y);
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
@@ -946,7 +971,7 @@ hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width)
 static void
 vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height)
 {
-	if (client == NULL || (client->max_height != 0 && mon_height > client->max_height))
+	if (client == NULL)
 		return;
 
 	xcb_atom_t state[] = {
@@ -954,7 +979,7 @@ vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height)
 		XCB_NONE
 	};
 
-	if (client->maxed || client->hmaxed)
+	if (client->maxed || client->hmaxed || client->monocled)
 		unmaximize_window(client);
 
 	if (client->geom.height != mon_height)
@@ -962,12 +987,34 @@ vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height)
 
 	client->geom.y = mon_y + conf.gap_up;
 	client->geom.height = mon_height - conf.gap_up - conf.gap_down - 2 * conf.border_width;
-	client->hmaxed = client->maxed = false;
 
 	teleport_window(client->window, client->geom.x, client->geom.y);
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
 	client->vmaxed = true;
 	xcb_ewmh_set_wm_state(ewmh, client->window, 2, state);
+}
+
+static void
+monocle_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mon_width, uint16_t mon_height)
+{
+	if (client == NULL)
+		return;
+
+	if (client->maxed || client->vmaxed || client->monocled)
+		unmaximize_window(client);
+
+	save_original_size(client);
+
+	client->geom.x = mon_x + conf.gap_left;
+	client->geom.y = mon_y + conf.gap_up;
+	client->geom.width = mon_width - 2 * conf.border_width
+		- conf.gap_left - conf.gap_right;
+	client->geom.height = mon_height - 2 * conf.border_width
+		- conf.gap_left - conf.gap_right;
+	teleport_window(client->window, client->geom.x, client->geom.y);
+	resize_window_absolute(client->window, client->geom.width, client->geom.height);
+	client->monocled = true;
+	set_focused_no_raise(client);
 }
 
 static void
@@ -981,11 +1028,13 @@ unmaximize_window(struct client *client)
 	client->geom.y = client->orig_geom.y;
 	client->geom.width = client->orig_geom.width;
 	client->geom.height = client->orig_geom.height;
-	client->maxed = client->hmaxed = client->vmaxed = false;
+	client->maxed = client->maxed = client->hmaxed
+		= client->vmaxed = client->monocled = false;
 
 	teleport_window(client->window, client->geom.x, client->geom.y);
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
 	xcb_ewmh_set_wm_state(ewmh, client->window, 2, state);
+	set_borders(client, conf.unfocus_color);
 }
 
 static void
@@ -1287,6 +1336,7 @@ free_window(struct client *client)
 {
 	struct list_item *item;
 
+	DMSG("freeing 0x%08x\n", client->window);
 	item = client->item;
 
 	free(client);
@@ -1504,19 +1554,19 @@ event_configure_request(xcb_generic_event_t *ev)
 	if (client != NULL) {
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_X
-				&& !client->maxed && !client->hmaxed)
+				&& !client->maxed && !client->monocled && !client->hmaxed)
 			client->geom.x = e->x;
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_Y
-				&& !client->maxed && !client->vmaxed)
+				&& !client->maxed && !client->monocled && !client->vmaxed)
 			client->geom.y = e->y;
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH
-				&& !client->maxed && !client->hmaxed)
+				&& !client->maxed && !client->monocled && !client->hmaxed)
 			client->geom.width= e->width;
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT
-				&& !client->maxed && !client->vmaxed)
+				&& !client->maxed && !client->monocled && !client->vmaxed)
 			client->geom.height = e->height;
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_STACK_MODE) {
@@ -1609,7 +1659,7 @@ event_enter_notify(xcb_generic_event_t *ev)
 
 	client = find_client(&e->event);
 
-	if (client != NULL && !client->maxed)
+	if (client != NULL)
 		set_focused_no_raise(client);
 }
 
@@ -1777,6 +1827,7 @@ event_client_message(xcb_generic_event_t *ev)
 		vmaxed = client->vmaxed;
 		hmaxed = client->hmaxed;
 		get_monitor_size(client, &mon_x, &mon_y, &mon_w, &mon_h);
+
 		/* We handle only two states at the same time */
 		for (int i = 0; i < 2; i++) {
 			xcb_atom_t state = e->data.data32[i + 1];
@@ -1903,6 +1954,7 @@ register_ipc_handlers(void)
 	ipc_handlers[IPCWindowMaximize]        = ipc_window_maximize;
 	ipc_handlers[IPCWindowHorMaximize]     = ipc_window_hor_maximize;
 	ipc_handlers[IPCWindowVerMaximize]     = ipc_window_ver_maximize;
+	ipc_handlers[IPCWindowMonocle]         = ipc_window_monocle;
 	ipc_handlers[IPCWindowClose]           = ipc_window_close;
 	ipc_handlers[IPCWindowPutInGrid]       = ipc_window_put_in_grid;
 	ipc_handlers[IPCWindowSnap]            = ipc_window_snap;
@@ -1998,12 +2050,6 @@ ipc_window_resize(uint32_t *d)
 		ah = 0;
 	DMSG("aw: %d\tah: %d\n", aw, ah);
 
-	if (focused_win->max_width != 0 && aw > focused_win->max_width)
-		aw = focused_win->max_width;
-
-	if (focused_win->max_height != 0 && ah > focused_win->max_height)
-		ah = focused_win->max_height;
-
 	if (focused_win->min_width != 0 && aw < focused_win->min_width)
 		aw = focused_win->min_width;
 
@@ -2027,12 +2073,6 @@ ipc_window_resize_absolute(uint32_t *d)
 
 	w = d[0];
 	h = d[1];
-
-	if (focused_win->max_width != 0 && w > focused_win->max_width)
-		w = focused_win->max_width;
-
-	if (focused_win->max_height != 0 && h > focused_win->max_height)
-		h = focused_win->max_height;
 
 	if (focused_win->min_width != 0 && w < focused_win->min_width)
 		w = focused_win->min_width;
@@ -2074,12 +2114,9 @@ ipc_window_hor_maximize(uint32_t *d)
 	(void)(d);
 	int16_t mon_x, mon_y;
 	uint16_t mon_w;
-	bool was_hmaxed;
 
 	if (focused_win == NULL)
 		return;
-
-	was_hmaxed = focused_win->hmaxed;
 
 	if (focused_win->hmaxed) {
 		unmaximize_window(focused_win);
@@ -2098,12 +2135,9 @@ ipc_window_ver_maximize(uint32_t *d)
 	(void)(d);
 	int16_t mon_x, mon_y;
 	uint16_t mon_h;
-	bool was_hmaxed;
 
 	if (focused_win == NULL)
 		return;
-
-	was_hmaxed = focused_win->hmaxed;
 
 	if (focused_win->vmaxed) {
 		unmaximize_window(focused_win);
@@ -2111,6 +2145,27 @@ ipc_window_ver_maximize(uint32_t *d)
 	} else {
 		get_monitor_size(focused_win, &mon_x, &mon_y, NULL, &mon_h);
 		vmaximize_window(focused_win, mon_y, mon_h);
+	}
+
+	xcb_flush(conn);
+}
+
+static void
+ipc_window_monocle(uint32_t *d)
+{
+	(void)(d);
+	int16_t mon_x, mon_y;
+	uint16_t mon_w, mon_h;
+
+	if (focused_win == NULL)
+		return;
+
+	if (focused_win->monocled) {
+		unmaximize_window(focused_win);
+		set_focused(focused_win);
+	} else {
+		get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
+		monocle_window(focused_win, mon_x, mon_y, mon_w, mon_h);
 	}
 
 	xcb_flush(conn);
@@ -2141,7 +2196,8 @@ ipc_window_put_in_grid(uint32_t *d)
 	if (focused_win == NULL || grid_x >= grid_width || grid_y >= grid_height)
 		return;
 
-	if (focused_win->maxed || focused_win->vmaxed || focused_win->hmaxed) {
+	if (focused_win->maxed || focused_win->vmaxed
+			|| focused_win->hmaxed || focused_win->monocled) {
 		unmaximize_window(focused_win);
 		set_focused(focused_win);
 	}
