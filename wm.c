@@ -1010,7 +1010,7 @@ monocle_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mon
 	client->geom.width = mon_width - 2 * conf.border_width
 		- conf.gap_left - conf.gap_right;
 	client->geom.height = mon_height - 2 * conf.border_width
-		- conf.gap_left - conf.gap_right;
+		- conf.gap_up - conf.gap_down;
 	teleport_window(client->window, client->geom.x, client->geom.y);
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
 	client->monocled = true;
