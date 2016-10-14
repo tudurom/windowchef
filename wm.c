@@ -1908,7 +1908,7 @@ event_motion_notify(xcb_generic_event_t *ev)
 	ptr = xcb_query_pointer_reply(conn,
 			xcb_query_pointer(conn, scr->root), NULL);
 
-	if (hovered_client == NULL || ptr == NULL)
+	if (hovered_client == NULL || hovered_client->maxed || ptr == NULL)
 		return;
 
 	switch (current_mouse_mode) {
