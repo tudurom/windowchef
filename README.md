@@ -23,6 +23,21 @@ Windowchef is written in C with the help of the XCB library for
 communicating with the X server. It supports randr and a subset of ewmh and
 icccm.
 
+Rationale
+---------
+
+Window managers are spreading like rats these days (I may be wrong). So what do you want to achieve with this one?
+
+What I want to achieve by writing windowchef is a simple window manager that
+provides basic functionality for a more minimal, yet comfortable workflow while
+being easily extensible using the standard UNIX way: shell scripts. Cool
+features like sorting windows by size on a specific monitor are not
+included in windowchef. Instead, the user is encouraged to write a script that
+does this using available tools like [wmutils](https://github.com/wmutils)
+for window manipulation and [disputils](https://arcetera.moe/git/disputils/log.html) for getting information regarding randr outputs.
+
+Have fun!
+
 Usage
 -----
 
