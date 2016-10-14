@@ -1818,7 +1818,7 @@ event_client_message(xcb_generic_event_t *ev)
 			(ipc_handlers[ipc_command])(data + 1);
 		DMSG("%u %u %u %u %u\n", data[0], data[1], data[2], data[3], data[4]);
 	} else if (e->type == ewmh->_NET_WM_STATE && e->format == 32) {
-		/* A window change its state */
+		/* A window changed its state */
 		client = find_client(&e->window);
 		if (client == NULL)
 			return;
@@ -1862,6 +1862,12 @@ event_client_message(xcb_generic_event_t *ev)
 							vmaximize_window(client, mon_y, mon_h);
 						else if (var == &hmaxed)
 							hmaximize_window(client, mon_x, mon_w);
+						xcb_atom_t data[] = {
+							state,
+							XCB_NONE
+						};
+						DMSG("wm state set to %d\n", data[0]);
+						xcb_ewmh_set_wm_state(ewmh, client->window, 2, data);
 					} else {
 						unmaximize_window(client);
 						set_focused(client);
