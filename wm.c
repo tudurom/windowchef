@@ -646,6 +646,8 @@ setup_window(xcb_window_t win)
 		client->min_height = hints.min_height;
 	}
 
+	DMSG("new window was born 0x%08x\n", client->window);
+
 	return client;
 }
 
@@ -1677,23 +1679,26 @@ event_map_request(xcb_generic_event_t *ev)
 		XCB_NONE,
 	};
 
-	/* window wants to magically show up. we prohibit that */
-	if (find_client(&e->window) != NULL)
-		return;
+	/* create window if new */
+	client = find_client(&e->window);
+	if (client == NULL) {
+		client = setup_window(e->window);
+
+		if (!client->geom.set_by_user) {
+			if (!get_pointer_location(&scr->root, &client->geom.x, &client->geom.y))
+				client->geom.x = client->geom.y = 0;
+
+			client->geom.x -= client->geom.width / 2;
+			client->geom.y -= client->geom.height / 2;
+			teleport_window(client->window, client->geom.x, client->geom.y);
+		}
+	}
 
 	xcb_map_window(conn, e->window);
-	client = setup_window(e->window);
 
+	/* in case of fire, abort */
 	if (client == NULL)
 		return;
-	if (!client->geom.set_by_user) {
-		if (!get_pointer_location(&scr->root, &client->geom.x, &client->geom.y))
-			client->geom.x = client->geom.y = 0;
-
-		client->geom.x -= client->geom.width / 2;
-		client->geom.y -= client->geom.height / 2;
-		teleport_window(client->window, client->geom.x, client->geom.y);
-	}
 
 	if (randr_base != -1) {
 		client->monitor = find_monitor_by_coord(client->geom.x, client->geom.y);
