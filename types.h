@@ -58,6 +58,7 @@ struct conf {
 	enum position cursor_position;
 	uint32_t groups;
 	bool sloppy_focus;
+	bool use_workspaces;
 };
 
 #endif

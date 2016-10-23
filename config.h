@@ -3,6 +3,8 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+#define INITIAL_GROUP 0
+
 #define BORDER_WIDTH 5
 
 /* colors are HTML colors that start in "0x" instead of "#" */
@@ -23,5 +25,8 @@
 
 /* focus windows after hovering them with the pointer */
 #define SLOPPY_FOCUS true
+
+/* use workspaces instead of groups */
+#define USE_WORKSPACES false
 
 #endif

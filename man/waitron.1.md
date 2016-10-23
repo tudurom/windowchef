@@ -140,7 +140,7 @@ are:
 
 * `color_focused`, `color_unfocused` <color>:
 	Sets the border color to <color> for the focused and unfocused state respectively.
-	<color> is a hexadecimal value that may or may not start witht he `0x`
+	<color> is a hexadecimal value that may or may not start with `0x`
 	prefix. Example: `0x1234ef`.
 
 * `gap_width` <POSITION> <width>:
@@ -160,6 +160,19 @@ are:
 
 * `enable_sloppy_focus` <BOOL>:
 	Enable sloppy focus.
+
+* `use_workspaces` <BOOL>:
+	Use workspaces instead of groups if <BOOL> is true.
+
+	When using workspaces, `group_*` commands have special behavior.
+
+	`group_add_window` hides the window if the workspace where it's being added
+	is not active.
+
+	`group_activate` leaves only the specified workspace active. All other
+	workspaces/groups are deactivated.
+
+	`group_toggle` behaves like `group_activate`.
 
 ## SEE ALSO
 

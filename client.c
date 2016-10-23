@@ -69,14 +69,15 @@ static struct Command c[] = {
 };
 
 static struct ConfigEntry configs[] = {
-	{ "border_width"        , IPCConfigBorderWidth       , fn_naturals } ,
-	{ "color_focused"       , IPCConfigColorFocused      , fn_hex      } ,
-	{ "color_unfocused"     , IPCConfigColorUnfocused    , fn_hex      } ,
-	{ "gap_width"           , IPCConfigGapWidth          , fn_gap      } ,
-	{ "grid_gap_width"      , IPCConfigGridGapWidth      , fn_naturals } ,
-	{ "cursor_position"     , IPCConfigCursorPosition    , fn_position } ,
-	{ "groups_nr"           , IPCConfigGroupsNr          , fn_naturals } ,
-	{ "enable_sloppy_focus" , IPCConfigEnableSloppyFocus , fn_bool     } ,
+	{ "border_width"        , IPCConfigBorderWidth       , fn_naturals },
+	{ "color_focused"       , IPCConfigColorFocused      , fn_hex      },
+	{ "color_unfocused"     , IPCConfigColorUnfocused    , fn_hex      },
+	{ "gap_width"           , IPCConfigGapWidth          , fn_gap      },
+	{ "grid_gap_width"      , IPCConfigGridGapWidth      , fn_naturals },
+	{ "cursor_position"     , IPCConfigCursorPosition    , fn_position },
+	{ "groups_nr"           , IPCConfigGroupsNr          , fn_naturals },
+	{ "enable_sloppy_focus" , IPCConfigEnableSloppyFocus , fn_bool     },
+	{ "use_workspaces"      , IPCConfigUseWorkspaces     , fn_bool     },
 };
 
 static bool

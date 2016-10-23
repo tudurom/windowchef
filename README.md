@@ -62,8 +62,11 @@ Features
 * cwm-like window groups
 	* Add or remove windows to a group
 	* Activate/Deactivate/Toggle a group
+* Workspaces instead of groups if you want
+* Mouse mode that can be either active or inactive. While active, the window is
+	moved/resized on click to the coordinates of the mouse pointer.
 * Simple and stylish solid-color border. Width can be configured
-* Gaps around the monitor
+* Gaps around the monitor and around the cells of the virtual grid(s).
 * Configuration script. Windowchef loads a given script at startup that can be
 	used for configuration with waitron.
 * 100% compatible with window management utilities (e.g. [wmutils](https://github.com/wmutils/)). Windowchef will update its internal state if programs attempt to manage windows. It also applies the correct window decorations when a program focuses a window. This makes it possible to use it as a "backend" with wm utilities.
@@ -82,6 +85,12 @@ at the same time.
 
 Windowchef allows you to add/remove windows to/from groups, show groups, hide
 groups or toggle them.
+
+### Workspaces
+
+Instead of using groups, you may want to enable workspaces. Workspaces are, in
+fact, groups with the particularity that only one workspace can be active at the
+same time.
 
 ### Virtual grids
 

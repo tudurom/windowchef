@@ -2337,8 +2337,25 @@ ipc_window_focus(uint32_t *d)
 static void
 ipc_group_add_window(uint32_t *d)
 {
-	if (focused_win != NULL)
+	bool in_use;
+	unsigned int i;
+
+	if (focused_win != NULL) {
+		if (conf.use_workspaces) {
+			i = 0;
+			while (i < conf.groups && !group_in_use[i])
+				i++;
+
+			/* if no group is active, activate the first one */
+			if (i >= conf.groups)
+				group_activate(INITIAL_GROUP);
+			in_use = group_in_use[d[0] - 1];
+		}
+
 		group_add_window(focused_win, d[0] - 1);
+		if (conf.use_workspaces && !in_use)
+			group_deactivate(d[0] - 1);
+	}
 }
 
 static void
@@ -2353,6 +2370,12 @@ static void
 ipc_group_activate(uint32_t *d)
 {
 	group_activate(d[0] - 1);
+	if (conf.use_workspaces) {
+		/* if we're using workspaces, leave only the current group active */
+		for (unsigned int i = 0; i < conf.groups; i++)
+			if (i != d[0] - 1)
+				group_deactivate(i);
+	}
 }
 
 static void
@@ -2364,7 +2387,11 @@ ipc_group_deactivate(uint32_t *d)
 static void
 ipc_group_toggle(uint32_t *d)
 {
-	group_toggle(d[0] - 1);
+	/* no such thing as toggling for workspaces */
+	if (conf.use_workspaces)
+		ipc_group_activate(d);
+	else
+		group_toggle(d[0] - 1);
 }
 
 static void
@@ -2433,6 +2460,9 @@ ipc_wm_config(uint32_t *d)
 		case IPCConfigEnableSloppyFocus:
 			conf.sloppy_focus = d[1];
 			break;
+		case IPCConfigUseWorkspaces:
+			conf.use_workspaces = d[1];
+			break;
 		default:
 			break;
 	}
@@ -2460,6 +2490,7 @@ load_defaults(void)
 	conf.cursor_position = CURSOR_POSITION;
 	conf.groups          = GROUPS;
 	conf.sloppy_focus    = SLOPPY_FOCUS;
+	conf.use_workspaces  = USE_WORKSPACES;
 }
 
 static void

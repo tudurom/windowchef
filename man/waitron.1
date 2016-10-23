@@ -160,7 +160,7 @@ Sets the border width to \fIwidth\fR pixels\.
 .
 .TP
 \fBcolor_focused\fR, \fBcolor_unfocused\fR \fIcolor\fR
-Sets the border color to \fIcolor\fR for the focused and unfocused state respectively\. \fIcolor\fR is a hexadecimal value that may or may not start witht he \fB0x\fR prefix\. Example: \fB0x1234ef\fR\.
+Sets the border color to \fIcolor\fR for the focused and unfocused state respectively\. \fIcolor\fR is a hexadecimal value that may or may not start with \fB0x\fR prefix\. Example: \fB0x1234ef\fR\.
 .
 .TP
 \fBgap_width\fR \fIPOSITION\fR \fIwidth\fR
@@ -181,6 +181,22 @@ Sets the number of groups to \fInr\fR\. If \fInr\fR is less than the current num
 .TP
 \fBenable_sloppy_focus\fR \fIBOOL\fR
 Enable sloppy focus\.
+.
+.TP
+\fBuse_workspaces\fR \fIBOOL\fR
+Use workspaces instead of groups if \fIBOOL\fR is true\.
+.
+.IP
+When using workspaces, \fBgroup_*\fR commands have special behavior\.
+.
+.IP
+\fBgroup_add_window\fR hides the window if the workspace where it\'s being added is not active\.
+.
+.IP
+\fBgroup_activate\fR leaves only the specified workspace active\. All other workspaces/groups are deactivated\.
+.
+.IP
+\fBgroup_toggle\fR behaves like \fBgroup_activate\fR\.
 .
 .SH "SEE ALSO"
 windowchef(1), sxhkd(1), wmutils(1), pfw(1), lsw(1)
