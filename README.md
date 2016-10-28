@@ -49,6 +49,35 @@ a shell script that calls `waitron wm_config` for configuration. See the
 manual page for `waitron(1)` for details regarding this topic.
 
 
+Dependencies
+------------
+
+Windowchef depends on `xcb` to communicate with the X11 server, `xcb-randr` to
+gather information about connected displays and `xcb-util-wm` for ewmh and icccm helper functions.
+
+I couldn't find compiled documentation for `xcb-util-wm` so I compiled it and
+put it on my website [here](http://thetudor.ddns.net/res).
+
+Building windowchef and installing it
+-------------------------------------
+
+Available in the AUR:
+
+* [windowchef](https://aur.archlinux.org/packages/windowchef/)
+* [windowchef-git](https://aur.archlinux.org/packages/windowchef-git/)
+
+First, you may need to tweak the search path for some operating systems (e.g.
+OpenBSD) in `config.mk`.
+
+Then, just `make` it:
+
+```bash
+$ make
+$ sudo make install
+```
+The `Makefile` respects the `DESTDIR` and `PREFIX` variables.
+
+
 Features
 --------
 
@@ -117,30 +146,6 @@ windows with the `_NET_WM_WINDOW_TYPE_DOCK` type. Panels can get
 information about the state of the window manager through ewmh properties.
 
 Tested with [lemonbar](https://github.com/lemonboy/bar).
-
-Dependencies
-------------
-
-Windowchef depends on `xcb` to communicate with the X11 server, `xcb-randr` to
-gather information about connected displays and `xcb-util-wm` for ewmh and icccm helper functions.
-
-I couldn't find compiled documentation for `xcb-util-wm` so I compiled it and
-put it on my website [here](http://thetudor.ddns.net/res).
-
-Building windowchef and installing it
--------------------------------------
-
-First, you may need to tweak the search path for some operating systems (e.g.
-OpenBSD) in `config.mk`.
-
-Then, just `make` it:
-
-```bash
-$ make
-$ sudo make install
-```
-The `Makefile` respects the `DESTDIR` and `PREFIX` variables.
-
 
 Thanks
 ------
