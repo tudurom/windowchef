@@ -24,9 +24,6 @@
 /* focus windows after hovering them with the pointer */
 #define SLOPPY_FOCUS true
 
-/* use workspaces instead of groups */
-#define USE_WORKSPACES false
-
 /* if true, new windows will be assigned to the last activated group */
 #define STICKY_WINDOWS false
 
