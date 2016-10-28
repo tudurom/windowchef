@@ -1,9 +1,9 @@
-windowchef(1) -- A static window cooker
+windowchef(1) -- A stacking window cooker
 =====================================
 
 ## SYNOPSIS
 
-`windowchef` [-h]
+`windowchef` [-h|-c <config_path>]
 
 ## DESCRIPTION
 
@@ -12,7 +12,7 @@ pointer inputs. It is controlled and configured by `waitron`.
 
 At startup,
 `windowchef` runs a script located at `$XDG_CONFIG_HOME/windowchef/windowchefrc`
-(`$XDG_CONFIG_HOME` is usually `~/.config`). The path of the config file can be
+(`$XDG_CONFIG_HOME` is usually `~/.config`). The path of the configuration file can be
 overridden with the `-c` flag.
 
 ## OPTIONS

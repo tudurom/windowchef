@@ -41,6 +41,7 @@ static int  randr_base;
 static bool halt;
 static int  exit_code;
 static bool *group_in_use = NULL;
+static int  last_group = 0;
 static enum mouse_mode current_mouse_mode = MOUSE_NONE;
 static struct client * hovered_client = NULL;
 static bool hovering_mouse = false;
@@ -1429,6 +1430,7 @@ group_activate(uint32_t group) {
 		}
 	}
 	group_in_use[group] = true;
+	last_group = group;
 }
 
 static void
@@ -1692,6 +1694,8 @@ event_map_request(xcb_generic_event_t *ev)
 			client->geom.y -= client->geom.height / 2;
 			teleport_window(client->window, client->geom.x, client->geom.y);
 		}
+		if (conf.sticky_windows)
+			group_add_window(client, last_group);
 	}
 
 	xcb_map_window(conn, e->window);
@@ -2337,25 +2341,8 @@ ipc_window_focus(uint32_t *d)
 static void
 ipc_group_add_window(uint32_t *d)
 {
-	bool in_use;
-	unsigned int i;
-
-	if (focused_win != NULL) {
-		if (conf.use_workspaces) {
-			i = 0;
-			while (i < conf.groups && !group_in_use[i])
-				i++;
-
-			/* if no group is active, activate the first one */
-			if (i >= conf.groups)
-				group_activate(INITIAL_GROUP);
-			in_use = group_in_use[d[0] - 1];
-		}
-
+	if (focused_win!= NULL)
 		group_add_window(focused_win, d[0] - 1);
-		if (conf.use_workspaces && !in_use)
-			group_deactivate(d[0] - 1);
-	}
 }
 
 static void
@@ -2370,28 +2357,18 @@ static void
 ipc_group_activate(uint32_t *d)
 {
 	group_activate(d[0] - 1);
-	if (conf.use_workspaces) {
-		/* if we're using workspaces, leave only the current group active */
-		for (unsigned int i = 0; i < conf.groups; i++)
-			if (i != d[0] - 1)
-				group_deactivate(i);
-	}
 }
 
 static void
 ipc_group_deactivate(uint32_t *d)
 {
-	group_activate(d[0] - 1);
+	group_deactivate(d[0] - 1);
 }
 
 static void
 ipc_group_toggle(uint32_t *d)
 {
-	/* no such thing as toggling for workspaces */
-	if (conf.use_workspaces)
-		ipc_group_activate(d);
-	else
-		group_toggle(d[0] - 1);
+	group_toggle(d[0] - 1);
 }
 
 static void
@@ -2460,8 +2437,8 @@ ipc_wm_config(uint32_t *d)
 		case IPCConfigEnableSloppyFocus:
 			conf.sloppy_focus = d[1];
 			break;
-		case IPCConfigUseWorkspaces:
-			conf.use_workspaces = d[1];
+		case IPCConfigStickyWindows:
+			conf.sticky_windows = d[1];
 			break;
 		default:
 			break;
@@ -2471,7 +2448,7 @@ ipc_wm_config(uint32_t *d)
 static void
 usage(char *name)
 {
-	fprintf(stderr, "Usage: %s [-h]\n", name);
+	fprintf(stderr, "Usage: %s [-h|-c CONFIG_PATH]\n", name);
 	fprintf(stderr, "\n");
 	fprintf(stderr, "%s %s\n", __NAME__, __THIS_VERSION__);
 
@@ -2490,7 +2467,7 @@ load_defaults(void)
 	conf.cursor_position = CURSOR_POSITION;
 	conf.groups          = GROUPS;
 	conf.sloppy_focus    = SLOPPY_FOCUS;
-	conf.use_workspaces  = USE_WORKSPACES;
+	conf.sticky_windows  = STICKY_WINDOWS;
 }
 
 static void

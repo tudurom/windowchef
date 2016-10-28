@@ -3,8 +3,6 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#define INITIAL_GROUP 0
-
 #define BORDER_WIDTH 5
 
 /* colors are HTML colors that start in "0x" instead of "#" */
@@ -28,5 +26,8 @@
 
 /* use workspaces instead of groups */
 #define USE_WORKSPACES false
+
+/* if true, new windows will be assigned to the last activated group */
+#define STICKY_WINDOWS false
 
 #endif

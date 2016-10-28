@@ -148,7 +148,7 @@ Change the number of maximum groups to \fInumber_of_groups\fR\.
 Windows that belong to a group that has a \fIgroup_nr\fR greater or equal to \fInumber_of_groups\fR will become orphaned\.
 .
 .TP
-\fBwm_config\fR \fIkey\fR [\fIvalue\fR\.\.\.]
+\fBwm_config\fR \fIkey\fR [\fIvalues\fR\.\.\.]
 See \fICONFIGURING\fR\.
 .
 .SH "CONFIGURING"
@@ -183,20 +183,8 @@ Sets the number of groups to \fInr\fR\. If \fInr\fR is less than the current num
 Enable sloppy focus\.
 .
 .TP
-\fBuse_workspaces\fR \fIBOOL\fR
-Use workspaces instead of groups if \fIBOOL\fR is true\.
-.
-.IP
-When using workspaces, \fBgroup_*\fR commands have special behavior\.
-.
-.IP
-\fBgroup_add_window\fR hides the window if the workspace where it\'s being added is not active\.
-.
-.IP
-\fBgroup_activate\fR leaves only the specified workspace active\. All other workspaces/groups are deactivated\.
-.
-.IP
-\fBgroup_toggle\fR behaves like \fBgroup_activate\fR\.
+\fBsticky_windows\fR \fIBOOL\fR
+If \fIsticky_windows\fR is true, new windows will be assigned to the last activated group automatically\. Recommended for people who like using workspaces over groups\.
 .
 .SH "SEE ALSO"
 windowchef(1), sxhkd(1), wmutils(1), pfw(1), lsw(1)

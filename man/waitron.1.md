@@ -127,7 +127,7 @@ anything on `stdout`.
 	Windows that belong to a group that has a <group_nr> greater or equal to
 	<number_of_groups> will become orphaned.
 
-* `wm_config` <key> [<value>...]:
+* `wm_config` <key> [<values>...]:
 	See [CONFIGURING][].
 
 ## CONFIGURING
@@ -161,18 +161,10 @@ are:
 * `enable_sloppy_focus` <BOOL>:
 	Enable sloppy focus.
 
-* `use_workspaces` <BOOL>:
-	Use workspaces instead of groups if <BOOL> is true.
-
-	When using workspaces, `group_*` commands have special behavior.
-
-	`group_add_window` hides the window if the workspace where it's being added
-	is not active.
-
-	`group_activate` leaves only the specified workspace active. All other
-	workspaces/groups are deactivated.
-
-	`group_toggle` behaves like `group_activate`.
+* `sticky_windows` <BOOL>:
+	If <sticky_windows> is true, new windows will be assigned to the last
+	activated group automatically. Recommended for people who like using
+	workspaces over groups.
 
 ## SEE ALSO
 

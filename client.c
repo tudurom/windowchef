@@ -77,7 +77,7 @@ static struct ConfigEntry configs[] = {
 	{ "cursor_position"     , IPCConfigCursorPosition    , fn_position },
 	{ "groups_nr"           , IPCConfigGroupsNr          , fn_naturals },
 	{ "enable_sloppy_focus" , IPCConfigEnableSloppyFocus , fn_bool     },
-	{ "use_workspaces"      , IPCConfigUseWorkspaces     , fn_bool     },
+	{ "sticky_windows"      , IPCConfigStickyWindows     , fn_bool     },
 };
 
 static bool

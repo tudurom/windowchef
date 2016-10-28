@@ -47,7 +47,7 @@ enum IPCConfig {
 	IPCConfigCursorPosition,
 	IPCConfigGroupsNr,
 	IPCConfigEnableSloppyFocus,
-	IPCConfigUseWorkspaces,
+	IPCConfigStickyWindows,
 	NR_IPC_CONFIGS
 };
 

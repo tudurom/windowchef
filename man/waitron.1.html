@@ -150,7 +150,7 @@ anything on <code>stdout</code>.</p>
 
 <p>  Windows that belong to a group that has a <var>group_nr</var> greater or equal to
   <var>number_of_groups</var> will become orphaned.</p></dd>
-<dt><code>wm_config</code> <var>key</var> [<var>value</var>...]</dt><dd><p>  See <a href="#CONFIGURING" title="CONFIGURING" data-bare-link="true">CONFIGURING</a>.</p></dd>
+<dt><code>wm_config</code> <var>key</var> [<var>values</var>...]</dt><dd><p>  See <a href="#CONFIGURING" title="CONFIGURING" data-bare-link="true">CONFIGURING</a>.</p></dd>
 </dl>
 
 
@@ -172,17 +172,9 @@ are:</p>
   of groups, window that belong to groups whose numbers are greater than <var>nr</var>
   will be mapped to screen and assigned to the null group.</p></dd>
 <dt><code>enable_sloppy_focus</code> <var>BOOL</var></dt><dd><p>  Enable sloppy focus.</p></dd>
-<dt><code>use_workspaces</code> <var>BOOL</var></dt><dd><p>  Use workspaces instead of groups if <var>BOOL</var> is true.</p>
-
-<p>  When using workspaces, <code>group_*</code> commands have special behavior.</p>
-
-<p>  <code>group_add_window</code> hides the window if the workspace where it's being added
-  is not active.</p>
-
-<p>  <code>group_activate</code> leaves only the specified workspace active. All other
-  workspaces/groups are deactivated.</p>
-
-<p>  <code>group_toggle</code> behaves like <code>group_activate</code>.</p></dd>
+<dt><code>sticky_windows</code> <var>BOOL</var></dt><dd><p>  If <var>sticky_windows</var> is true, new windows will be assigned to the last
+  activated group automatically. Recommended for people who like using
+  workspaces over groups.</p></dd>
 </dl>
 
 
