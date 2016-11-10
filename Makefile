@@ -3,7 +3,7 @@ include config.mk
 __NAME__ = windowchef
 __NAME_CLIENT__ = waitron
 __CONFIG_NAME__ = windowchefrc
-__THIS_VERSION__ = 0.1
+__THIS_VERSION__ = 0.2.1
 NAME_DEFINES = -D__NAME__=\"$(__NAME__)\"                 \
 			   -D__NAME_CLIENT__=\"$(__NAME_CLIENT__)\"   \
 			   -D__THIS_VERSION__=\"$(__THIS_VERSION__)\" \
