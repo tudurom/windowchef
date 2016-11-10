@@ -7,4 +7,5 @@ sleep 1
 
 export DISPLAY=:$D
 sxhkd -c .sxhkdrc &
-exec ./windowchef -c windowchefrc
+#exec ./windowchef -c windowchefrc
+xterm

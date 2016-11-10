@@ -1686,6 +1686,10 @@ event_map_request(xcb_generic_event_t *ev)
 	if (client == NULL) {
 		client = setup_window(e->window);
 
+		/* client is a dock or some kind of window that needs to be ignored */
+		if (client == NULL)
+			return;
+
 		if (!client->geom.set_by_user) {
 			if (!get_pointer_location(&scr->root, &client->geom.x, &client->geom.y))
 				client->geom.x = client->geom.y = 0;
