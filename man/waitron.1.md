@@ -109,6 +109,9 @@ anything on `stdout`.
 * `group_toggle` <group_nr>:
 	Toggle the <group_nr> group.
 
+* `group_activate_specific` <group_nr>:
+	Activate group <group_nr> and deactivate the rest.
+
 * `mouse_start` <MOUSE>:
 	Start tracking the pointer to move/resize the mouse.
 

@@ -61,6 +61,7 @@ static struct Command c[] = {
 	{ "group_activate"            , IPCGroupActivate         ,  1 , fn_naturals } ,
 	{ "group_deactivate"          , IPCGroupDeactivate       ,  1 , fn_naturals } ,
 	{ "group_toggle"              , IPCGroupToggle           ,  1 , fn_naturals } ,
+	{ "group_activate_specific"   , IPCGroupActivateSpecific ,  1 , fn_naturals } ,
 	{ "mouse_start"               , IPCMouseStart            ,  1 , fn_mouse    } ,
 	{ "mouse_stop"                , IPCMouseStop             ,  0 , NULL        } ,
 	{ "mouse_toggle"              , IPCMouseToggle           ,  1 , fn_mouse    } ,

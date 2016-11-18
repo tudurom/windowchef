@@ -21,7 +21,7 @@
 #include "config.h"
 
 #define EVENT_MASK(ev) ((ev & ~0x80))
-/* XCB event with the biggest values */
+/* XCB event with the biggest value */
 #define LAST_XCB_EVENT XCB_GET_MODIFIER_MAPPING
 #define NULL_GROUP 0xffffffff
 
@@ -108,6 +108,7 @@ static void group_remove_window(struct client *);
 static void group_activate(uint32_t);
 static void group_deactivate(uint32_t);
 static void group_toggle(uint32_t);
+static void group_activate_specific(uint32_t);
 static void change_nr_of_groups(uint32_t);
 static void mouse_start(enum mouse_mode);
 static void mouse_stop(void);
@@ -147,6 +148,7 @@ static void ipc_group_remove_window(uint32_t *);
 static void ipc_group_activate(uint32_t *);
 static void ipc_group_deactivate(uint32_t *);
 static void ipc_group_toggle(uint32_t *);
+static void ipc_group_activate_specific(uint32_t *);
 static void ipc_mouse_start(uint32_t *);
 static void ipc_mouse_stop(uint32_t *);
 static void ipc_mouse_toggle(uint32_t *);
@@ -1419,6 +1421,9 @@ group_remove_window(struct client *client)
 
 static void
 group_activate(uint32_t group) {
+	if (group >= conf.groups)
+		return;
+
 	struct list_item *item;
 	struct client *client;
 
@@ -1436,6 +1441,9 @@ group_activate(uint32_t group) {
 static void
 group_deactivate(uint32_t group)
 {
+	if (group >= conf.groups)
+		return;
+
 	struct list_item *item;
 	struct client *client;
 
@@ -1450,10 +1458,27 @@ group_deactivate(uint32_t group)
 static void
 group_toggle(uint32_t group)
 {
+	if (group >= conf.groups)
+		return;
+
 	if (group_in_use[group])
 		group_deactivate(group);
 	else
 		group_activate(group);
+}
+
+static void
+group_activate_specific(uint32_t group)
+{
+	if (group >= conf.groups)
+		return;
+
+	for (unsigned int i = 0; i < conf.groups; i++) {
+		if (i == group)
+			group_activate(i);
+		else
+			group_deactivate(i);
+	}
 }
 
 static void
@@ -1987,6 +2012,7 @@ register_ipc_handlers(void)
 	ipc_handlers[IPCGroupActivate]         = ipc_group_activate;
 	ipc_handlers[IPCGroupDeactivate]       = ipc_group_deactivate;
 	ipc_handlers[IPCGroupToggle]           = ipc_group_toggle;
+	ipc_handlers[IPCGroupActivateSpecific] = ipc_group_activate_specific;
 	ipc_handlers[IPCMouseStart]            = ipc_mouse_start;
 	ipc_handlers[IPCMouseStop]             = ipc_mouse_stop;
 	ipc_handlers[IPCMouseToggle]           = ipc_mouse_toggle;
@@ -2373,6 +2399,12 @@ static void
 ipc_group_toggle(uint32_t *d)
 {
 	group_toggle(d[0] - 1);
+}
+
+static void
+ipc_group_activate_specific(uint32_t *d)
+{
+	group_activate_specific(d[0] - 1);
 }
 
 static void

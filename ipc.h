@@ -30,6 +30,7 @@ enum IPCCommand {
 	IPCGroupActivate,
 	IPCGroupDeactivate,
 	IPCGroupToggle,
+	IPCGroupActivateSpecific,
 	IPCMouseStart,
 	IPCMouseStop,
 	IPCMouseToggle,
