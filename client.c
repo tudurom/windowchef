@@ -327,7 +327,7 @@ int main(int argc, char **argv)
 	if (i < NR_IPC_COMMANDS) {
 		if (c[i].argc != -1) {
 			if (command_argc < c[i].argc)
-				errx(EXIT_FAILURE, "not enough argmuents");
+				errx(EXIT_FAILURE, "not enough arguments");
 			else if (command_argc > c[i].argc)
 				warnx("too many arguments");
 		}
