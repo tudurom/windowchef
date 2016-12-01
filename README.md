@@ -157,5 +157,5 @@ the essentials of X11 development.
 
 Thanks to venam, Michaell Cardell and baskerville for the window managers they
 made: 2bwm, mcwm and bspwm (ironically they all end in wm :). Their
-programs were and still are a very good source of inspirationfor anyone who
+programs were and still are a very good source of inspiration for anyone who
 wants to write a window manager.
