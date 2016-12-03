@@ -563,7 +563,7 @@ run(void)
 		xcb_flush(conn);
 		ev = xcb_wait_for_event(conn);
 		if (ev) {
-			DMSG("%d\n", ev->response_type & ~0x80);
+			DMSG("X Event %d\n", ev->response_type & ~0x80);
 			if (ev->response_type == randr_base + XCB_RANDR_SCREEN_CHANGE_NOTIFY) {
 				get_randr();
 				DMSG("Screen layout changed\n");
@@ -1932,7 +1932,7 @@ event_client_message(xcb_generic_event_t *ev)
 		ipc_command = data[0];
 		if (ipc_handlers[ipc_command] != NULL)
 			(ipc_handlers[ipc_command])(data + 1);
-		DMSG("%u %u %u %u %u\n", data[0], data[1], data[2], data[3], data[4]);
+		DMSG("IPC Command %u with arguments %u %u %u\n", data[1], data[2], data[3], data[4]);
 	} else {
 		client = find_client(&e->window);
 		if (client == NULL)
@@ -2136,7 +2136,6 @@ ipc_window_resize(uint32_t *d)
 		aw = 0;
 	if (ah < 0)
 		ah = 0;
-	DMSG("aw: %d\tah: %d\n", aw, ah);
 
 	if (focused_win->min_width != 0 && aw < focused_win->min_width)
 		aw = focused_win->min_width;
@@ -2304,7 +2303,6 @@ ipc_window_put_in_grid(uint32_t *d)
 			- grid_width * 2 * conf.border_width - conf.gap_left - conf.gap_right) / grid_width;
 	step_y = (mon_h - (grid_width - 1) * conf.grid_gap
 			- grid_width * 2 * conf.border_width - conf.gap_up - conf.gap_down) / grid_height;
-	DMSG("%d %d %d %d %d %d\n", grid_width, grid_height, grid_x, grid_y, step_x, step_y);
 
 	focused_win->geom.width = step_x;
 	focused_win->geom.height = step_y;
