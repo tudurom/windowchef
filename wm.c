@@ -87,6 +87,7 @@ static void hmaximize_window(struct client *, int16_t, uint16_t);
 static void vmaximize_window(struct client *, int16_t, uint16_t);
 static void monocle_window(struct client *, int16_t, int16_t, uint16_t, uint16_t);
 static void unmaximize_window(struct client *);
+static bool is_maxed(struct client *);
 static void cycle_window(struct client *);
 static void rcycle_window(struct client *);
 static void cycle_window_in_group(struct client *);
@@ -113,6 +114,8 @@ static void change_nr_of_groups(uint32_t);
 static void mouse_start(enum mouse_mode);
 static void mouse_stop(void);
 static void mouse_toggle(enum mouse_mode);
+static void update_ewmh_wm_state(struct client *);
+static void handle_wm_state(struct client *, xcb_atom_t, unsigned int);
 static void register_event_handlers(void);
 static void event_configure_request(xcb_generic_event_t *);
 static void event_destroy_notify(xcb_generic_event_t *);
@@ -671,10 +674,6 @@ set_focused_no_raise(struct client *client)
 	if (!client->maxed)
 		set_borders(client, conf.focus_color);
 
-	/* revert state to normal */
-	xcb_change_property(conn, XCB_PROP_MODE_REPLACE, client->window,
-			ewmh->_NET_WM_STATE, ewmh->_NET_WM_STATE, 32, 2, data);
-
 	/* focus the window */
 	xcb_set_input_focus(conn, XCB_INPUT_FOCUS_POINTER_ROOT,
 			client->window, XCB_CURRENT_TIME);
@@ -687,8 +686,9 @@ set_focused_no_raise(struct client *client)
 	if (client != focused_win) {
 		if (focused_win != NULL && !focused_win->maxed)
 			set_borders(focused_win, conf.unfocus_color);
-		focused_win = client;
 	}
+
+	focused_win = client;
 }
 
 /*
@@ -917,11 +917,6 @@ static void
 maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mon_width, uint16_t mon_height)
 {
 	uint32_t values[1];
-	xcb_atom_t state[] = {
-		ewmh->_NET_WM_STATE_FULLSCREEN,
-		XCB_NONE
-	};
-
 	if (client == NULL)
 		return;
 
@@ -943,8 +938,9 @@ maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mo
 	teleport_window(client->window, client->geom.x, client->geom.y);
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
 	client->maxed = true;
-	xcb_ewmh_set_wm_state(ewmh, client->window, 2, state);
 	set_focused_no_raise(client);
+
+	update_ewmh_wm_state(client);
 }
 
 static void
@@ -952,11 +948,6 @@ hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width)
 {
 	if (client == NULL)
 		return;
-
-	xcb_atom_t state[] = {
-		ewmh->_NET_WM_STATE_MAXIMIZED_HORZ,
-		XCB_NONE
-	};
 
 	if (client->maxed || client->vmaxed || client->monocled)
 		unmaximize_window(client);
@@ -970,7 +961,7 @@ hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width)
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
 	client->hmaxed = true;
 
-	xcb_ewmh_set_wm_state(ewmh, client->window, 2, state);
+	update_ewmh_wm_state(client);
 }
 
 static void
@@ -978,11 +969,6 @@ vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height)
 {
 	if (client == NULL)
 		return;
-
-	xcb_atom_t state[] = {
-		ewmh->_NET_WM_STATE_MAXIMIZED_VERT,
-		XCB_NONE
-	};
 
 	if (client->maxed || client->hmaxed || client->monocled)
 		unmaximize_window(client);
@@ -996,7 +982,8 @@ vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height)
 	teleport_window(client->window, client->geom.x, client->geom.y);
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
 	client->vmaxed = true;
-	xcb_ewmh_set_wm_state(ewmh, client->window, 2, state);
+
+	update_ewmh_wm_state(client);
 }
 
 static void
@@ -1020,6 +1007,8 @@ monocle_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mon
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
 	client->monocled = true;
 	set_focused_no_raise(client);
+
+	update_ewmh_wm_state(client);
 }
 
 static void
@@ -1038,8 +1027,22 @@ unmaximize_window(struct client *client)
 
 	teleport_window(client->window, client->geom.x, client->geom.y);
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
-	xcb_ewmh_set_wm_state(ewmh, client->window, 2, state);
 	set_borders(client, conf.unfocus_color);
+
+	xcb_change_property(conn, XCB_PROP_MODE_REPLACE, client->window,
+			ewmh->_NET_WM_STATE, ewmh->_NET_WM_STATE, 32, 2, state);
+}
+
+static bool
+is_maxed(struct client *client)
+{
+	if (client == NULL)
+		return false;
+
+	return client->maxed
+		|| client->vmaxed
+		|| client->hmaxed
+		|| client->monocled;
 }
 
 static void
@@ -1544,6 +1547,80 @@ mouse_toggle(enum mouse_mode mode)
 		mouse_start(mode);
 }
 
+static void
+update_ewmh_wm_state(struct client *client)
+{
+	int i;
+	uint32_t values[12];
+
+	if (client == NULL)
+		return;
+#define HANDLE_WM_STATE(s) \
+	values[i] = ewmh->_NET_WM_STATE_##s; \
+	i++; \
+	DMSG("ewmh net_wm_state %s present\n", #s);
+
+	i = 0;
+	if (client->maxed) {
+		HANDLE_WM_STATE(FULLSCREEN);
+	}
+	if (client->vmaxed) {
+		HANDLE_WM_STATE(MAXIMIZED_VERT);
+	}
+	if (client->hmaxed) {
+		HANDLE_WM_STATE(MAXIMIZED_HORZ);
+	}
+
+	xcb_ewmh_set_wm_state(ewmh, client->window, i, values);
+}
+
+static void
+handle_wm_state(struct client *client, xcb_atom_t state, unsigned int action)
+{
+	int16_t mon_x, mon_y;
+	uint16_t mon_w, mon_h;
+	get_monitor_size(client, &mon_x, &mon_y, &mon_w, &mon_h);
+	if (state == ewmh->_NET_WM_STATE_FULLSCREEN) {
+		if (action == XCB_EWMH_WM_STATE_ADD) {
+			maximize_window(client, mon_x, mon_y, mon_w, mon_h);
+		} else if (action == XCB_EWMH_WM_STATE_REMOVE && client->maxed) {
+			unmaximize_window(client);
+			set_focused(client);
+		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
+			if (client->maxed) {
+				unmaximize_window(client);
+				set_focused(client);
+			} else {
+				maximize_window(client, mon_x, mon_y, mon_w, mon_h);
+			}
+		}
+	} else if (state == ewmh->_NET_WM_STATE_MAXIMIZED_VERT) {
+		if (action == XCB_EWMH_WM_STATE_ADD) {
+			vmaximize_window(client, mon_y, mon_h);
+		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
+			if (client->vmaxed)
+				unmaximize_window(client);
+		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
+			if (client->vmaxed)
+				unmaximize_window(client);
+			else
+				vmaximize_window(client, mon_y, mon_h);
+		}
+	} else if (state == ewmh->_NET_WM_STATE_MAXIMIZED_HORZ) {
+		if (action == XCB_EWMH_WM_STATE_ADD) {
+			hmaximize_window(client, mon_y, mon_h);
+		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
+			if (client->hmaxed)
+				unmaximize_window(client);
+		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
+			if (client->hmaxed)
+				unmaximize_window(client);
+			else
+				hmaximize_window(client, mon_x, mon_w);
+		}
+	}
+}
+
 /*
  * Adds X event handlers to the array.
  */
@@ -1741,6 +1818,7 @@ event_map_request(xcb_generic_event_t *ev)
 
 	fit_on_screen(client);
 
+	/* window is normal */
 	xcb_change_property(conn, XCB_PROP_MODE_REPLACE, client->window,
 			ewmh->_NET_WM_STATE, ewmh->_NET_WM_STATE, 32, 2, data);
 
@@ -1855,63 +1933,13 @@ event_client_message(xcb_generic_event_t *ev)
 		if (ipc_handlers[ipc_command] != NULL)
 			(ipc_handlers[ipc_command])(data + 1);
 		DMSG("%u %u %u %u %u\n", data[0], data[1], data[2], data[3], data[4]);
-	} else if (e->type == ewmh->_NET_WM_STATE && e->format == 32) {
-		/* A window changed its state */
+	} else {
 		client = find_client(&e->window);
 		if (client == NULL)
 			return;
-		action = e->data.data32[0];
-		maxed = client->maxed;
-		vmaxed = client->vmaxed;
-		hmaxed = client->hmaxed;
-		get_monitor_size(client, &mon_x, &mon_y, &mon_w, &mon_h);
-
-		/* We handle only two states at the same time */
-		for (int i = 0; i < 2; i++) {
-			xcb_atom_t state = e->data.data32[i + 1];
-			bool *var = NULL, *orig = NULL;
-			if (state == ewmh->_NET_WM_STATE_FULLSCREEN) {
-				var = &maxed;
-				orig = &client->maxed;
-			} else if (state == ewmh->_NET_WM_STATE_MAXIMIZED_VERT) {
-				var = &vmaxed;
-				orig = &client->vmaxed;
-			} else if (state == ewmh->_NET_WM_STATE_MAXIMIZED_HORZ) {
-				var = &hmaxed;
-				orig = &client->hmaxed;
-			}
-			if (var != NULL) {
-				if (action == XCB_EWMH_WM_STATE_REMOVE)
-					*var = false;
-				else if (action == XCB_EWMH_WM_STATE_ADD)
-					*var = true;
-				else if (action == XCB_EWMH_WM_STATE_TOGGLE)
-					*var = !(*var);
-
-				/* if the state changed, update */
-				if (*var != *orig) {
-					/* state added */
-					if (*var) {
-						/* reset */
-						unmaximize_window(client);
-						if (var == &maxed)
-							maximize_window(client, mon_x, mon_y, mon_w, mon_h);
-						else if (var == &vmaxed)
-							vmaximize_window(client, mon_y, mon_h);
-						else if (var == &hmaxed)
-							hmaximize_window(client, mon_x, mon_w);
-						xcb_atom_t data[] = {
-							state,
-							XCB_NONE
-						};
-						DMSG("wm state set to %d\n", data[0]);
-						xcb_ewmh_set_wm_state(ewmh, client->window, 2, data);
-					} else {
-						unmaximize_window(client);
-						set_focused(client);
-					}
-				}
-			}
+		if (e->type == ewmh->_NET_WM_STATE) {
+			handle_wm_state(client, e->data.data32[1], e->data.data32[0]);
+			handle_wm_state(client, e->data.data32[2], e->data.data32[0]);
 		}
 	}
 }
@@ -2028,6 +2056,11 @@ ipc_window_move(uint32_t *d)
 	if (focused_win == NULL)
 		return;
 
+	if (is_maxed(focused_win)) {
+		unmaximize_window(focused_win);
+		set_focused(focused_win);
+	}
+
 	x = d[2];
 	y = d[3];
 if (d[0])
@@ -2049,6 +2082,11 @@ ipc_window_move_absolute(uint32_t *d)
 
 	if (focused_win == NULL)
 		return;
+
+	if (is_maxed(focused_win)) {
+		unmaximize_window(focused_win);
+		set_focused(focused_win);
+	}
 
 	x = d[2];
 	y = d[3];
@@ -2073,6 +2111,11 @@ ipc_window_resize(uint32_t *d)
 
 	if (focused_win == NULL)
 		return;
+
+	if (is_maxed(focused_win)) {
+		unmaximize_window(focused_win);
+		set_focused(focused_win);
+	}
 
 	w = d[2];
 	h = d[3];
@@ -2116,6 +2159,11 @@ ipc_window_resize_absolute(uint32_t *d)
 	if (focused_win == NULL)
 		return;
 
+	if (is_maxed(focused_win)) {
+		unmaximize_window(focused_win);
+		set_focused(focused_win);
+	}
+
 	w = d[0];
 	h = d[1];
 
@@ -2144,11 +2192,12 @@ ipc_window_maximize(uint32_t *d)
 
 	if (focused_win->maxed) {
 		unmaximize_window(focused_win);
-		set_focused(focused_win);
 	} else {
 		get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
 		maximize_window(focused_win, mon_x, mon_y, mon_w, mon_h);
 	}
+
+	set_focused(focused_win);
 
 	xcb_flush(conn);
 }
@@ -2165,11 +2214,12 @@ ipc_window_hor_maximize(uint32_t *d)
 
 	if (focused_win->hmaxed) {
 		unmaximize_window(focused_win);
-		set_focused(focused_win);
 	} else {
 		get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, NULL);
 		hmaximize_window(focused_win, mon_x, mon_w);
 	}
+
+	set_focused(focused_win);
 
 	xcb_flush(conn);
 }
@@ -2186,11 +2236,12 @@ ipc_window_ver_maximize(uint32_t *d)
 
 	if (focused_win->vmaxed) {
 		unmaximize_window(focused_win);
-		set_focused(focused_win);
 	} else {
 		get_monitor_size(focused_win, &mon_x, &mon_y, NULL, &mon_h);
 		vmaximize_window(focused_win, mon_y, mon_h);
 	}
+
+	set_focused(focused_win);
 
 	xcb_flush(conn);
 }
@@ -2207,11 +2258,12 @@ ipc_window_monocle(uint32_t *d)
 
 	if (focused_win->monocled) {
 		unmaximize_window(focused_win);
-		set_focused(focused_win);
 	} else {
 		get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
 		monocle_window(focused_win, mon_x, mon_y, mon_w, mon_h);
 	}
+
+	set_focused(focused_win);
 
 	xcb_flush(conn);
 }
@@ -2241,8 +2293,7 @@ ipc_window_put_in_grid(uint32_t *d)
 	if (focused_win == NULL || grid_x >= grid_width || grid_y >= grid_height)
 		return;
 
-	if (focused_win->maxed || focused_win->vmaxed
-			|| focused_win->hmaxed || focused_win->monocled) {
+	if (is_maxed(focused_win)) {
 		unmaximize_window(focused_win);
 		set_focused(focused_win);
 	}
@@ -2278,6 +2329,11 @@ ipc_window_snap(uint32_t *d)
 
 	if (focused_win == NULL)
 		return;
+
+	if (is_maxed(focused_win)) {
+		unmaximize_window(focused_win);
+		set_focused(focused_win);
+	}
 
 	fit_on_screen(focused_win);
 
