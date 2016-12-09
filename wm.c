@@ -1304,7 +1304,7 @@ get_geometry(xcb_window_t *win, int16_t *x, int16_t *y, uint16_t *width, uint16_
 static void
 set_borders(struct client *client, uint32_t color)
 {
-	if (client == NULL)
+	if (client == NULL || conf.borders == false)
 		return;
 	uint32_t values[1];
 	values[0] = conf.border_width;
@@ -2530,7 +2530,11 @@ ipc_wm_config(uint32_t *d)
 		case IPCConfigStickyWindows:
 			conf.sticky_windows = d[1];
 			break;
+		case IPCConfigEnableBorders:
+			conf.borders = d[1];
+			break;
 		default:
+			DMSG("!!! unhandled config key %d\n", key);
 			break;
 	}
 }
@@ -2558,6 +2562,7 @@ load_defaults(void)
 	conf.groups          = GROUPS;
 	conf.sloppy_focus    = SLOPPY_FOCUS;
 	conf.sticky_windows  = STICKY_WINDOWS;
+	conf.borders         = BORDERS;
 }
 
 static void

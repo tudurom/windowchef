@@ -8,3 +8,4 @@
 ./waitron wm_config groups_nr 4
 ./waitron wm_config enable_sloppy_focus true
 ./waitron wm_config sticky_windows false
+./waitron wm_config enable_borders true

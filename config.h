@@ -27,4 +27,7 @@
 /* if true, new windows will be assigned to the last activated group */
 #define STICKY_WINDOWS false
 
+/* if true, paint borders */
+#define BORDERS true
+
 #endif

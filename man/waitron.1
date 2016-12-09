@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "WAITRON" "1" "November 2016" "" "Windowchef Manual"
+.TH "WAITRON" "1" "December 2016" "" "Windowchef Manual"
 .
 .SH "NAME"
 \fBwaitron\fR \- A client for windowchef(1)
@@ -190,8 +190,12 @@ Enable sloppy focus\.
 \fBsticky_windows\fR \fIBOOL\fR
 If \fIsticky_windows\fR is true, new windows will be assigned to the last activated group automatically\. Recommended for people who like using workspaces over groups\.
 .
+.TP
+\fBenable_borders\fR \fIBOOL\fR
+If true, border colors will be set each time a window gets/loses focus\. Setting it to false is useful when using another program to draw the borders (example: \fBchwb2\fR from wmutils)\.
+.
 .SH "SEE ALSO"
-windowchef(1), sxhkd(1), wmutils(1), pfw(1), lsw(1)
+windowchef(1), sxhkd(1), wmutils(1), pfw(1), lsw(1), chwb2(1), lemonbar(1)
 .
 .SH "AUTHOR"
 Tudor Roman \fB<tudurom at gmail dot com>\fR

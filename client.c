@@ -79,6 +79,7 @@ static struct ConfigEntry configs[] = {
 	{ "groups_nr"           , IPCConfigGroupsNr          , fn_naturals },
 	{ "enable_sloppy_focus" , IPCConfigEnableSloppyFocus , fn_bool     },
 	{ "sticky_windows"      , IPCConfigStickyWindows     , fn_bool     },
+	{ "enable_borders"      , IPCConfigEnableBorders     , fn_bool     },
 };
 
 static bool

@@ -169,9 +169,14 @@ are:
 	activated group automatically. Recommended for people who like using
 	workspaces over groups.
 
+* `enable_borders` <BOOL>:
+	If true, border colors will be set each time a window gets/loses focus.
+	Setting it to false is useful when using another program to draw the borders
+	(example: `chwb2` from wmutils).
+
 ## SEE ALSO
 
-windowchef(1), sxhkd(1), wmutils(1), pfw(1), lsw(1)
+windowchef(1), sxhkd(1), wmutils(1), pfw(1), lsw(1), chwb2(1), lemonbar(1)
 
 ## AUTHOR
 
