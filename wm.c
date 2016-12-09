@@ -1304,14 +1304,16 @@ get_geometry(xcb_window_t *win, int16_t *x, int16_t *y, uint16_t *width, uint16_
 static void
 set_borders(struct client *client, uint32_t color)
 {
-	if (client == NULL || conf.borders == false)
+	if (client == NULL)
 		return;
 	uint32_t values[1];
 	values[0] = conf.border_width;
 	xcb_configure_window(conn, client->window,
 			XCB_CONFIG_WINDOW_BORDER_WIDTH, values);
-	values[0] = color;
-	xcb_change_window_attributes(conn, client->window, XCB_CW_BORDER_PIXEL, values);
+	if (conf.borders == true) {
+		values[0] = color;
+		xcb_change_window_attributes(conn, client->window, XCB_CW_BORDER_PIXEL, values);
+	}
 }
 
 /*
