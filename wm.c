@@ -114,6 +114,7 @@ static void change_nr_of_groups(uint32_t);
 static void mouse_start(enum mouse_mode);
 static void mouse_stop(void);
 static void mouse_toggle(enum mouse_mode);
+static void refresh_borders(void);
 static void update_ewmh_wm_state(struct client *);
 static void handle_wm_state(struct client *, xcb_atom_t, unsigned int);
 static void register_event_handlers(void);
@@ -1550,6 +1551,22 @@ mouse_toggle(enum mouse_mode mode)
 }
 
 static void
+refresh_borders(void)
+{
+	struct list_item *item;
+	struct client *client;
+
+	for (item = win_list; item != NULL; item = item->next) {
+		client = item->data;
+
+		if (client == focused_win)
+			set_borders(client, conf.focus_color);
+		else
+			set_borders(client, conf.unfocus_color);
+	}
+}
+
+static void
 update_ewmh_wm_state(struct client *client)
 {
 	int i;
@@ -2500,12 +2517,15 @@ ipc_wm_config(uint32_t *d)
 	switch (key) {
 		case IPCConfigBorderWidth:
 			conf.border_width = d[1];
+			refresh_borders();
 			break;
 		case IPCConfigColorFocused:
 			conf.focus_color = d[1];
+			refresh_borders();
 			break;
 		case IPCConfigColorUnfocused:
 			conf.unfocus_color = d[1];
+			refresh_borders();
 			break;
 		case IPCConfigGapWidth:
 			switch (d[1]) {
