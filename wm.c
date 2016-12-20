@@ -1471,6 +1471,7 @@ group_toggle(uint32_t group)
 		group_deactivate(group);
 	else
 		group_activate(group);
+	last_group = group;
 }
 
 static void
@@ -2026,6 +2027,10 @@ event_motion_notify(xcb_generic_event_t *ev)
 			resize_window_absolute(hovered_client->window,
 					ptr->root_x - hovered_client->geom.x,
 					ptr->root_y - hovered_client->geom.y);
+			hovered_client->geom.width =
+				ptr->root_x - hovered_client->geom.x;
+			hovered_client->geom.height =
+				ptr->root_y - hovered_client->geom.y;
 		default:
 			break;
 	}

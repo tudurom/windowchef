@@ -91,7 +91,8 @@ Features
 * cwm-like window groups
 	* Add or remove windows to a group
 	* Activate/Deactivate/Toggle a group
-* Workspaces instead of groups if you want
+	* groups can be "sticky": windows are assigned to the currently
+		selected group automatically
 * Mouse mode that can be either active or inactive. While active, the window is
 	moved/resized on click to the coordinates of the mouse pointer.
 * Simple and stylish solid-color border. Width can be configured
@@ -115,11 +116,8 @@ at the same time.
 Windowchef allows you to add/remove windows to/from groups, show groups, hide
 groups or toggle them.
 
-### Workspaces
-
-Instead of using groups, you may want to enable workspaces. Workspaces are, in
-fact, groups with the particularity that only one workspace can be active at the
-same time.
+You can also activate *sticky group mode*. When activated, new windows are
+automatically assigned to the currently selected group.
 
 ### Virtual grids
 
