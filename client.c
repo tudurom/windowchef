@@ -22,7 +22,6 @@ static bool fn_bool(uint32_t *, int, char **);
 static bool fn_config(uint32_t *, int, char **);
 static bool fn_hex(uint32_t *, int, char **);
 static bool fn_position(uint32_t *, int, char **);
-static bool fn_mouse(uint32_t *, int, char **);
 static bool fn_gap(uint32_t *, int, char **);
 
 struct Command {
@@ -62,9 +61,6 @@ static struct Command c[] = {
 	{ "group_deactivate"          , IPCGroupDeactivate       ,  1 , fn_naturals } ,
 	{ "group_toggle"              , IPCGroupToggle           ,  1 , fn_naturals } ,
 	{ "group_activate_specific"   , IPCGroupActivateSpecific ,  1 , fn_naturals } ,
-	{ "mouse_start"               , IPCMouseStart            ,  1 , fn_mouse    } ,
-	{ "mouse_stop"                , IPCMouseStop             ,  0 , NULL        } ,
-	{ "mouse_toggle"              , IPCMouseToggle           ,  1 , fn_mouse    } ,
 	{ "wm_quit"                   , IPCWMQuit                ,  1 , fn_naturals } ,
 	{ "wm_config"                 , IPCWMConfig              , -1 , fn_config   },
 };
@@ -211,25 +207,6 @@ fn_position(uint32_t *data, int argc, char **argv)
 
 	(void)(argc);
 	data[0] = snap_pos;
-
-	return true;
-}
-
-static bool
-fn_mouse(uint32_t *data, int argc, char **argv)
-{
-	char *pos = argv[0];
-	enum mouse_mode mode;
-
-	if (strcasecmp(pos, "move") == 0)
-		mode = MOUSE_MOVE;
-	else if (strcasecmp(pos, "resize") == 0)
-		mode = MOUSE_RESIZE;
-	else
-		return false;
-
-	(void)(argc);
-	data[0] = mode;
 
 	return true;
 }

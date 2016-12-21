@@ -93,8 +93,6 @@ Features
 	* Activate/Deactivate/Toggle a group
 	* groups can be "sticky": windows are assigned to the currently
 		selected group automatically
-* Mouse mode that can be either active or inactive. While active, the window is
-	moved/resized on click to the coordinates of the mouse pointer.
 * Simple and stylish solid-color border. Width can be configured
 * Gaps around the monitor and around the cells of the virtual grid(s).
 * Configuration script. Windowchef loads a given script at startup that can be
@@ -134,6 +132,19 @@ grid and put my window in the cell at `x = 0`, `y = 2`:
 |-------+--------+------|
 | xterm |        |      |
 +-----------------------+
+```
+
+Using the mouse
+---------------
+
+Windowchef doesn't offer any mouse moving/resizing features. You can emulate
+that with `xmmv(1)` and `xmrs(1)` from wmutils' `opt`.
+
+`.sxhkdrc`:
+
+```
+super + {_,alt +} t
+	{xmmv,xmrs}
 ```
 
 Bars and panels
