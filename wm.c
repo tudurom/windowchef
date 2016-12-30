@@ -1182,7 +1182,7 @@ save_original_size(struct client *client)
 static xcb_atom_t
 get_atom(char *name)
 {
-	xcb_intern_atom_cookie_t cookie = xcb_intern_atom(conn, 0, strlen(name), name);
+	xcb_intern_atom_cookie_t cookie = xcb_intern_atom(conn, false, strlen(name), name);
 	xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(conn, cookie, NULL);
 
 	if (!reply)
