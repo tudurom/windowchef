@@ -139,6 +139,26 @@ Windows that belong to a group that has a \fIgroup_nr\fR greater or equal to \fI
 \fBwm_config\fR \fIkey\fR [\fIvalues\fR\.\.\.]
 See \fICONFIGURING\fR\.
 .
+.SH "QUERYING"
+Information about the current state of windowchef is made available through X properties of the root window\. Example:
+.
+.IP "" 4
+.
+.nf
+
+xprop \-root WINDOWCHEF_ACTIVE_GROUPS
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Here is a list of exposed properties:
+.
+.TP
+\fBWINDOWCHEF_ACTIVE_GROUPS\fR
+An integer list of currently active groups\.
+.
 .SH "CONFIGURING"
 Configuring is done using the \fBwm_config\fR command\. Possible configuration keys are:
 .

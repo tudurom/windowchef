@@ -59,6 +59,7 @@
     <a href="#OPTIONS">OPTIONS</a>
     <a href="#COMMON-DEFINITIONS">COMMON DEFINITIONS</a>
     <a href="#COMMANDS">COMMANDS</a>
+    <a href="#QUERYING">QUERYING</a>
     <a href="#CONFIGURING">CONFIGURING</a>
     <a href="#SEE-ALSO">SEE ALSO</a>
     <a href="#AUTHOR">AUTHOR</a>
@@ -148,6 +149,21 @@ anything on <code>stdout</code>.</p>
 <p>  Windows that belong to a group that has a <var>group_nr</var> greater or equal to
   <var>number_of_groups</var> will become orphaned.</p></dd>
 <dt><code>wm_config</code> <var>key</var> [<var>values</var>...]</dt><dd><p>  See <a href="#CONFIGURING" title="CONFIGURING" data-bare-link="true">CONFIGURING</a>.</p></dd>
+</dl>
+
+
+<h2 id="QUERYING">QUERYING</h2>
+
+<p>Information about the current state of windowchef is made available through
+X properties of the root window. Example:</p>
+
+<pre><code>xprop -root WINDOWCHEF_ACTIVE_GROUPS
+</code></pre>
+
+<p>Here is a list of exposed properties:</p>
+
+<dl>
+<dt><code>WINDOWCHEF_ACTIVE_GROUPS</code></dt><dd>  An integer list of currently active groups.</dd>
 </dl>
 
 

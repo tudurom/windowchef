@@ -121,6 +121,20 @@ anything on `stdout`.
 * `wm_config` <key> [<values>...]:
 	See [CONFIGURING][].
 
+## QUERYING
+
+Information about the current state of windowchef is made available through
+X properties of the root window. Example:
+
+```
+xprop -root WINDOWCHEF_ACTIVE_GROUPS
+```
+
+Here is a list of exposed properties:
+
+* `WINDOWCHEF_ACTIVE_GROUPS`:
+	An integer list of currently active groups.
+
 ## CONFIGURING
 
 Configuring is done using the `wm_config` command. Possible configuration keys

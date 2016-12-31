@@ -26,7 +26,7 @@
 #define NULL_GROUP 0xffffffff
 
 /* atoms identifiers */
-enum { WM_DELETE_WINDOW, _IPC_ATOM_COMMAND, NR_ATOMS };
+enum { WM_DELETE_WINDOW, WINDOWCHEF_ACTIVE_GROUPS, _IPC_ATOM_COMMAND, NR_ATOMS };
 
 /* connection to the X server */
 static xcb_connection_t *conn;
@@ -48,6 +48,7 @@ static struct list_item *win_list   = NULL;
 static struct list_item *mon_list   = NULL;
 static char *atom_names[NR_ATOMS] = {
 	"WM_DELETE_WINDOW",
+	"WINDOWCHEF_ACTIVE_GROUPS",
 	ATOM_COMMAND,
 };
 static xcb_atom_t ATOMS[NR_ATOMS];
@@ -108,6 +109,7 @@ static void group_activate(uint32_t);
 static void group_deactivate(uint32_t);
 static void group_toggle(uint32_t);
 static void group_activate_specific(uint32_t);
+static void update_group_list(void);
 static void change_nr_of_groups(uint32_t);
 static void refresh_borders(void);
 static void update_ewmh_wm_state(struct client *);
@@ -549,6 +551,7 @@ run(void)
 {
 	xcb_generic_event_t *ev;
 
+	update_group_list();
 	halt = false;
 	exit_code = 0;
 	while (!halt) {
@@ -1402,8 +1405,9 @@ group_add_window(struct client *client, uint32_t group)
 {
 	if (client != NULL && group < conf.groups) {
 		client->group = group;
-		update_wm_desktop(client);
 		group_in_use[group] = true;
+		update_wm_desktop(client);
+		update_group_list();
 	}
 }
 
@@ -1433,6 +1437,7 @@ group_activate(uint32_t group) {
 	}
 	group_in_use[group] = true;
 	last_group = group;
+	update_group_list();
 }
 
 static void
@@ -1450,6 +1455,7 @@ group_deactivate(uint32_t group)
 			xcb_unmap_window(conn, client->window);
 	}
 	group_in_use[group] = false;
+	update_group_list();
 }
 
 static void
@@ -1463,6 +1469,7 @@ group_toggle(uint32_t group)
 	else
 		group_activate(group);
 	last_group = group;
+	update_group_list();
 }
 
 static void
@@ -1477,6 +1484,27 @@ group_activate_specific(uint32_t group)
 		else
 			group_deactivate(i);
 	}
+	update_group_list();
+}
+
+static void update_group_list(void)
+{
+	bool first = true;
+
+	for (unsigned int i = 0; i < conf.groups; i++) {
+		if (group_in_use[i]) {
+			uint8_t mode = XCB_PROP_MODE_APPEND;
+			uint32_t data[] = { i + 1 };
+			if (first) {
+				mode = XCB_PROP_MODE_REPLACE;
+				first = false;
+			}
+			xcb_change_property(conn, mode, scr->root, ATOMS[WINDOWCHEF_ACTIVE_GROUPS], XCB_ATOM_INTEGER, 32, 1, data);
+		}
+	}
+
+	if (first)
+		xcb_change_property(conn, XCB_PROP_MODE_REPLACE, scr->root, ATOMS[WINDOWCHEF_ACTIVE_GROUPS], XCB_ATOM_INTEGER, 32, 0, NULL);
 }
 
 static void
