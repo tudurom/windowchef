@@ -115,7 +115,7 @@ Windowchef allows you to add/remove windows to/from groups, show groups, hide
 groups or toggle them.
 
 You can also activate *sticky group mode*. When activated, new windows are
-automatically assigned to the currently selected group. Together with the `group_active_specific` command (see `waitron(1)`), a workspace-like workflow can be achieved.
+automatically assigned to the currently selected group. Together with the `group_activate_specific` command (see `waitron(1)`), a workspace-like workflow can be achieved.
 
 ### Virtual grids
 
