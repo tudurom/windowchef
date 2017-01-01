@@ -1417,6 +1417,7 @@ group_remove_window(struct client *client)
 	if (client != NULL) {
 		client->group = NULL_GROUP;
 		update_wm_desktop(client);
+		update_group_list();
 	}
 }
 
@@ -1489,9 +1490,22 @@ group_activate_specific(uint32_t group)
 
 static void update_group_list(void)
 {
+	struct list_item *item;
+	struct client *client;
+	int in_group;
 	bool first = true;
 
 	for (unsigned int i = 0; i < conf.groups; i++) {
+		/* deactivate group if no window in group */
+		in_group = 0;
+		for (item = win_list; item != NULL; item = item->next) {
+			client = item->data;
+			if (client->group == i)
+				in_group++;
+		}
+		if (in_group == 0)
+			group_in_use[i] = false;
+
 		if (group_in_use[i]) {
 			uint8_t mode = XCB_PROP_MODE_APPEND;
 			uint32_t data[] = { i + 1 };
@@ -1746,6 +1760,7 @@ event_destroy_notify(xcb_generic_event_t *ev)
 	}
 
 	update_client_list();
+	update_group_list();
 }
 
 /*
