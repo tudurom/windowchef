@@ -1555,6 +1555,8 @@ refresh_borders(void)
 
 	for (item = win_list; item != NULL; item = item->next) {
 		client = item->data;
+		if (client->maxed)
+			continue;
 
 		if (client == focused_win)
 			set_borders(client, conf.focus_color);
