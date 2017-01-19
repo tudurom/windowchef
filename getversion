@@ -1,0 +1,7 @@
+#!/bin/sh
+
+VER=0.2.6
+
+git describe > /dev/null 2>&1 && ver="$(git describe)" || ver="$VER"
+
+echo "$ver"
