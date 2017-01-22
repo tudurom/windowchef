@@ -134,6 +134,8 @@ grid and put my window in the cell at `x = 0`, `y = 2`:
 +-----------------------+
 ```
 
+![Screenshot](https://u.teknik.io/T2ZlM.png)
+
 Using the mouse
 ---------------
 
