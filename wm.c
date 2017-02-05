@@ -418,17 +418,20 @@ static struct monitor *
 find_monitor_by_coord(int16_t x, int16_t y)
 {
 	struct list_item *item;
-	struct monitor *m = NULL;
+	struct monitor *m, *ret;
 
-	for (item = mon_list; item != NULL; item = item->next) {
+	m = ret = NULL;
+	item = mon_list;
+	while (item != NULL) {
 		m = item->data;
-
 		if (x >= m->x && x <= m->x + m->width
 			&& y >= m->y && y <= m->y + m->height)
-			break;
+			ret = m;
+
+		item = item->next;
 	}
 
-	return m;
+	return ret;
 }
 
 /*
@@ -626,7 +629,7 @@ setup_window(xcb_window_t win)
 	client->window = win;
 	client->geom.x = client->geom.y = client->geom.width
 				   = client->geom.height
-				   = client->min_width = client->min_height;
+				   = client->min_width = client->min_height = 0;
 	client->maxed  = client->hmaxed = client->vmaxed
 		= client->monocled = client->geom.set_by_user = false;
 	client->monitor = NULL;
