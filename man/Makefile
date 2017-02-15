@@ -3,6 +3,7 @@ include ../config.mk
 MAN = windowchef.1 \
 	  waitron.1
 MANUAL = "Windowchef Manual"
+ORG = "Windowchef"
 
 .POSIX:
 
@@ -11,7 +12,7 @@ all: build
 build: $(MAN)
 
 %.1: *.1.md
-	ronn --manual=$(MANUAL) $@.md
+	ronn --manual=$(MANUAL) --organization=$(ORG) $@.md
 
 clean:
 	rm *.1
