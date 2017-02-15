@@ -18,6 +18,8 @@
 xcb_connection_t *conn;
 xcb_screen_t *scr;
 
+int opterr = 0;
+
 static bool fn_offset(uint32_t *, int, char **);
 static bool fn_naturals(uint32_t *, int, char **);
 static bool fn_bool(uint32_t *, int, char **);
@@ -304,18 +306,13 @@ int main(int argc, char **argv)
 	char **command_argv;
 	int opt;
 
-	if (argc == 1)
+	if (argc == 1) {
 		usage(argv[0], EXIT_FAILURE);
-	while((opt = getopt(argc, argv, "hv")) != -1) {
-		switch (opt) {
-			case 'h':
-				usage(argv[0], EXIT_SUCCESS);
-				break;
-
-			case 'v':
-				version();
-				break;
-		}
+	} else if (argc > 1) {
+		if (strcmp(argv[1], "-h") == 0)
+			usage(argv[0], EXIT_SUCCESS);
+		else if (strcmp(argv[1], "-v") == 0)
+			version();
 	}
 
 	init_xcb(&conn);
