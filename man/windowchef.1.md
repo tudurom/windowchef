@@ -3,7 +3,7 @@ windowchef(1) -- A stacking window cooker
 
 ## SYNOPSIS
 
-`windowchef` [-h|-c <config_path>]
+`windowchef` [-hv] [-c <config_path>]
 
 ## DESCRIPTION
 
@@ -18,7 +18,10 @@ overridden with the `-c` flag.
 ## OPTIONS
 
 * `-h`:
-	Print usage and version information.
+	Print usage.
+
+* `-v`:
+	Print version information.
 
 * `-c` <config_path>:
 	Load script from <config_path> instead of

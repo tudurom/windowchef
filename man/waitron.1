@@ -1,13 +1,13 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "WAITRON" "1" "December 2016" "Windowchef" "Windowchef Manual"
+.TH "WAITRON" "1" "February 2017" "Windowchef" "Windowchef Manual"
 .
 .SH "NAME"
 \fBwaitron\fR \- A client for windowchef(1)
 .
 .SH "SYNOPSIS"
-\fBwaitron\fR [\-h] \fIcommand\fR [\fIargs\fR\.\.\.]
+\fBwaitron\fR [\-hv] \fIcommand\fR [\fIargs\fR\.\.\.]
 .
 .SH "DESCRIPTION"
 \fBwaitron\fR is the client for windowchef(1)\. It sends a given command to windowchef(1) as an X client message\. As a result, \fBwaitron\fR doesn\'t print anything on \fBstdout\fR\.
@@ -16,7 +16,11 @@
 .
 .TP
 \fB\-h\fR
-Print usage and version information\.
+Print usage\.
+.
+.TP
+\fB\-v\fR
+Print version information\.
 .
 .SH "COMMON DEFINITIONS"
 .

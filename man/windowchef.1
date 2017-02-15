@@ -1,13 +1,13 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "WINDOWCHEF" "1" "December 2016" "Windowchef" "Windowchef Manual"
+.TH "WINDOWCHEF" "1" "February 2017" "Windowchef" "Windowchef Manual"
 .
 .SH "NAME"
 \fBwindowchef\fR \- A stacking window cooker
 .
 .SH "SYNOPSIS"
-\fBwindowchef\fR [\-h|\-c \fIconfig_path\fR]
+\fBwindowchef\fR [\-hv] [\-c \fIconfig_path\fR]
 .
 .SH "DESCRIPTION"
 \fBwindowchef\fR is a stacking window manager that doesn\'t handle keyboard or pointer inputs\. It is controlled and configured by \fBwaitron\fR\.
@@ -19,7 +19,11 @@ At startup, \fBwindowchef\fR runs a script located at \fB$XDG_CONFIG_HOME/window
 .
 .TP
 \fB\-h\fR
-Print usage and version information\.
+Print usage\.
+.
+.TP
+\fB\-v\fR
+Print version information\.
 .
 .TP
 \fB\-c\fR \fIconfig_path\fR

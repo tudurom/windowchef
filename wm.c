@@ -153,6 +153,7 @@ static void ipc_wm_quit(uint32_t *);
 static void ipc_wm_config(uint32_t *);
 
 static void usage(char *);
+static void version(void);
 static void load_defaults(void);
 static void load_config(char *);
 
@@ -556,7 +557,7 @@ run(void)
 
 	update_group_list();
 	halt = false;
-	exit_code = 0;
+	exit_code = EXIT_SUCCESS;
 	while (!halt) {
 		xcb_flush(conn);
 		ev = xcb_wait_for_event(conn);
@@ -2497,10 +2498,17 @@ static void
 usage(char *name)
 {
 	fprintf(stderr, "Usage: %s [-h|-c CONFIG_PATH]\n", name);
-	fprintf(stderr, "\n");
-	fprintf(stderr, "%s %s\n", __NAME__, __THIS_VERSION__);
 
-	exit(EXIT_FAILURE);
+	exit(EXIT_SUCCESS);
+}
+
+static void version(void)
+{
+	fprintf(stderr, "%s %s\n", __NAME__, __THIS_VERSION__);
+	fprintf(stderr, "Copyright (c) 2016-2017 Tudor Ioan Roman\n");
+	fprintf(stderr, "Released under the ISC License\n");
+
+	exit(EXIT_SUCCESS);
 }
 
 static void
@@ -2535,13 +2543,16 @@ int main(int argc, char *argv[])
 	int opt;
 	char *config_path = malloc(MAXLEN * sizeof(char));
 	config_path[0] = '\0';
-	while ((opt = getopt(argc, argv, "hc:")) != -1) {
+	while ((opt = getopt(argc, argv, "hvc:")) != -1) {
 		switch (opt) {
 			case 'h':
 				usage(argv[0]);
 				break;
 			case 'c':
 				snprintf(config_path, MAXLEN * sizeof(char), "%s", optarg);
+				break;
+			case 'v':
+				version();
 				break;
 		}
 	}

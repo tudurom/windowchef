@@ -3,7 +3,7 @@ waitron(1) -- A client for windowchef(1)
 
 ## SYNOPSIS
 
-`waitron` [-h] <command> [<args>...]
+`waitron` [-hv] <command> [<args>...]
 
 ## DESCRIPTION
 
@@ -14,7 +14,10 @@ anything on `stdout`.
 ## OPTIONS
 
 * `-h`:
-	Print usage and version information.
+	Print usage.
+
+* `-v`:
+	Print version information.
 
 ## COMMON DEFINITIONS
 

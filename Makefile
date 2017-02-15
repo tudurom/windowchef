@@ -1,9 +1,11 @@
 include config.mk
 
+VERCMD ?= git describe 2> /dev/null
+
 __NAME__ = windowchef
 __NAME_CLIENT__ = waitron
 __CONFIG_NAME__ = windowchefrc
-__THIS_VERSION__ = $(shell ./getversion)
+__THIS_VERSION__ = $(shell $(VERCMD) || cat VERSION)
 __THIS_VERSION__ ?= 0.2.6
 NAME_DEFINES = -D__NAME__=\"$(__NAME__)\"                 \
 			   -D__NAME_CLIENT__=\"$(__NAME_CLIENT__)\"   \

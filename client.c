@@ -1,13 +1,15 @@
 /* See the LICENSE file for copyright and license details. */
 
+#include <xcb/xcb.h>
+
+#include <err.h>
+#include <errno.h>
+#include <getopt.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <stdbool.h>
-#include <xcb/xcb.h>
-#include <err.h>
-#include <errno.h>
 
 #include "ipc.h"
 #include "common.h"
@@ -23,6 +25,9 @@ static bool fn_config(uint32_t *, int, char **);
 static bool fn_hex(uint32_t *, int, char **);
 static bool fn_position(uint32_t *, int, char **);
 static bool fn_gap(uint32_t *, int, char **);
+
+static void usage(char *, int);
+static void version(void);
 
 struct Command {
 	char *string_command;
@@ -274,13 +279,22 @@ send_command(struct Command *c, int argc, char **argv)
 	xcb_flush(conn);
 }
 
-void
-usage(char *name)
+static void
+usage(char *name, int status)
 {
 	fprintf(stderr, "Usage: %s <command> [args...]\n", name);
-	fprintf(stderr, "\n");
+	exit(status);
+}
+
+static void
+version(void)
+{
+
 	fprintf(stderr, "%s %s\n", __NAME_CLIENT__, __THIS_VERSION__);
-	exit(1);
+	fprintf(stderr, "Copyright (c) 2016-2017 Tudor Ioan Roman\n");
+	fprintf(stderr, "Released under the ISC License\n");
+
+	exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char **argv)
@@ -288,9 +302,21 @@ int main(int argc, char **argv)
 	int i;
 	int command_argc;
 	char **command_argv;
+	int opt;
 
-	if (argc == 1 || (argc == 2 && strcmp(argv[1], "-h") == 0))
-		usage(argv[0]);
+	if (argc == 1)
+		usage(argv[0], EXIT_FAILURE);
+	while((opt = getopt(argc, argv, "hv")) != -1) {
+		switch (opt) {
+			case 'h':
+				usage(argv[0], EXIT_SUCCESS);
+				break;
+
+			case 'v':
+				version();
+				break;
+		}
+	}
 
 	init_xcb(&conn);
 
