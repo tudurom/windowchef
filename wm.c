@@ -49,9 +49,9 @@ static struct client * hovered_client = NULL;
 static struct list_item *win_list   = NULL;
 static struct list_item *mon_list   = NULL;
 static char *atom_names[NR_ATOMS] = {
-	"WM_DELETE_WINDOW",
-	"WINDOWCHEF_ACTIVE_GROUPS",
-	ATOM_COMMAND,
+    "WM_DELETE_WINDOW",
+    "WINDOWCHEF_ACTIVE_GROUPS",
+    ATOM_COMMAND,
 };
 static xcb_atom_t ATOMS[NR_ATOMS];
 /* function handlers for ipc commands */
@@ -173,1025 +173,1025 @@ static void load_config(char *);
  * Gracefully disconnect.
  */
 
-static void
+    static void
 cleanup(void)
 {
-	xcb_set_input_focus(conn, XCB_NONE, XCB_INPUT_FOCUS_POINTER_ROOT,
-			XCB_CURRENT_TIME);
-	if (ewmh != NULL)
-		xcb_ewmh_connection_wipe(ewmh);
-	if (win_list != NULL)
-		list_delete_all_items(&win_list, true);
-	if (conn != NULL)
-		xcb_disconnect(conn);
+    xcb_set_input_focus(conn, XCB_NONE, XCB_INPUT_FOCUS_POINTER_ROOT,
+            XCB_CURRENT_TIME);
+    if (ewmh != NULL)
+        xcb_ewmh_connection_wipe(ewmh);
+    if (win_list != NULL)
+        list_delete_all_items(&win_list, true);
+    if (conn != NULL)
+        xcb_disconnect(conn);
 }
 
 /*
  * Connect to the X server and initialize some things.
  */
 
-static int
+    static int
 setup(void)
 {
-	/* init xcb and grab events */
-	unsigned int values[1];
-	int mask;
+    /* init xcb and grab events */
+    unsigned int values[1];
+    int mask;
 
-	conn = xcb_connect(NULL, &scrno);
-	if (xcb_connection_has_error(conn)) {
-		return -1;
-	}
+    conn = xcb_connect(NULL, &scrno);
+    if (xcb_connection_has_error(conn)) {
+        return -1;
+    }
 
-	/* get the first screen. hope it's the last one too */
-	scr = xcb_setup_roots_iterator(xcb_get_setup(conn)).data;
-	focused_win = NULL;
+    /* get the first screen. hope it's the last one too */
+    scr = xcb_setup_roots_iterator(xcb_get_setup(conn)).data;
+    focused_win = NULL;
 
-	mask = XCB_CW_EVENT_MASK;
-	values[0] = XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY
-		| XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT;
-	xcb_generic_error_t *e = xcb_request_check(conn,
-			xcb_change_window_attributes_checked(conn, scr->root,
-				mask, values));
-	if (e != NULL) {
-		free(e);
-		errx(EXIT_FAILURE, "Another window manager is already running.");
-	}
+    mask = XCB_CW_EVENT_MASK;
+    values[0] = XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY
+        | XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT;
+    xcb_generic_error_t *e = xcb_request_check(conn,
+            xcb_change_window_attributes_checked(conn, scr->root,
+                mask, values));
+    if (e != NULL) {
+        free(e);
+        errx(EXIT_FAILURE, "Another window manager is already running.");
+    }
 
-	/* initialize ewmh variables */
-	ewmh = calloc(1, sizeof(xcb_ewmh_connection_t));
-	if (!ewmh)
-		warnx("couldn't set up ewmh connection");
-	xcb_intern_atom_cookie_t *cookie = xcb_ewmh_init_atoms(conn, ewmh);
-	xcb_ewmh_init_atoms_replies(ewmh, cookie, (void *)0);
-	xcb_ewmh_set_wm_pid(ewmh, scr->root, getpid());
-	xcb_ewmh_set_wm_name(ewmh, scr->root, strlen(__NAME__), __NAME__);
-	xcb_ewmh_set_current_desktop(ewmh, 0, 0);
-	xcb_ewmh_set_number_of_desktops(ewmh, 0, GROUPS);
+    /* initialize ewmh variables */
+    ewmh = calloc(1, sizeof(xcb_ewmh_connection_t));
+    if (!ewmh)
+        warnx("couldn't set up ewmh connection");
+    xcb_intern_atom_cookie_t *cookie = xcb_ewmh_init_atoms(conn, ewmh);
+    xcb_ewmh_init_atoms_replies(ewmh, cookie, (void *)0);
+    xcb_ewmh_set_wm_pid(ewmh, scr->root, getpid());
+    xcb_ewmh_set_wm_name(ewmh, scr->root, strlen(__NAME__), __NAME__);
+    xcb_ewmh_set_current_desktop(ewmh, 0, 0);
+    xcb_ewmh_set_number_of_desktops(ewmh, 0, GROUPS);
 
-	xcb_atom_t supported_atoms[] = {
-		ewmh->_NET_SUPPORTED               , ewmh->_NET_WM_DESKTOP              ,
-		ewmh->_NET_NUMBER_OF_DESKTOPS      , ewmh->_NET_CURRENT_DESKTOP         ,
-		ewmh->_NET_ACTIVE_WINDOW           , ewmh->_NET_WM_STATE                ,
-		ewmh->_NET_WM_STATE_FULLSCREEN     , ewmh->_NET_WM_STATE_MAXIMIZED_VERT ,
-		ewmh->_NET_WM_STATE_MAXIMIZED_HORZ , ewmh->_NET_WM_NAME                 ,
-		ewmh->_NET_WM_ICON_NAME            , ewmh->_NET_WM_WINDOW_TYPE          ,
-		ewmh->_NET_WM_WINDOW_TYPE_DOCK     , ewmh->_NET_WM_PID                  ,
-		ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR  , ewmh->_NET_WM_WINDOW_TYPE_DESKTOP  ,
-	};
-	xcb_ewmh_set_supported(ewmh, scrno, sizeof(supported_atoms) / sizeof(xcb_atom_t), supported_atoms);
+    xcb_atom_t supported_atoms[] = {
+        ewmh->_NET_SUPPORTED               , ewmh->_NET_WM_DESKTOP              ,
+        ewmh->_NET_NUMBER_OF_DESKTOPS      , ewmh->_NET_CURRENT_DESKTOP         ,
+        ewmh->_NET_ACTIVE_WINDOW           , ewmh->_NET_WM_STATE                ,
+        ewmh->_NET_WM_STATE_FULLSCREEN     , ewmh->_NET_WM_STATE_MAXIMIZED_VERT ,
+        ewmh->_NET_WM_STATE_MAXIMIZED_HORZ , ewmh->_NET_WM_NAME                 ,
+        ewmh->_NET_WM_ICON_NAME            , ewmh->_NET_WM_WINDOW_TYPE          ,
+        ewmh->_NET_WM_WINDOW_TYPE_DOCK     , ewmh->_NET_WM_PID                  ,
+        ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR  , ewmh->_NET_WM_WINDOW_TYPE_DESKTOP  ,
+    };
+    xcb_ewmh_set_supported(ewmh, scrno, sizeof(supported_atoms) / sizeof(xcb_atom_t), supported_atoms);
 
-	/* send requests */
-	xcb_flush(conn);
+    /* send requests */
+    xcb_flush(conn);
 
-	/* get various atoms for icccm and ewmh */
-	for (int i = 0; i < NR_ATOMS; i++)
-		ATOMS[i] = get_atom(atom_names[i]);
+    /* get various atoms for icccm and ewmh */
+    for (int i = 0; i < NR_ATOMS; i++)
+        ATOMS[i] = get_atom(atom_names[i]);
 
-	randr_base = setup_randr();
+    randr_base = setup_randr();
 
-	group_in_use = malloc(conf.groups * sizeof(bool));
-	for (uint32_t i = 0; i < conf.groups; i++)
-		group_in_use[i] = false;
-	return 0;
+    group_in_use = malloc(conf.groups * sizeof(bool));
+    for (uint32_t i = 0; i < conf.groups; i++)
+        group_in_use[i] = false;
+    return 0;
 }
 
 /*
  * Tells the server we want to use randr.
  */
 
-static int
+    static int
 setup_randr(void)
 {
-	int base;
-	const xcb_query_extension_reply_t *r = xcb_get_extension_data(conn, &xcb_randr_id);
+    int base;
+    const xcb_query_extension_reply_t *r = xcb_get_extension_data(conn, &xcb_randr_id);
 
-	if (!r->present)
-		return -1;
-	else
-		get_randr();
+    if (!r->present)
+        return -1;
+    else
+        get_randr();
 
-	base = r->first_event;
-	xcb_randr_select_input(conn, scr->root,
-			XCB_RANDR_NOTIFY_MASK_SCREEN_CHANGE
-			| XCB_RANDR_NOTIFY_MASK_OUTPUT_CHANGE
-			| XCB_RANDR_NOTIFY_MASK_CRTC_CHANGE
-			| XCB_RANDR_NOTIFY_MASK_OUTPUT_PROPERTY);
+    base = r->first_event;
+    xcb_randr_select_input(conn, scr->root,
+            XCB_RANDR_NOTIFY_MASK_SCREEN_CHANGE
+            | XCB_RANDR_NOTIFY_MASK_OUTPUT_CHANGE
+            | XCB_RANDR_NOTIFY_MASK_CRTC_CHANGE
+            | XCB_RANDR_NOTIFY_MASK_OUTPUT_PROPERTY);
 
-	return base;
+    return base;
 }
 
 /*
  * Get information regarding randr.
  */
 
-static void
+    static void
 get_randr(void)
 {
-	int len;
-	xcb_randr_get_screen_resources_current_cookie_t c
-		= xcb_randr_get_screen_resources_current(conn, scr->root);
-	xcb_randr_get_screen_resources_current_reply_t *r
-		= xcb_randr_get_screen_resources_current_reply(conn, c, NULL);
+    int len;
+    xcb_randr_get_screen_resources_current_cookie_t c
+        = xcb_randr_get_screen_resources_current(conn, scr->root);
+    xcb_randr_get_screen_resources_current_reply_t *r
+        = xcb_randr_get_screen_resources_current_reply(conn, c, NULL);
 
-	if (r == NULL)
-		return;
+    if (r == NULL)
+        return;
 
-	xcb_timestamp_t timestamp = r->config_timestamp;
-	len = xcb_randr_get_screen_resources_current_outputs_length(r);
-	xcb_randr_output_t *outputs
-		= xcb_randr_get_screen_resources_current_outputs(r);
+    xcb_timestamp_t timestamp = r->config_timestamp;
+    len = xcb_randr_get_screen_resources_current_outputs_length(r);
+    xcb_randr_output_t *outputs
+        = xcb_randr_get_screen_resources_current_outputs(r);
 
-	/* Request information for all outputs */
-	get_outputs(outputs, len, timestamp);
-	free(r);
+    /* Request information for all outputs */
+    get_outputs(outputs, len, timestamp);
+    free(r);
 }
 
 /*
  * Gets information about connected outputs.
  */
 
-static void
+    static void
 get_outputs(xcb_randr_output_t *outputs, int len, xcb_timestamp_t timestamp)
 {
-	int name_len;
-	char *name;
-	xcb_randr_get_crtc_info_cookie_t info_c;
-	xcb_randr_get_crtc_info_reply_t *crtc;
-	xcb_randr_get_output_info_reply_t *output;
-	struct monitor *mon, *clonemon;
-	struct list_item *item;
-	xcb_randr_get_output_info_cookie_t out_cookie[len];
+    int name_len;
+    char *name;
+    xcb_randr_get_crtc_info_cookie_t info_c;
+    xcb_randr_get_crtc_info_reply_t *crtc;
+    xcb_randr_get_output_info_reply_t *output;
+    struct monitor *mon, *clonemon;
+    struct list_item *item;
+    xcb_randr_get_output_info_cookie_t out_cookie[len];
 
-	for (int i = 0; i < len; i++)
-		out_cookie[i] = xcb_randr_get_output_info(conn, outputs[i],
-				timestamp);
+    for (int i = 0; i < len; i++)
+        out_cookie[i] = xcb_randr_get_output_info(conn, outputs[i],
+                timestamp);
 
-	for (int i = 0; i < len; i++) {
-		output = xcb_randr_get_output_info_reply(conn, out_cookie[i], NULL);
-		if (output == NULL)
-			continue;
+    for (int i = 0; i < len; i++) {
+        output = xcb_randr_get_output_info_reply(conn, out_cookie[i], NULL);
+        if (output == NULL)
+            continue;
 
-		name_len = xcb_randr_get_output_info_name_length(output);
-		if (16 < name_len)
-			name_len = 16;
+        name_len = xcb_randr_get_output_info_name_length(output);
+        if (16 < name_len)
+            name_len = 16;
 
-		/* +1 for the null character */
-		name = malloc(name_len + 1);
-		/* make sure the name is at most name_len + 1 length
-		 * or we may run into problems. */
-		snprintf(name, name_len + 1, "%.*s", name_len,
-				xcb_randr_get_output_info_name(output));
+        /* +1 for the null character */
+        name = malloc(name_len + 1);
+        /* make sure the name is at most name_len + 1 length
+         * or we may run into problems. */
+        snprintf(name, name_len + 1, "%.*s", name_len,
+                xcb_randr_get_output_info_name(output));
 
-		if (output->crtc != XCB_NONE) {
-			info_c = xcb_randr_get_crtc_info(conn, output->crtc,
-					timestamp);
-			crtc = xcb_randr_get_crtc_info_reply(conn, info_c, NULL);
+        if (output->crtc != XCB_NONE) {
+            info_c = xcb_randr_get_crtc_info(conn, output->crtc,
+                    timestamp);
+            crtc = xcb_randr_get_crtc_info_reply(conn, info_c, NULL);
 
-			if (crtc == NULL)
-				return;
+            if (crtc == NULL)
+                return;
 
-			clonemon = find_clones(outputs[i], crtc->x, crtc->y);
-			if (clonemon != NULL)
-				continue;
+            clonemon = find_clones(outputs[i], crtc->x, crtc->y);
+            if (clonemon != NULL)
+                continue;
 
-			mon = find_monitor(outputs[i]);
-			if (mon == NULL) {
-				add_monitor(outputs[i], name, crtc->x, crtc->y,
-						crtc->width, crtc->height);
-			} else {
-				mon->x = crtc->x;
-				mon->y = crtc->y;
-				mon->width = crtc->width;
-				mon->height = crtc->height;
+            mon = find_monitor(outputs[i]);
+            if (mon == NULL) {
+                add_monitor(outputs[i], name, crtc->x, crtc->y,
+                        crtc->width, crtc->height);
+            } else {
+                mon->x = crtc->x;
+                mon->y = crtc->y;
+                mon->width = crtc->width;
+                mon->height = crtc->height;
 
-				arrange_by_monitor(mon);
-			}
+                arrange_by_monitor(mon);
+            }
 
-			free(crtc);
-		} else {
-			/* Check if the monitor was used before
-			 * becoming disabled. */
-			mon = find_monitor(outputs[i]);
-			if (mon) {
-				struct client *client;
-				for (item = win_list; item != NULL; item = item->next) {
-					/* Move window from this monitor to
-					 * either the next one or the first one. */
-					client = item->data;
+            free(crtc);
+        } else {
+            /* Check if the monitor was used before
+             * becoming disabled. */
+            mon = find_monitor(outputs[i]);
+            if (mon) {
+                struct client *client;
+                for (item = win_list; item != NULL; item = item->next) {
+                    /* Move window from this monitor to
+                     * either the next one or the first one. */
+                    client = item->data;
 
-					if (client->monitor == mon) {
-						if (client->monitor->item->next)
-							// If at end, take from the beginning
-							if (mon_list == NULL)
-								client->monitor = NULL;
-							else
-								client->monitor = mon_list->data;
-						else
-							client->monitor = client->monitor->item->next->data;
-						fit_on_screen(client);
-					}
-				}
+                    if (client->monitor == mon) {
+                        if (client->monitor->item->next)
+                            // If at end, take from the beginning
+                            if (mon_list == NULL)
+                                client->monitor = NULL;
+                            else
+                                client->monitor = mon_list->data;
+                        else
+                            client->monitor = client->monitor->item->next->data;
+                        fit_on_screen(client);
+                    }
+                }
 
-				/* Monitor not active. Delete it. */
-				free_monitor(mon);
-			}
-		}
+                /* Monitor not active. Delete it. */
+                free_monitor(mon);
+            }
+        }
 
-		if (output != NULL)
-			free(output);
-		free(name);
-	}
+        if (output != NULL)
+            free(output);
+        free(name);
+    }
 }
 
 /*
  * Finds a monitor in the list.
  */
 
-struct monitor *
+    struct monitor *
 find_monitor(xcb_randr_output_t mon)
 {
-	struct list_item *item;
-	struct monitor *m;
+    struct list_item *item;
+    struct monitor *m;
 
-	item = mon_list;
-	while (item != NULL && (m = item->data)->monitor != mon)
-		item = item->next;
+    item = mon_list;
+    while (item != NULL && (m = item->data)->monitor != mon)
+        item = item->next;
 
-	if (item == NULL)
-		return NULL;
-	else
-		return item->data;
+    if (item == NULL)
+        return NULL;
+    else
+        return item->data;
 }
 
 /*
  * Find a monitor in the list by its coordinates.
  */
 
-static struct monitor *
+    static struct monitor *
 find_monitor_by_coord(int16_t x, int16_t y)
 {
-	struct list_item *item;
-	struct monitor *m, *ret;
+    struct list_item *item;
+    struct monitor *m, *ret;
 
-	m = ret = NULL;
-	item = mon_list;
-	while (item != NULL) {
-		m = item->data;
-		if (x >= m->x && x <= m->x + m->width
-			&& y >= m->y && y <= m->y + m->height)
-			ret = m;
+    m = ret = NULL;
+    item = mon_list;
+    while (item != NULL) {
+        m = item->data;
+        if (x >= m->x && x <= m->x + m->width
+                && y >= m->y && y <= m->y + m->height)
+            ret = m;
 
-		item = item->next;
-	}
+        item = item->next;
+    }
 
-	return ret;
+    return ret;
 }
 
 /*
  * Find cloned (mirrored) outputs.
  */
 
-struct monitor *
+    struct monitor *
 find_clones(xcb_randr_output_t mon, int16_t x, int16_t y)
 {
-	struct monitor *clonemon;
-	struct list_item *item;
+    struct monitor *clonemon;
+    struct list_item *item;
 
-	item = mon_list;
-	while (item != NULL && ((clonemon = item->data)->monitor == mon
-						|| clonemon->x != x
-						|| clonemon->y != y)) {
-		item = item->next;
-	}
+    item = mon_list;
+    while (item != NULL && ((clonemon = item->data)->monitor == mon
+                || clonemon->x != x
+                || clonemon->y != y)) {
+        item = item->next;
+    }
 
-	if (item == NULL)
-		return NULL;
-	else
-		return clonemon;
+    if (item == NULL)
+        return NULL;
+    else
+        return clonemon;
 }
 
 /*
  * Add a monitor to the global monitor list.
  */
 
-static struct monitor *
+    static struct monitor *
 add_monitor(xcb_randr_output_t mon, char *name, int16_t x, int16_t y, uint16_t width, uint16_t height)
 {
-	struct list_item *item;
-	struct monitor *monitor = malloc(sizeof(struct monitor));
+    struct list_item *item;
+    struct monitor *monitor = malloc(sizeof(struct monitor));
 
-	if (monitor == NULL)
-		return NULL;
+    if (monitor == NULL)
+        return NULL;
 
-	item = list_add_item(&mon_list);
-	if (item == NULL) {
-		free(monitor);
-		return NULL;
-	}
+    item = list_add_item(&mon_list);
+    if (item == NULL) {
+        free(monitor);
+        return NULL;
+    }
 
-	item->data = monitor;
-	monitor->item = item;
-	monitor->monitor = mon;
-	monitor->name = name;
-	monitor->x = x;
-	monitor->y = y;
-	monitor->width = width;
-	monitor->height = height;
+    item->data = monitor;
+    monitor->item = item;
+    monitor->monitor = mon;
+    monitor->name = name;
+    monitor->x = x;
+    monitor->y = y;
+    monitor->width = width;
+    monitor->height = height;
 
-	return monitor;
+    return monitor;
 }
 
 /*
  * Free a monitor from the global monitor list.
  */
 
-static void
+    static void
 free_monitor(struct monitor *mon)
 {
-	struct list_item *item = mon->item;
+    struct list_item *item = mon->item;
 
-	free(mon);
-	list_delete_item(&mon_list, item);
+    free(mon);
+    list_delete_item(&mon_list, item);
 }
 
 /*
  * Get information about a certain monitor situated in a window: coordinates and size.
  */
 
-static void
+    static void
 get_monitor_size(struct client *client, int16_t *mon_x, int16_t *mon_y, uint16_t *mon_width, uint16_t *mon_height)
 {
-	if (client == NULL || client->monitor == NULL) {
-		if (mon_x != NULL && mon_y != NULL)
-			*mon_x = *mon_y = 0;
-		if (mon_width != NULL)
-			*mon_width = scr->width_in_pixels;
-		if (mon_height != NULL)
-			*mon_height = scr->height_in_pixels;
-	} else {
-		if (mon_x != NULL)
-			*mon_x = client->monitor->x;
-		if (mon_y != NULL)
-			*mon_y = client->monitor->y;
-		if (mon_width != NULL)
-			*mon_width = client->monitor->width;
-		if (mon_height != NULL)
-			*mon_height = client->monitor->height;
-	}
+    if (client == NULL || client->monitor == NULL) {
+        if (mon_x != NULL && mon_y != NULL)
+            *mon_x = *mon_y = 0;
+        if (mon_width != NULL)
+            *mon_width = scr->width_in_pixels;
+        if (mon_height != NULL)
+            *mon_height = scr->height_in_pixels;
+    } else {
+        if (mon_x != NULL)
+            *mon_x = client->monitor->x;
+        if (mon_y != NULL)
+            *mon_y = client->monitor->y;
+        if (mon_width != NULL)
+            *mon_width = client->monitor->width;
+        if (mon_height != NULL)
+            *mon_height = client->monitor->height;
+    }
 }
 
 /*
  * Arrange clients on a monitor.
  */
 
-static void
+    static void
 arrange_by_monitor(struct monitor *mon)
 {
-	struct client *client;
-	struct list_item *item;
+    struct client *client;
+    struct list_item *item;
 
-	for (item = win_list; item != NULL; item = item->next) {
-		client = item->data;
+    for (item = win_list; item != NULL; item = item->next) {
+        client = item->data;
 
-		if (client->monitor == mon)
-			fit_on_screen(client);
-	}
+        if (client->monitor == mon)
+            fit_on_screen(client);
+    }
 }
 
 /*
  * Wait for events and handle them.
  */
 
-static void
+    static void
 run(void)
 {
-	xcb_generic_event_t *ev;
+    xcb_generic_event_t *ev;
 
-	update_group_list();
-	halt = false;
-	exit_code = EXIT_SUCCESS;
-	while (!halt) {
-		xcb_flush(conn);
-		ev = xcb_wait_for_event(conn);
-		if (ev) {
-			DMSG("X Event %d\n", ev->response_type & ~0x80);
-			if (ev->response_type == randr_base + XCB_RANDR_SCREEN_CHANGE_NOTIFY) {
-				get_randr();
-				DMSG("Screen layout changed\n");
-			}
-			if (events[EVENT_MASK(ev->response_type)] != NULL)
-				(events[EVENT_MASK(ev->response_type)])(ev);
-			free(ev);
-		}
-	}
+    update_group_list();
+    halt = false;
+    exit_code = EXIT_SUCCESS;
+    while (!halt) {
+        xcb_flush(conn);
+        ev = xcb_wait_for_event(conn);
+        if (ev) {
+            DMSG("X Event %d\n", ev->response_type & ~0x80);
+            if (ev->response_type == randr_base + XCB_RANDR_SCREEN_CHANGE_NOTIFY) {
+                get_randr();
+                DMSG("Screen layout changed\n");
+            }
+            if (events[EVENT_MASK(ev->response_type)] != NULL)
+                (events[EVENT_MASK(ev->response_type)])(ev);
+            free(ev);
+        }
+    }
 }
 
 /*
  * Initialize a window for further work.
  */
 
-static struct client *
+    static struct client *
 setup_window(xcb_window_t win)
 {
-	uint32_t values[2];
-	xcb_ewmh_get_atoms_reply_t win_type;
-	xcb_atom_t atom;
-	struct client *client;
-	struct list_item *item;
-	xcb_size_hints_t hints;
+    uint32_t values[2];
+    xcb_ewmh_get_atoms_reply_t win_type;
+    xcb_atom_t atom;
+    struct client *client;
+    struct list_item *item;
+    xcb_size_hints_t hints;
 
-	if (xcb_ewmh_get_wm_window_type_reply(ewmh,
-				xcb_ewmh_get_wm_window_type(ewmh, win),
-				&win_type, NULL) == 1) {
-		unsigned int i = 0;
-		/* if the window is a toolbar or a dock, map it and ignore it */
-		while (i < win_type.atoms_len &&
-			(atom = win_type.atoms[i]) != ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR
-			&& atom != ewmh->_NET_WM_WINDOW_TYPE_DOCK
-			&& atom != ewmh->_NET_WM_WINDOW_TYPE_DESKTOP)
-			i++;
+    if (xcb_ewmh_get_wm_window_type_reply(ewmh,
+                xcb_ewmh_get_wm_window_type(ewmh, win),
+                &win_type, NULL) == 1) {
+        unsigned int i = 0;
+        /* if the window is a toolbar or a dock, map it and ignore it */
+        while (i < win_type.atoms_len &&
+                (atom = win_type.atoms[i]) != ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR
+                && atom != ewmh->_NET_WM_WINDOW_TYPE_DOCK
+                && atom != ewmh->_NET_WM_WINDOW_TYPE_DESKTOP)
+            i++;
 
-		if (i < win_type.atoms_len) {
-			xcb_ewmh_get_atoms_reply_wipe(&win_type);
-			xcb_map_window(conn, win);
-			return NULL;
-		}
-	}
+        if (i < win_type.atoms_len) {
+            xcb_ewmh_get_atoms_reply_wipe(&win_type);
+            xcb_map_window(conn, win);
+            return NULL;
+        }
+    }
 
-	/* subscribe to events */
-	values[0] = XCB_EVENT_MASK_ENTER_WINDOW | XCB_EVENT_MASK_FOCUS_CHANGE;
-	xcb_change_window_attributes(conn, win, XCB_CW_EVENT_MASK, values);
+    /* subscribe to events */
+    values[0] = XCB_EVENT_MASK_ENTER_WINDOW | XCB_EVENT_MASK_FOCUS_CHANGE;
+    xcb_change_window_attributes(conn, win, XCB_CW_EVENT_MASK, values);
 
-	/* in case of fire */
-	xcb_change_save_set(conn, XCB_SET_MODE_INSERT, win);
+    /* in case of fire */
+    xcb_change_save_set(conn, XCB_SET_MODE_INSERT, win);
 
-	/* assign to the null group */
-	xcb_ewmh_set_wm_desktop(ewmh, win, NULL_GROUP);
+    /* assign to the null group */
+    xcb_ewmh_set_wm_desktop(ewmh, win, NULL_GROUP);
 
-	item = list_add_item(&win_list);
-	if (item == NULL)
-		return NULL;
+    item = list_add_item(&win_list);
+    if (item == NULL)
+        return NULL;
 
-	client = malloc(sizeof(struct client));
-	if (client == NULL)
-		return NULL;
+    client = malloc(sizeof(struct client));
+    if (client == NULL)
+        return NULL;
 
-	/* initialize variables */
-	item->data = client;
-	client->item = item;
-	client->window = win;
-	client->geom.x = client->geom.y = client->geom.width
-				   = client->geom.height
-				   = client->min_width = client->min_height = 0;
-	client->maxed  = client->hmaxed = client->vmaxed
-		= client->monocled = client->geom.set_by_user = false;
-	client->monitor = NULL;
-	client->mapped  = false;
-	client->group   = NULL_GROUP;
-	get_geometry(&client->window, &client->geom.x, &client->geom.y,
-			&client->geom.width, &client->geom.height);
+    /* initialize variables */
+    item->data = client;
+    client->item = item;
+    client->window = win;
+    client->geom.x = client->geom.y = client->geom.width
+        = client->geom.height
+        = client->min_width = client->min_height = 0;
+    client->maxed  = client->hmaxed = client->vmaxed
+        = client->monocled = client->geom.set_by_user = false;
+    client->monitor = NULL;
+    client->mapped  = false;
+    client->group   = NULL_GROUP;
+    get_geometry(&client->window, &client->geom.x, &client->geom.y,
+            &client->geom.width, &client->geom.height);
 
-	xcb_icccm_get_wm_normal_hints_reply(conn,
-			xcb_icccm_get_wm_normal_hints_unchecked(conn, win),
-			&hints, NULL);
+    xcb_icccm_get_wm_normal_hints_reply(conn,
+            xcb_icccm_get_wm_normal_hints_unchecked(conn, win),
+            &hints, NULL);
 
-	if (hints.flags & XCB_ICCCM_SIZE_HINT_US_POSITION)
-		client->geom.set_by_user = true;
+    if (hints.flags & XCB_ICCCM_SIZE_HINT_US_POSITION)
+        client->geom.set_by_user = true;
 
-	if (hints.flags & XCB_ICCCM_SIZE_HINT_P_MIN_SIZE) {
-		client->min_width = hints.min_width;
-		client->min_height = hints.min_height;
-	}
+    if (hints.flags & XCB_ICCCM_SIZE_HINT_P_MIN_SIZE) {
+        client->min_width = hints.min_width;
+        client->min_height = hints.min_height;
+    }
 
-	DMSG("new window was born 0x%08x\n", client->window);
+    DMSG("new window was born 0x%08x\n", client->window);
 
-	return client;
+    return client;
 }
 
 /*
  * Set focus state to active or inactive without raising the window.
  */
 
-static void
+    static void
 set_focused_no_raise(struct client *client)
 {
-	long data[] = {
-		XCB_ICCCM_WM_STATE_NORMAL,
-		XCB_NONE,
-	};
-	if (client == NULL)
-		return;
+    long data[] = {
+        XCB_ICCCM_WM_STATE_NORMAL,
+        XCB_NONE,
+    };
+    if (client == NULL)
+        return;
 
-	if (!client->maxed)
-		set_borders(client, conf.focus_color);
+    if (!client->maxed)
+        set_borders(client, conf.focus_color);
 
-	/* focus the window */
-	xcb_set_input_focus(conn, XCB_INPUT_FOCUS_POINTER_ROOT,
-			client->window, XCB_CURRENT_TIME);
+    /* focus the window */
+    xcb_set_input_focus(conn, XCB_INPUT_FOCUS_POINTER_ROOT,
+            client->window, XCB_CURRENT_TIME);
 
-	/* set ewmh property */
-	xcb_change_property(conn, XCB_PROP_MODE_REPLACE, scr->root,
-			ewmh->_NET_ACTIVE_WINDOW, XCB_ATOM_WINDOW, 32, 1, &client->window);
+    /* set ewmh property */
+    xcb_change_property(conn, XCB_PROP_MODE_REPLACE, scr->root,
+            ewmh->_NET_ACTIVE_WINDOW, XCB_ATOM_WINDOW, 32, 1, &client->window);
 
-	/* set the focus state to inactive on the previously focused window */
-	if (client != focused_win) {
-		if (focused_win != NULL && !focused_win->maxed)
-			set_borders(focused_win, conf.unfocus_color);
-	}
+    /* set the focus state to inactive on the previously focused window */
+    if (client != focused_win) {
+        if (focused_win != NULL && !focused_win->maxed)
+            set_borders(focused_win, conf.unfocus_color);
+    }
 
-	focused_win = client;
+    focused_win = client;
 }
 
 /*
  * Focus and raise.
  */
 
-static void
+    static void
 set_focused(struct client *client)
 {
-	set_focused_no_raise(client);
-	raise_window(client->window);
+    set_focused_no_raise(client);
+    raise_window(client->window);
 }
 
 /*
  * Put window at the top of the window stack.
  */
 
-static void
+    static void
 raise_window(xcb_window_t win)
 {
-	uint32_t values[1] = { XCB_STACK_MODE_ABOVE };
-	xcb_configure_window(conn, win, XCB_CONFIG_WINDOW_STACK_MODE, values);
+    uint32_t values[1] = { XCB_STACK_MODE_ABOVE };
+    xcb_configure_window(conn, win, XCB_CONFIG_WINDOW_STACK_MODE, values);
 }
 
 /*
  * Ask window to close gracefully. If the window doesn't respond, kill it.
  */
 
-static void
+    static void
 close_window(struct client *client)
 {
-	if (client == NULL)
-		return;
+    if (client == NULL)
+        return;
 
-	xcb_window_t win = client->window;
-	xcb_get_property_cookie_t cookie =
-		xcb_icccm_get_wm_protocols_unchecked(conn,
-				win, ewmh->WM_PROTOCOLS);
-	xcb_icccm_get_wm_protocols_reply_t reply;
-	unsigned int i = 0;
-	bool got = false;
+    xcb_window_t win = client->window;
+    xcb_get_property_cookie_t cookie =
+        xcb_icccm_get_wm_protocols_unchecked(conn,
+                win, ewmh->WM_PROTOCOLS);
+    xcb_icccm_get_wm_protocols_reply_t reply;
+    unsigned int i = 0;
+    bool got = false;
 
-	if (xcb_icccm_get_wm_protocols_reply(conn, cookie, &reply, NULL)) {
-		for (i = 0; i < reply.atoms_len; i++) {
-			got = (reply.atoms[i] = ATOMS[WM_DELETE_WINDOW]);
-			if (got)
-				break;
-		}
+    if (xcb_icccm_get_wm_protocols_reply(conn, cookie, &reply, NULL)) {
+        for (i = 0; i < reply.atoms_len; i++) {
+            got = (reply.atoms[i] = ATOMS[WM_DELETE_WINDOW]);
+            if (got)
+                break;
+        }
 
-		xcb_icccm_get_wm_protocols_reply_wipe(&reply);
-	}
+        xcb_icccm_get_wm_protocols_reply_wipe(&reply);
+    }
 
-	if (got)
-		delete_window(win);
-	else
-		xcb_kill_client(conn, win);
+    if (got)
+        delete_window(win);
+    else
+        xcb_kill_client(conn, win);
 }
 
 /*
  * Gracefully ask a window to close.
  */
 
-static void
+    static void
 delete_window(xcb_window_t win)
 {
-	xcb_client_message_event_t ev;
+    xcb_client_message_event_t ev;
 
-	ev.response_type = XCB_CLIENT_MESSAGE;
-	ev.sequence = 0;
-	ev.format = 32;
-	ev.window = win;
-	ev.type = ewmh->WM_PROTOCOLS;
-	ev.data.data32[0] = ATOMS[WM_DELETE_WINDOW];
-	ev.data.data32[1] = XCB_CURRENT_TIME;
+    ev.response_type = XCB_CLIENT_MESSAGE;
+    ev.sequence = 0;
+    ev.format = 32;
+    ev.window = win;
+    ev.type = ewmh->WM_PROTOCOLS;
+    ev.data.data32[0] = ATOMS[WM_DELETE_WINDOW];
+    ev.data.data32[1] = XCB_CURRENT_TIME;
 
-	xcb_send_event(conn, 0, win, XCB_EVENT_MASK_NO_EVENT, (char *)&ev);
+    xcb_send_event(conn, 0, win, XCB_EVENT_MASK_NO_EVENT, (char *)&ev);
 }
 
 /*
  * Teleports window absolutely to the given coordinates.
  */
 
-static void
+    static void
 teleport_window(xcb_window_t win, int16_t x, int16_t y)
 {
-	uint32_t values[2] = {x, y};
+    uint32_t values[2] = {x, y};
 
-	if (win == scr->root || win == 0)
-		return;
+    if (win == scr->root || win == 0)
+        return;
 
-	xcb_configure_window(conn, win, XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y, values);
+    xcb_configure_window(conn, win, XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y, values);
 
-	xcb_flush(conn);
+    xcb_flush(conn);
 }
 
 /*
  * Moves the window by a certain amount.
  */
 
-static void
+    static void
 move_window(xcb_window_t win, int16_t x, int16_t y)
 {
-	int16_t win_x, win_y;
-	uint16_t win_w, win_h;
+    int16_t win_x, win_y;
+    uint16_t win_w, win_h;
 
-	if (!is_mapped(win) || win == scr->root)
-		return;
+    if (!is_mapped(win) || win == scr->root)
+        return;
 
-	get_geometry(&win, &win_x, &win_y, &win_w, &win_h);
+    get_geometry(&win, &win_x, &win_y, &win_w, &win_h);
 
-	win_x += x;
-	win_y += y;
+    win_x += x;
+    win_y += y;
 
-	teleport_window(win, win_x, win_y);
+    teleport_window(win, win_x, win_y);
 }
 
 /*
  * Resizes window to the given size.
  */
 
-static void
+    static void
 resize_window_absolute(xcb_window_t win, uint16_t w, uint16_t h)
 {
-	uint32_t val[2];
-	uint32_t mask = XCB_CONFIG_WINDOW_WIDTH
-				  | XCB_CONFIG_WINDOW_HEIGHT;
+    uint32_t val[2];
+    uint32_t mask = XCB_CONFIG_WINDOW_WIDTH
+        | XCB_CONFIG_WINDOW_HEIGHT;
 
-	val[0] = w;
-	val[1] = h;
+    val[0] = w;
+    val[1] = h;
 
-	xcb_configure_window(conn, win, mask, val);
+    xcb_configure_window(conn, win, mask, val);
 }
 
 /*
  * Resizes window by a certain amount.
  */
 
-static void
+    static void
 resize_window(xcb_window_t win, int16_t w, int16_t h)
 {
-	uint16_t win_w, win_h;
+    uint16_t win_w, win_h;
 
-	get_geometry(&win, NULL, NULL, &win_w, &win_h);
-	resize_window_absolute(win, win_w + w, win_h + h);
+    get_geometry(&win, NULL, NULL, &win_w, &win_h);
+    resize_window_absolute(win, win_w + w, win_h + h);
 }
 
 /*
  * Fit window on screen if too big.
  */
 
-static void
+    static void
 fit_on_screen(struct client *client)
 {
-	int16_t mon_x, mon_y;
-	uint16_t mon_width, mon_height;
-	bool will_resize, will_move;
+    int16_t mon_x, mon_y;
+    uint16_t mon_width, mon_height;
+    bool will_resize, will_move;
 
-	will_resize = will_move = false;
-	client->hmaxed = client->vmaxed = false;
-	get_monitor_size(client, &mon_x, &mon_y, &mon_width, &mon_height);
-	if (client->maxed) {
-		client->maxed = false;
-	} else if (client->geom.width == mon_width && client->geom.height == mon_height) {
-		client->geom.x = mon_x;
-		client->geom.y = mon_y;
-		client->geom.width -= 2 * conf.border_width;
-		client->geom.height -= 2 * conf.border_width;
-		maximize_window(client, mon_x, mon_y, mon_width, mon_height);
-		return;
-	}
+    will_resize = will_move = false;
+    client->hmaxed = client->vmaxed = false;
+    get_monitor_size(client, &mon_x, &mon_y, &mon_width, &mon_height);
+    if (client->maxed) {
+        client->maxed = false;
+    } else if (client->geom.width == mon_width && client->geom.height == mon_height) {
+        client->geom.x = mon_x;
+        client->geom.y = mon_y;
+        client->geom.width -= 2 * conf.border_width;
+        client->geom.height -= 2 * conf.border_width;
+        maximize_window(client, mon_x, mon_y, mon_width, mon_height);
+        return;
+    }
 
-	/* Is it outside the display? */
-	if (client->geom.x > mon_x + mon_width || client->geom.y > mon_y + mon_height
-			|| client->geom.x < mon_x || client->geom.y < mon_y) {
-		will_move = true;
-		if (client->geom.x > mon_x + mon_width)
-			client->geom.x = mon_x + mon_width - client->geom.width - 2 * conf.border_width;
-		else if (client->geom.x < mon_x)
-			client->geom.x = mon_x;
-		if (client->geom.y > mon_y + mon_height)
-			client->geom.y = mon_y + mon_height - client->geom.height - 2 * conf.border_width;
-		else if (client->geom.y < mon_y)
-			client->geom.y = mon_y;
-	}
+    /* Is it outside the display? */
+    if (client->geom.x > mon_x + mon_width || client->geom.y > mon_y + mon_height
+            || client->geom.x < mon_x || client->geom.y < mon_y) {
+        will_move = true;
+        if (client->geom.x > mon_x + mon_width)
+            client->geom.x = mon_x + mon_width - client->geom.width - 2 * conf.border_width;
+        else if (client->geom.x < mon_x)
+            client->geom.x = mon_x;
+        if (client->geom.y > mon_y + mon_height)
+            client->geom.y = mon_y + mon_height - client->geom.height - 2 * conf.border_width;
+        else if (client->geom.y < mon_y)
+            client->geom.y = mon_y;
+    }
 
-	/* Is it smaller than it wants to be? */
-	if (client->min_width != 0 && client->geom.width < client->min_width) {
-		client->geom.width = client->min_width;
-		will_resize = true;
-	}
-	if (client->min_height != 0 && client->geom.height < client->min_height) {
-		client->geom.height = client->min_height;
+    /* Is it smaller than it wants to be? */
+    if (client->min_width != 0 && client->geom.width < client->min_width) {
+        client->geom.width = client->min_width;
+        will_resize = true;
+    }
+    if (client->min_height != 0 && client->geom.height < client->min_height) {
+        client->geom.height = client->min_height;
 
-		will_resize = true;
-	}
+        will_resize = true;
+    }
 
-	/* If the window is larger than the screen or is a bit in the outside,
-	 * move it to the corner and resize it accordingly. */
-	if (client->geom.width + 2 * conf.border_width > mon_width) {
-		client->geom.x = mon_x;
-		client->geom.width = mon_width - 2 * conf.border_width;
-		will_move = will_resize = true;
-	} else if (client->geom.x + client->geom.width + 2 * conf.border_width
-			> mon_x + mon_width) {
-		client->geom.x = mon_x + mon_width - client->geom.width - 2 * conf.border_width;
-		will_move = true;
-	}
+    /* If the window is larger than the screen or is a bit in the outside,
+     * move it to the corner and resize it accordingly. */
+    if (client->geom.width + 2 * conf.border_width > mon_width) {
+        client->geom.x = mon_x;
+        client->geom.width = mon_width - 2 * conf.border_width;
+        will_move = will_resize = true;
+    } else if (client->geom.x + client->geom.width + 2 * conf.border_width
+            > mon_x + mon_width) {
+        client->geom.x = mon_x + mon_width - client->geom.width - 2 * conf.border_width;
+        will_move = true;
+    }
 
-	if (client->geom.height + 2 * conf.border_width > mon_height) {
-		client->geom.y = mon_y;
-		client->geom.height = mon_height - 2 * conf.border_width;
-		will_move = will_resize = true;
-	} else if (client->geom.y + client->geom.height + 2 * conf.border_width
-			> mon_y + mon_height) {
-		client->geom.y = mon_y + mon_height - client->geom.height - 2 * conf.border_width;
-		will_move = true;
-	}
+    if (client->geom.height + 2 * conf.border_width > mon_height) {
+        client->geom.y = mon_y;
+        client->geom.height = mon_height - 2 * conf.border_width;
+        will_move = will_resize = true;
+    } else if (client->geom.y + client->geom.height + 2 * conf.border_width
+            > mon_y + mon_height) {
+        client->geom.y = mon_y + mon_height - client->geom.height - 2 * conf.border_width;
+        will_move = true;
+    }
 
-	if (will_move)
-		teleport_window(client->window, client->geom.x, client->geom.y);
-	if (will_resize)
-		resize_window_absolute(client->window, client->geom.width, client->geom.height);
+    if (will_move)
+        teleport_window(client->window, client->geom.x, client->geom.y);
+    if (will_resize)
+        resize_window_absolute(client->window, client->geom.width, client->geom.height);
 }
 
-static void
+    static void
 maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mon_width, uint16_t mon_height)
 {
-	uint32_t values[1];
-	if (client == NULL)
-		return;
+    uint32_t values[1];
+    if (client == NULL)
+        return;
 
-	if (client->vmaxed || client->hmaxed || client->monocled)
-		unmaximize_window(client);
+    if (client->vmaxed || client->hmaxed || client->monocled)
+        unmaximize_window(client);
 
-	/* maximized windows don't have borders */
-	values[0] = 0;
-	if (client->geom.width != mon_width || client->geom.height != mon_height)
-		save_original_size(client);
-	xcb_configure_window(conn, client->window, XCB_CONFIG_WINDOW_BORDER_WIDTH,
-			values);
+    /* maximized windows don't have borders */
+    values[0] = 0;
+    if (client->geom.width != mon_width || client->geom.height != mon_height)
+        save_original_size(client);
+    xcb_configure_window(conn, client->window, XCB_CONFIG_WINDOW_BORDER_WIDTH,
+            values);
 
-	client->geom.x = mon_x;
-	client->geom.y = mon_y;
-	client->geom.width = mon_width;
-	client->geom.height = mon_height;
+    client->geom.x = mon_x;
+    client->geom.y = mon_y;
+    client->geom.width = mon_width;
+    client->geom.height = mon_height;
 
-	teleport_window(client->window, client->geom.x, client->geom.y);
-	resize_window_absolute(client->window, client->geom.width, client->geom.height);
-	client->maxed = true;
-	set_focused_no_raise(client);
+    teleport_window(client->window, client->geom.x, client->geom.y);
+    resize_window_absolute(client->window, client->geom.width, client->geom.height);
+    client->maxed = true;
+    set_focused_no_raise(client);
 
-	update_ewmh_wm_state(client);
+    update_ewmh_wm_state(client);
 }
 
-static void
+    static void
 hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width)
 {
-	if (client == NULL)
-		return;
+    if (client == NULL)
+        return;
 
-	if (client->maxed || client->vmaxed || client->monocled)
-		unmaximize_window(client);
+    if (client->maxed || client->vmaxed || client->monocled)
+        unmaximize_window(client);
 
-	if (client->geom.width != mon_width)
-		save_original_size(client);
-	client->geom.x = mon_x + conf.gap_left;
-	client->geom.width = mon_width - conf.gap_left - conf.gap_right - 2 * conf.border_width;
+    if (client->geom.width != mon_width)
+        save_original_size(client);
+    client->geom.x = mon_x + conf.gap_left;
+    client->geom.width = mon_width - conf.gap_left - conf.gap_right - 2 * conf.border_width;
 
-	teleport_window(client->window, client->geom.x, client->geom.y);
-	resize_window_absolute(client->window, client->geom.width, client->geom.height);
-	client->hmaxed = true;
+    teleport_window(client->window, client->geom.x, client->geom.y);
+    resize_window_absolute(client->window, client->geom.width, client->geom.height);
+    client->hmaxed = true;
 
-	update_ewmh_wm_state(client);
+    update_ewmh_wm_state(client);
 }
 
-static void
+    static void
 vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height)
 {
-	if (client == NULL)
-		return;
+    if (client == NULL)
+        return;
 
-	if (client->maxed || client->hmaxed || client->monocled)
-		unmaximize_window(client);
+    if (client->maxed || client->hmaxed || client->monocled)
+        unmaximize_window(client);
 
-	if (client->geom.height != mon_height)
-		save_original_size(client);
+    if (client->geom.height != mon_height)
+        save_original_size(client);
 
-	client->geom.y = mon_y + conf.gap_up;
-	client->geom.height = mon_height - conf.gap_up - conf.gap_down - 2 * conf.border_width;
+    client->geom.y = mon_y + conf.gap_up;
+    client->geom.height = mon_height - conf.gap_up - conf.gap_down - 2 * conf.border_width;
 
-	teleport_window(client->window, client->geom.x, client->geom.y);
-	resize_window_absolute(client->window, client->geom.width, client->geom.height);
-	client->vmaxed = true;
+    teleport_window(client->window, client->geom.x, client->geom.y);
+    resize_window_absolute(client->window, client->geom.width, client->geom.height);
+    client->vmaxed = true;
 
-	update_ewmh_wm_state(client);
+    update_ewmh_wm_state(client);
 }
 
-static void
+    static void
 monocle_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mon_width, uint16_t mon_height)
 {
-	if (client == NULL)
-		return;
+    if (client == NULL)
+        return;
 
-	if (client->maxed || client->vmaxed || client->monocled)
-		unmaximize_window(client);
+    if (client->maxed || client->vmaxed || client->monocled)
+        unmaximize_window(client);
 
-	save_original_size(client);
+    save_original_size(client);
 
-	client->geom.x = mon_x + conf.gap_left;
-	client->geom.y = mon_y + conf.gap_up;
-	client->geom.width = mon_width - 2 * conf.border_width
-		- conf.gap_left - conf.gap_right;
-	client->geom.height = mon_height - 2 * conf.border_width
-		- conf.gap_up - conf.gap_down;
-	teleport_window(client->window, client->geom.x, client->geom.y);
-	resize_window_absolute(client->window, client->geom.width, client->geom.height);
-	client->monocled = true;
-	set_focused_no_raise(client);
+    client->geom.x = mon_x + conf.gap_left;
+    client->geom.y = mon_y + conf.gap_up;
+    client->geom.width = mon_width - 2 * conf.border_width
+        - conf.gap_left - conf.gap_right;
+    client->geom.height = mon_height - 2 * conf.border_width
+        - conf.gap_up - conf.gap_down;
+    teleport_window(client->window, client->geom.x, client->geom.y);
+    resize_window_absolute(client->window, client->geom.width, client->geom.height);
+    client->monocled = true;
+    set_focused_no_raise(client);
 
-	update_ewmh_wm_state(client);
+    update_ewmh_wm_state(client);
 }
 
-static void
+    static void
 unmaximize_window(struct client *client)
 {
-	xcb_atom_t state[] = {
-		XCB_ICCCM_WM_STATE_NORMAL,
-		XCB_NONE
-	};
-	client->geom.x = client->orig_geom.x;
-	client->geom.y = client->orig_geom.y;
-	client->geom.width = client->orig_geom.width;
-	client->geom.height = client->orig_geom.height;
-	client->maxed = client->maxed = client->hmaxed
-		= client->vmaxed = client->monocled = false;
+    xcb_atom_t state[] = {
+        XCB_ICCCM_WM_STATE_NORMAL,
+        XCB_NONE
+    };
+    client->geom.x = client->orig_geom.x;
+    client->geom.y = client->orig_geom.y;
+    client->geom.width = client->orig_geom.width;
+    client->geom.height = client->orig_geom.height;
+    client->maxed = client->maxed = client->hmaxed
+        = client->vmaxed = client->monocled = false;
 
-	teleport_window(client->window, client->geom.x, client->geom.y);
-	resize_window_absolute(client->window, client->geom.width, client->geom.height);
-	set_borders(client, conf.unfocus_color);
+    teleport_window(client->window, client->geom.x, client->geom.y);
+    resize_window_absolute(client->window, client->geom.width, client->geom.height);
+    set_borders(client, conf.unfocus_color);
 
-	xcb_change_property(conn, XCB_PROP_MODE_REPLACE, client->window,
-			ewmh->_NET_WM_STATE, ewmh->_NET_WM_STATE, 32, 2, state);
+    xcb_change_property(conn, XCB_PROP_MODE_REPLACE, client->window,
+            ewmh->_NET_WM_STATE, ewmh->_NET_WM_STATE, 32, 2, state);
 }
 
-static bool
+    static bool
 is_maxed(struct client *client)
 {
-	if (client == NULL)
-		return false;
+    if (client == NULL)
+        return false;
 
-	return client->maxed
-		|| client->vmaxed
-		|| client->hmaxed
-		|| client->monocled;
+    return client->maxed
+        || client->vmaxed
+        || client->hmaxed
+        || client->monocled;
 }
 
-static void
+    static void
 cycle_window(struct client *client)
 {
-	struct list_item *item;
-	struct client *data;
+    struct list_item *item;
+    struct client *data;
 
-	item = win_list;
-	if (client != NULL)
-			while (item != NULL && item->data != client)
-				item = item->next;
+    item = win_list;
+    if (client != NULL)
+        while (item != NULL && item->data != client)
+            item = item->next;
 
-	/* if item is not found item will be null
-	 * and we'll get a nice segmentation fault. may the debugger be with you */
-	if (item != NULL)
-		do {
-			item = item->next;
-			if (item == NULL)
-				item = win_list;
-			data = item->data;
-		} while (!data->mapped);
+    /* if item is not found item will be null
+     * and we'll get a nice segmentation fault. may the debugger be with you */
+    if (item != NULL)
+        do {
+            item = item->next;
+            if (item == NULL)
+                item = win_list;
+            data = item->data;
+        } while (!data->mapped);
 
-	if (item != NULL && item->data != client)
-		set_focused(item->data);
+    if (item != NULL && item->data != client)
+        set_focused(item->data);
 }
 
-static void
+    static void
 rcycle_window(struct client *client)
 {
-	struct list_item *item = NULL;
-	struct list_item *last_item;
-	struct list_item *client_item;
-	struct client *data;
+    struct list_item *item = NULL;
+    struct list_item *last_item;
+    struct list_item *client_item;
+    struct client *data;
 
-	if (win_list == NULL)
-		return;
+    if (win_list == NULL)
+        return;
 
-	/* find last window */
-	item = win_list;
-	while (item != NULL) {
-		last_item = item;
-		item = item->next;
-	}
+    /* find last window */
+    item = win_list;
+    while (item != NULL) {
+        last_item = item;
+        item = item->next;
+    }
 
-	/* find item of client */
-	item = win_list;
-	while (item != NULL && item->data != client)
-		item = item->next;
+    /* find item of client */
+    item = win_list;
+    while (item != NULL && item->data != client)
+        item = item->next;
 
-	if (item == NULL)
-		item = last_item;
+    if (item == NULL)
+        item = last_item;
 
-	client_item = item;
+    client_item = item;
 
-	item = client_item;
-	do {
-		item = item->prev;
-		if (item == NULL)
-			item = last_item;
-		data = item->data;
-	} while (!data->mapped);
+    item = client_item;
+    do {
+        item = item->prev;
+        if (item == NULL)
+            item = last_item;
+        data = item->data;
+    } while (!data->mapped);
 
-	if (item != NULL && item->data != client)
-		set_focused(item->data);
+    if (item != NULL && item->data != client)
+        set_focused(item->data);
 }
 
-static void
+    static void
 cycle_window_in_group(struct client *client)
 {
-	struct list_item *item;
-	struct client *data;
+    struct list_item *item;
+    struct client *data;
 
-	if (client == NULL)
-		return;
+    if (client == NULL)
+        return;
 
-	item = win_list;
-	while (item != NULL && item->data != client)
-		item = item->next;
-	if (item != NULL)
-		do {
-			item = item->next;
-			if (item == NULL)
-				item = win_list;
-			data = item->data;
-		} while (!data->mapped || data->group != client->group);
+    item = win_list;
+    while (item != NULL && item->data != client)
+        item = item->next;
+    if (item != NULL)
+        do {
+            item = item->next;
+            if (item == NULL)
+                item = win_list;
+            data = item->data;
+        } while (!data->mapped || data->group != client->group);
 
-	if (item != NULL && data != client && data->group == client->group)
-		set_focused(item->data);
+    if (item != NULL && data != client && data->group == client->group)
+        set_focused(item->data);
 }
 
-static void
+    static void
 rcycle_window_in_group(struct client *client)
 {
-	struct list_item *item = NULL;
-	struct list_item *last_item;
-	struct list_item *client_item;
-	struct client *data;
+    struct list_item *item = NULL;
+    struct list_item *last_item;
+    struct list_item *client_item;
+    struct client *data;
 
-	if (win_list == NULL || client == NULL)
-		return;
+    if (win_list == NULL || client == NULL)
+        return;
 
-	/* find item of client */
-	item = win_list;
-	while (item != NULL && item->data != client)
-		item = item->next;
+    /* find item of client */
+    item = win_list;
+    while (item != NULL && item->data != client)
+        item = item->next;
 
-	if (item == NULL)
-		return;
+    if (item == NULL)
+        return;
 
-	client_item = item;
+    client_item = item;
 
-	/* find last window */
-	item = win_list;
-	while (item != NULL) {
-		last_item = item;
-		item = item->next;
-	}
+    /* find last window */
+    item = win_list;
+    while (item != NULL) {
+        last_item = item;
+        item = item->next;
+    }
 
-	item = client_item;
-	do {
-		item = item->prev;
-		if (item == NULL)
-			item = last_item;
-		data = item->data;
-	} while (!data->mapped || data->group != client->group);
+    item = client_item;
+    do {
+        item = item->prev;
+        if (item == NULL)
+            item = last_item;
+        data = item->data;
+    } while (!data->mapped || data->group != client->group);
 
-	if (item != NULL && data != client && data->group == client->group)
-		set_focused(item->data);
+    if (item != NULL && data != client && data->group == client->group)
+        set_focused(item->data);
 }
 
-static void
+    static void
 cardinal_focus(uint32_t dir)
 {
     // Don't focus if we don't have a current focus!
     if (focused_win == NULL)
         return;
-    
+
     struct list_item *valid_windows = NULL;
     struct list_item *desired_window = NULL;
     struct list_item *valid_window;
@@ -1259,19 +1259,19 @@ cardinal_focus(uint32_t dir)
         cur_distance = get_distance_between_windows(focused_win, (struct client *)win->data);
         cur_angle = get_angle_between_windows(focused_win, (struct client *)win->data);
 
-        if (is_in_valid_direction(dir, cur_angle, 5))
+        if (is_in_valid_direction(dir, cur_angle, 10))
         {
             if (is_overlapping(focused_win, (struct client *)win->data))
                 cur_distance = cur_distance * 0.1;
-            cur_distance = cur_distance * 0.5;
-        }
-        else if (is_in_valid_direction(dir, cur_angle, 20))
-        {
-            if (is_overlapping(focused_win, (struct client *)win->data))
-                cur_distance = cur_distance * 0.1;
-            cur_distance = cur_distance * 0.65;
+            cur_distance = cur_distance * 0.80;
         }
         else if (is_in_valid_direction(dir, cur_angle, 25))
+        {
+            if (is_overlapping(focused_win, (struct client *)win->data))
+                cur_distance = cur_distance * 0.1;
+            cur_distance = cur_distance * 0.85;
+        }
+        else if (is_in_valid_direction(dir, cur_angle, 35))
         {
             if (is_overlapping(focused_win, (struct client *)win->data))
                 cur_distance = cur_distance * 0.1;
@@ -1283,7 +1283,7 @@ cardinal_focus(uint32_t dir)
                 cur_distance = cur_distance * 0.1;
             cur_distance = cur_distance * 3;
         }
-        else 
+        else
         {
             win = win->next;
             continue;
@@ -1305,12 +1305,12 @@ cardinal_focus(uint32_t dir)
 
     if (desired_window != NULL)
         set_focused(desired_window->data);
-        
+
     if (valid_windows != NULL)
         list_delete_all_items(&valid_windows, false);
 }
 
-static struct win_position
+    static struct win_position
 get_window_position(uint32_t mode, struct client *win)
 {
     struct win_position pos;
@@ -1343,7 +1343,7 @@ get_window_position(uint32_t mode, struct client *win)
     return pos;
 }
 
-static bool
+    static bool
 is_in_cardinal_direction(uint32_t direction, struct client *a, struct client *b)
 {
     bool is_x_left_valid, is_x_right_valid, is_y_top_valid, is_y_bot_valid;
@@ -1368,7 +1368,7 @@ is_in_cardinal_direction(uint32_t direction, struct client *a, struct client *b)
     return false;
 }
 
-static bool
+    static bool
 is_in_valid_direction(uint32_t direction, float window_direction, float delta)
 {
     switch((uint32_t)direction)
@@ -1394,7 +1394,7 @@ is_in_valid_direction(uint32_t direction, float window_direction, float delta)
     return false;
 }
 
-static bool
+    static bool
 is_overlapping(struct client *a, struct client *b)
 {
     struct win_position pos_a_top_left = get_window_position(TOP_LEFT, a);
@@ -1414,12 +1414,12 @@ is_overlapping(struct client *a, struct client *b)
     return (is_x_top_overlapped || is_x_bot_overlapped) && (is_y_top_overlapped || is_y_bot_overlapped);
 }
 
-static float
+    static float
 get_angle_between_windows(struct client *a, struct client *b)
 {
     struct win_position a_pos = get_window_position(CENTER, a);
     struct win_position b_pos = get_window_position(CENTER, b);
-    
+
     float dx = (float)(b_pos.x - a_pos.x);
     float dy = (float)(b_pos.y - a_pos.y);
 
@@ -1429,7 +1429,7 @@ get_angle_between_windows(struct client *a, struct client *b)
     return atan2(dx,dy) * (180 / PI);
 }
 
-static float
+    static float
 get_distance_between_windows(struct client *a, struct client *b)
 {
     struct win_position a_pos = get_window_position(CENTER, a);
@@ -1439,256 +1439,256 @@ get_distance_between_windows(struct client *a, struct client *b)
     return distance;
 }
 
-static void
+    static void
 save_original_size(struct client *client)
 {
-	client->orig_geom.x = client->geom.x;
-	client->orig_geom.y = client->geom.y;
-	client->orig_geom.width = client->geom.width;
-	client->orig_geom.height = client->geom.height;
+    client->orig_geom.x = client->geom.x;
+    client->orig_geom.y = client->geom.y;
+    client->orig_geom.width = client->geom.width;
+    client->orig_geom.height = client->geom.height;
 }
 
 /*
  * Get atom by name.
  */
 
-static xcb_atom_t
+    static xcb_atom_t
 get_atom(char *name)
 {
-	xcb_intern_atom_cookie_t cookie = xcb_intern_atom(conn, false, strlen(name), name);
-	xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(conn, cookie, NULL);
+    xcb_intern_atom_cookie_t cookie = xcb_intern_atom(conn, false, strlen(name), name);
+    xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(conn, cookie, NULL);
 
-	if (!reply)
-		return XCB_ATOM_STRING;
+    if (!reply)
+        return XCB_ATOM_STRING;
 
-	return reply->atom;
+    return reply->atom;
 }
 
 /*
  * Get the mouse pointer's coordinates.
  */
 
-static bool
+    static bool
 get_pointer_location(xcb_window_t *win, int16_t *x, int16_t *y)
 {
-	xcb_query_pointer_reply_t *pointer;
+    xcb_query_pointer_reply_t *pointer;
 
-	pointer = xcb_query_pointer_reply(conn,
-			xcb_query_pointer(conn, *win), 0);
+    pointer = xcb_query_pointer_reply(conn,
+            xcb_query_pointer(conn, *win), 0);
 
-	*x = pointer->win_x;
-	*y = pointer->win_y;
+    *x = pointer->win_x;
+    *y = pointer->win_y;
 
-	free(pointer);
+    free(pointer);
 
-	return pointer != NULL;
+    return pointer != NULL;
 }
 
-static void
+    static void
 center_pointer(struct client *client)
 {
-	int16_t cur_x, cur_y;
+    int16_t cur_x, cur_y;
 
-	cur_x = cur_y = 0;
+    cur_x = cur_y = 0;
 
-	switch (conf.cursor_position) {
-	case TOP_LEFT:
-		cur_x = -conf.border_width;
-		cur_y = -conf.border_width;
-		break;
-	case TOP_RIGHT:
-		cur_x = client->geom.width + conf.border_width;
-		cur_y = 0 - conf.border_width;
-		break;
-	case BOTTOM_LEFT:
-		cur_x = 0 - conf.border_width;
-		cur_y = client->geom.height + conf.border_width;
-		break;
-	case BOTTOM_RIGHT:
-		cur_x = client->geom.width + conf.border_width;
-		cur_y = client->geom.height + conf.border_width;
-		break;
-	case CENTER:
-		cur_x = client->geom.width / 2;
-		cur_y = client->geom.height / 2;
-		break;
-	default: break;
-	}
+    switch (conf.cursor_position) {
+        case TOP_LEFT:
+            cur_x = -conf.border_width;
+            cur_y = -conf.border_width;
+            break;
+        case TOP_RIGHT:
+            cur_x = client->geom.width + conf.border_width;
+            cur_y = 0 - conf.border_width;
+            break;
+        case BOTTOM_LEFT:
+            cur_x = 0 - conf.border_width;
+            cur_y = client->geom.height + conf.border_width;
+            break;
+        case BOTTOM_RIGHT:
+            cur_x = client->geom.width + conf.border_width;
+            cur_y = client->geom.height + conf.border_width;
+            break;
+        case CENTER:
+            cur_x = client->geom.width / 2;
+            cur_y = client->geom.height / 2;
+            break;
+        default: break;
+    }
 
-	xcb_warp_pointer(conn, XCB_NONE, client->window, 0, 0, 0, 0, cur_x, cur_y);
-	xcb_flush(conn);
+    xcb_warp_pointer(conn, XCB_NONE, client->window, 0, 0, 0, 0, cur_x, cur_y);
+    xcb_flush(conn);
 }
 
 /*
  * Get the client instance with a given window id.
  */
 
-static struct client*
+    static struct client*
 find_client(xcb_window_t *win)
 {
-	struct list_item *item;
+    struct list_item *item;
 
-	item = win_list;
-	while (item != NULL && ((struct client *)item->data)->window != *win)
-		item = item ->next;
+    item = win_list;
+    while (item != NULL && ((struct client *)item->data)->window != *win)
+        item = item ->next;
 
-	if (item == NULL)
-		return NULL;
-	else
-		return item->data;
+    if (item == NULL)
+        return NULL;
+    else
+        return item->data;
 }
 
 /*
  * Get a window's geometry.
  */
 
-static bool
+    static bool
 get_geometry(xcb_window_t *win, int16_t *x, int16_t *y, uint16_t *width, uint16_t *height)
 {
-	xcb_get_geometry_reply_t *reply = xcb_get_geometry_reply(conn, xcb_get_geometry(conn, *win), NULL);
+    xcb_get_geometry_reply_t *reply = xcb_get_geometry_reply(conn, xcb_get_geometry(conn, *win), NULL);
 
-	if (reply == NULL)
-		return false;
-	if (x != NULL)
-		*x = reply->x;
-	if (y != NULL)
-		*y = reply->y;
-	if (width != NULL)
-		*width = reply->width;
-	if (height != NULL)
-		*height = reply->height;
+    if (reply == NULL)
+        return false;
+    if (x != NULL)
+        *x = reply->x;
+    if (y != NULL)
+        *y = reply->y;
+    if (width != NULL)
+        *width = reply->width;
+    if (height != NULL)
+        *height = reply->height;
 
-	free(reply);
-	return true;
+    free(reply);
+    return true;
 }
 
 /*
  * Set the color of the border.
  */
 
-static void
+    static void
 set_borders(struct client *client, uint32_t color)
 {
-	if (client == NULL)
-		return;
-	uint32_t values[1];
-	values[0] = conf.border_width;
-	xcb_configure_window(conn, client->window,
-			XCB_CONFIG_WINDOW_BORDER_WIDTH, values);
-	if (conf.borders == true) {
-		values[0] = color;
-		xcb_change_window_attributes(conn, client->window, XCB_CW_BORDER_PIXEL, values);
-	}
+    if (client == NULL)
+        return;
+    uint32_t values[1];
+    values[0] = conf.border_width;
+    xcb_configure_window(conn, client->window,
+            XCB_CONFIG_WINDOW_BORDER_WIDTH, values);
+    if (conf.borders == true) {
+        values[0] = color;
+        xcb_change_window_attributes(conn, client->window, XCB_CW_BORDER_PIXEL, values);
+    }
 }
 
 /*
  * Returns true if window is mapped.
  */
 
-static bool
+    static bool
 is_mapped(xcb_window_t win)
 {
-	bool yes;
-	xcb_get_window_attributes_reply_t *r =
-		xcb_get_window_attributes_reply(conn,
-				xcb_get_window_attributes(conn, win),
-				NULL);
-	if (r == NULL)
-		return false;
+    bool yes;
+    xcb_get_window_attributes_reply_t *r =
+        xcb_get_window_attributes_reply(conn,
+                xcb_get_window_attributes(conn, win),
+                NULL);
+    if (r == NULL)
+        return false;
 
-	yes = r->map_state == XCB_MAP_STATE_VIEWABLE;
-	free(r);
+    yes = r->map_state == XCB_MAP_STATE_VIEWABLE;
+    free(r);
 
-	return yes;
+    return yes;
 }
 
 /*
  * Deletes and frees a client from the list.
  */
 
-static void
+    static void
 free_window(struct client *client)
 {
-	struct list_item *item;
+    struct list_item *item;
 
-	DMSG("freeing 0x%08x\n", client->window);
-	item = client->item;
+    DMSG("freeing 0x%08x\n", client->window);
+    item = client->item;
 
-	free(client);
-	list_delete_item(&win_list, item);
+    free(client);
+    list_delete_item(&win_list, item);
 }
 
 /*
  * Add window to the ewmh client list.
  */
 
-static void
+    static void
 add_to_client_list(xcb_window_t win)
 {
-	xcb_change_property(conn, XCB_PROP_MODE_APPEND, scr->root,
-			ewmh->_NET_CLIENT_LIST, XCB_ATOM_WINDOW, 32, 1, &win);
-	xcb_change_property(conn, XCB_PROP_MODE_APPEND, scr->root, ewmh->_NET_CLIENT_LIST_STACKING, XCB_ATOM_WINDOW, 32, 1, &win);
+    xcb_change_property(conn, XCB_PROP_MODE_APPEND, scr->root,
+            ewmh->_NET_CLIENT_LIST, XCB_ATOM_WINDOW, 32, 1, &win);
+    xcb_change_property(conn, XCB_PROP_MODE_APPEND, scr->root, ewmh->_NET_CLIENT_LIST_STACKING, XCB_ATOM_WINDOW, 32, 1, &win);
 }
 
 /*
  * Adds all windows to the ewmh client list.
  */
 
-static void
+    static void
 update_client_list(void)
 {
-	xcb_window_t *children;
-	struct client *client;
-	uint32_t len;
+    xcb_window_t *children;
+    struct client *client;
+    uint32_t len;
 
-	xcb_query_tree_reply_t *reply = xcb_query_tree_reply(conn,
-			xcb_query_tree(conn, scr->root), NULL);
-	xcb_delete_property(conn, scr->root, ewmh->_NET_CLIENT_LIST);
-	xcb_delete_property(conn, scr->root, ewmh->_NET_CLIENT_LIST_STACKING);
+    xcb_query_tree_reply_t *reply = xcb_query_tree_reply(conn,
+            xcb_query_tree(conn, scr->root), NULL);
+    xcb_delete_property(conn, scr->root, ewmh->_NET_CLIENT_LIST);
+    xcb_delete_property(conn, scr->root, ewmh->_NET_CLIENT_LIST_STACKING);
 
-	if (reply == NULL) {
-		add_to_client_list(0);
-		return;
-	}
+    if (reply == NULL) {
+        add_to_client_list(0);
+        return;
+    }
 
-	len = xcb_query_tree_children_length(reply);
-	children = xcb_query_tree_children(reply);
+    len = xcb_query_tree_children_length(reply);
+    children = xcb_query_tree_children(reply);
 
-	for (unsigned int i = 0; i < len; i++) {
-		client = find_client(&children[i]);
-		if (client != NULL)
-			add_to_client_list(client->window);
-	}
+    for (unsigned int i = 0; i < len; i++) {
+        client = find_client(&children[i]);
+        if (client != NULL)
+            add_to_client_list(client->window);
+    }
 
-	free(reply);
+    free(reply);
 }
 
-static void
+    static void
 update_wm_desktop(struct client *client)
 {
-	if (client != NULL)
-		xcb_ewmh_set_wm_desktop(ewmh, client->window, client->group);
+    if (client != NULL)
+        xcb_ewmh_set_wm_desktop(ewmh, client->window, client->group);
 }
 
-static void
+    static void
 group_add_window(struct client *client, uint32_t group)
 {
-	if (client != NULL && group < conf.groups) {
-		client->group = group;
-		group_in_use[group] = true;
-		update_wm_desktop(client);
-		update_group_list();
-	}
+    if (client != NULL && group < conf.groups) {
+        client->group = group;
+        group_in_use[group] = true;
+        update_wm_desktop(client);
+        update_group_list();
+    }
 }
 
-static void
+    static void
 group_remove_window(struct client *client)
 {
-	if (client != NULL) {
-		client->group = NULL_GROUP;
-		update_wm_desktop(client);
-		update_group_list();
-	}
+    if (client != NULL) {
+        client->group = NULL_GROUP;
+        update_wm_desktop(client);
+        update_group_list();
+    }
 }
 
 static void
@@ -1699,7 +1699,7 @@ group_remove_all_windows(uint32_t group) {
     struct list_item *item;
     struct client *client;
 
-	for (item = win_list; item != NULL; item = item->next) {
+    for (item = win_list; item != NULL; item = item->next) {
         client = item->data;
         group_remove_window(client);
     }
@@ -1709,508 +1709,508 @@ group_remove_all_windows(uint32_t group) {
 
 static void
 group_activate(uint32_t group) {
-	if (group >= conf.groups)
-		return;
+    if (group >= conf.groups)
+        return;
 
-	struct list_item *item;
-	struct client *client;
+    struct list_item *item;
+    struct client *client;
 
-	for (item = win_list; item != NULL; item = item->next) {
-		client = item->data;
-		if (client->group == group) {
-			xcb_map_window(conn, client->window);
-			set_focused(client);
-		}
-	}
-	group_in_use[group] = true;
-	last_group = group;
-	update_group_list();
+    for (item = win_list; item != NULL; item = item->next) {
+        client = item->data;
+        if (client->group == group) {
+            xcb_map_window(conn, client->window);
+            set_focused(client);
+        }
+    }
+    group_in_use[group] = true;
+    last_group = group;
+    update_group_list();
 }
 
-static void
+    static void
 group_deactivate(uint32_t group)
 {
-	if (group >= conf.groups)
-		return;
+    if (group >= conf.groups)
+        return;
 
-	struct list_item *item;
-	struct client *client;
+    struct list_item *item;
+    struct client *client;
 
-	for (item = win_list; item != NULL; item = item->next) {
-		client = item->data;
-		if (client->group == group)
-			xcb_unmap_window(conn, client->window);
-	}
-	group_in_use[group] = false;
-	update_group_list();
+    for (item = win_list; item != NULL; item = item->next) {
+        client = item->data;
+        if (client->group == group)
+            xcb_unmap_window(conn, client->window);
+    }
+    group_in_use[group] = false;
+    update_group_list();
 }
 
-static void
+    static void
 group_toggle(uint32_t group)
 {
-	if (group >= conf.groups)
-		return;
+    if (group >= conf.groups)
+        return;
 
-	if (group_in_use[group])
-		group_deactivate(group);
-	else
-		group_activate(group);
-	last_group = group;
-	update_group_list();
+    if (group_in_use[group])
+        group_deactivate(group);
+    else
+        group_activate(group);
+    last_group = group;
+    update_group_list();
 }
 
-static void
+    static void
 group_activate_specific(uint32_t group)
 {
-	if (group >= conf.groups)
-		return;
+    if (group >= conf.groups)
+        return;
 
-	for (unsigned int i = 0; i < conf.groups; i++) {
-		if (i == group)
-			group_activate(i);
-		else
-			group_deactivate(i);
-	}
-	update_group_list();
+    for (unsigned int i = 0; i < conf.groups; i++) {
+        if (i == group)
+            group_activate(i);
+        else
+            group_deactivate(i);
+    }
+    update_group_list();
 }
 
 static void update_group_list(void)
 {
-	struct list_item *item;
-	struct client *client;
-	int in_group;
-	bool first = true;
+    struct list_item *item;
+    struct client *client;
+    int in_group;
+    bool first = true;
 
-	for (unsigned int i = 0; i < conf.groups; i++) {
-		/* deactivate group if no window in group */
-		in_group = 0;
-		for (item = win_list; item != NULL; item = item->next) {
-			client = item->data;
-			if (client->group == i)
-				in_group++;
-		}
-		if (in_group == 0)
-			group_in_use[i] = false;
+    for (unsigned int i = 0; i < conf.groups; i++) {
+        /* deactivate group if no window in group */
+        in_group = 0;
+        for (item = win_list; item != NULL; item = item->next) {
+            client = item->data;
+            if (client->group == i)
+                in_group++;
+        }
+        if (in_group == 0)
+            group_in_use[i] = false;
 
-		if (group_in_use[i]) {
-			uint8_t mode = XCB_PROP_MODE_APPEND;
-			uint32_t data[] = { i + 1 };
-			if (first) {
-				mode = XCB_PROP_MODE_REPLACE;
-				first = false;
-			}
-			xcb_change_property(conn, mode, scr->root, ATOMS[WINDOWCHEF_ACTIVE_GROUPS], XCB_ATOM_INTEGER, 32, 1, data);
-		}
-	}
+        if (group_in_use[i]) {
+            uint8_t mode = XCB_PROP_MODE_APPEND;
+            uint32_t data[] = { i + 1 };
+            if (first) {
+                mode = XCB_PROP_MODE_REPLACE;
+                first = false;
+            }
+            xcb_change_property(conn, mode, scr->root, ATOMS[WINDOWCHEF_ACTIVE_GROUPS], XCB_ATOM_INTEGER, 32, 1, data);
+        }
+    }
 
-	if (first)
-		xcb_change_property(conn, XCB_PROP_MODE_REPLACE, scr->root, ATOMS[WINDOWCHEF_ACTIVE_GROUPS], XCB_ATOM_INTEGER, 32, 0, NULL);
+    if (first)
+        xcb_change_property(conn, XCB_PROP_MODE_REPLACE, scr->root, ATOMS[WINDOWCHEF_ACTIVE_GROUPS], XCB_ATOM_INTEGER, 32, 0, NULL);
 }
 
-static void
+    static void
 change_nr_of_groups(uint32_t groups)
 {
-	bool *copy = malloc(groups * sizeof(bool));
-	uint32_t until = groups < conf.groups ? groups : conf.groups;
-	struct list_item *item;
-	struct client *client;
+    bool *copy = malloc(groups * sizeof(bool));
+    uint32_t until = groups < conf.groups ? groups : conf.groups;
+    struct list_item *item;
+    struct client *client;
 
-	for (uint32_t i = 0; i < until; i++)
-		copy[i] = group_in_use[i];
+    for (uint32_t i = 0; i < until; i++)
+        copy[i] = group_in_use[i];
 
-	if (groups < conf.groups)
-		for (item = win_list; item != NULL; item = item->next) {
-			client = item->data;
-			if (client->group != NULL_GROUP && client->group >= groups) {
-				group_activate(client->group);
-				client->group = NULL_GROUP;
-				update_wm_desktop(client);
-			}
-		}
+    if (groups < conf.groups)
+        for (item = win_list; item != NULL; item = item->next) {
+            client = item->data;
+            if (client->group != NULL_GROUP && client->group >= groups) {
+                group_activate(client->group);
+                client->group = NULL_GROUP;
+                update_wm_desktop(client);
+            }
+        }
 
-	conf.groups = groups;
-	free(group_in_use);
-	group_in_use = copy;
+    conf.groups = groups;
+    free(group_in_use);
+    group_in_use = copy;
 }
 
-static void
+    static void
 refresh_borders(void)
 {
-	struct list_item *item;
-	struct client *client;
+    struct list_item *item;
+    struct client *client;
 
-	for (item = win_list; item != NULL; item = item->next) {
-		client = item->data;
-		if (client->maxed)
-			continue;
+    for (item = win_list; item != NULL; item = item->next) {
+        client = item->data;
+        if (client->maxed)
+            continue;
 
-		if (client == focused_win)
-			set_borders(client, conf.focus_color);
-		else
-			set_borders(client, conf.unfocus_color);
-	}
+        if (client == focused_win)
+            set_borders(client, conf.focus_color);
+        else
+            set_borders(client, conf.unfocus_color);
+    }
 }
 
-static void
+    static void
 update_ewmh_wm_state(struct client *client)
 {
-	int i;
-	uint32_t values[12];
+    int i;
+    uint32_t values[12];
 
-	if (client == NULL)
-		return;
+    if (client == NULL)
+        return;
 #define HANDLE_WM_STATE(s) \
-	values[i] = ewmh->_NET_WM_STATE_##s; \
-	i++; \
-	DMSG("ewmh net_wm_state %s present\n", #s);
+    values[i] = ewmh->_NET_WM_STATE_##s; \
+    i++; \
+    DMSG("ewmh net_wm_state %s present\n", #s);
 
-	i = 0;
-	if (client->maxed) {
-		HANDLE_WM_STATE(FULLSCREEN);
-	}
-	if (client->vmaxed) {
-		HANDLE_WM_STATE(MAXIMIZED_VERT);
-	}
-	if (client->hmaxed) {
-		HANDLE_WM_STATE(MAXIMIZED_HORZ);
-	}
+    i = 0;
+    if (client->maxed) {
+        HANDLE_WM_STATE(FULLSCREEN);
+    }
+    if (client->vmaxed) {
+        HANDLE_WM_STATE(MAXIMIZED_VERT);
+    }
+    if (client->hmaxed) {
+        HANDLE_WM_STATE(MAXIMIZED_HORZ);
+    }
 
-	xcb_ewmh_set_wm_state(ewmh, client->window, i, values);
+    xcb_ewmh_set_wm_state(ewmh, client->window, i, values);
 }
 
-static void
+    static void
 handle_wm_state(struct client *client, xcb_atom_t state, unsigned int action)
 {
-	int16_t mon_x, mon_y;
-	uint16_t mon_w, mon_h;
-	get_monitor_size(client, &mon_x, &mon_y, &mon_w, &mon_h);
-	if (state == ewmh->_NET_WM_STATE_FULLSCREEN) {
-		if (action == XCB_EWMH_WM_STATE_ADD) {
-			maximize_window(client, mon_x, mon_y, mon_w, mon_h);
-		} else if (action == XCB_EWMH_WM_STATE_REMOVE && client->maxed) {
-			unmaximize_window(client);
-			set_focused(client);
-		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
-			if (client->maxed) {
-				unmaximize_window(client);
-				set_focused(client);
-			} else {
-				maximize_window(client, mon_x, mon_y, mon_w, mon_h);
-			}
-		}
-	} else if (state == ewmh->_NET_WM_STATE_MAXIMIZED_VERT) {
-		if (action == XCB_EWMH_WM_STATE_ADD) {
-			vmaximize_window(client, mon_y, mon_h);
-		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
-			if (client->vmaxed)
-				unmaximize_window(client);
-		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
-			if (client->vmaxed)
-				unmaximize_window(client);
-			else
-				vmaximize_window(client, mon_y, mon_h);
-		}
-	} else if (state == ewmh->_NET_WM_STATE_MAXIMIZED_HORZ) {
-		if (action == XCB_EWMH_WM_STATE_ADD) {
-			hmaximize_window(client, mon_y, mon_h);
-		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
-			if (client->hmaxed)
-				unmaximize_window(client);
-		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
-			if (client->hmaxed)
-				unmaximize_window(client);
-			else
-				hmaximize_window(client, mon_x, mon_w);
-		}
-	}
+    int16_t mon_x, mon_y;
+    uint16_t mon_w, mon_h;
+    get_monitor_size(client, &mon_x, &mon_y, &mon_w, &mon_h);
+    if (state == ewmh->_NET_WM_STATE_FULLSCREEN) {
+        if (action == XCB_EWMH_WM_STATE_ADD) {
+            maximize_window(client, mon_x, mon_y, mon_w, mon_h);
+        } else if (action == XCB_EWMH_WM_STATE_REMOVE && client->maxed) {
+            unmaximize_window(client);
+            set_focused(client);
+        } else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
+            if (client->maxed) {
+                unmaximize_window(client);
+                set_focused(client);
+            } else {
+                maximize_window(client, mon_x, mon_y, mon_w, mon_h);
+            }
+        }
+    } else if (state == ewmh->_NET_WM_STATE_MAXIMIZED_VERT) {
+        if (action == XCB_EWMH_WM_STATE_ADD) {
+            vmaximize_window(client, mon_y, mon_h);
+        } else if (action == XCB_EWMH_WM_STATE_REMOVE) {
+            if (client->vmaxed)
+                unmaximize_window(client);
+        } else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
+            if (client->vmaxed)
+                unmaximize_window(client);
+            else
+                vmaximize_window(client, mon_y, mon_h);
+        }
+    } else if (state == ewmh->_NET_WM_STATE_MAXIMIZED_HORZ) {
+        if (action == XCB_EWMH_WM_STATE_ADD) {
+            hmaximize_window(client, mon_y, mon_h);
+        } else if (action == XCB_EWMH_WM_STATE_REMOVE) {
+            if (client->hmaxed)
+                unmaximize_window(client);
+        } else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
+            if (client->hmaxed)
+                unmaximize_window(client);
+            else
+                hmaximize_window(client, mon_x, mon_w);
+        }
+    }
 }
 
 /*
  * Adds X event handlers to the array.
  */
 
-static void
+    static void
 register_event_handlers(void)
 {
-	for (int i = 0; i <= LAST_XCB_EVENT; i++)
-		events[i] = NULL;
+    for (int i = 0; i <= LAST_XCB_EVENT; i++)
+        events[i] = NULL;
 
-	events[XCB_CONFIGURE_REQUEST] = event_configure_request;
-	events[XCB_DESTROY_NOTIFY]    = event_destroy_notify;
-	events[XCB_ENTER_NOTIFY]      = event_enter_notify;
-	events[XCB_MAP_REQUEST]       = event_map_request;
-	events[XCB_MAP_NOTIFY]        = event_map_notify;
-	events[XCB_UNMAP_NOTIFY]      = event_unmap_notify;
-	events[XCB_CLIENT_MESSAGE]    = event_client_message;
-	events[XCB_CONFIGURE_NOTIFY]  = event_configure_notify;
-	events[XCB_CIRCULATE_REQUEST] = event_circulate_request;
-	events[XCB_FOCUS_OUT]         = event_focus_out;
+    events[XCB_CONFIGURE_REQUEST] = event_configure_request;
+    events[XCB_DESTROY_NOTIFY]    = event_destroy_notify;
+    events[XCB_ENTER_NOTIFY]      = event_enter_notify;
+    events[XCB_MAP_REQUEST]       = event_map_request;
+    events[XCB_MAP_NOTIFY]        = event_map_notify;
+    events[XCB_UNMAP_NOTIFY]      = event_unmap_notify;
+    events[XCB_CLIENT_MESSAGE]    = event_client_message;
+    events[XCB_CONFIGURE_NOTIFY]  = event_configure_notify;
+    events[XCB_CIRCULATE_REQUEST] = event_circulate_request;
+    events[XCB_FOCUS_OUT]         = event_focus_out;
 }
 
 /*
  * A window wants to be configured.
  */
 
-static void
+    static void
 event_configure_request(xcb_generic_event_t *ev)
 {
-	xcb_configure_request_event_t *e = (xcb_configure_request_event_t *)ev;
-	struct client *client;
-	uint32_t values[7];
-	int i = 0;
+    xcb_configure_request_event_t *e = (xcb_configure_request_event_t *)ev;
+    struct client *client;
+    uint32_t values[7];
+    int i = 0;
 
-	client = find_client(&e->window);
-	if (client != NULL) {
+    client = find_client(&e->window);
+    if (client != NULL) {
 
-		if (e->value_mask & XCB_CONFIG_WINDOW_X
-				&& !client->maxed && !client->monocled && !client->hmaxed)
-			client->geom.x = e->x;
+        if (e->value_mask & XCB_CONFIG_WINDOW_X
+                && !client->maxed && !client->monocled && !client->hmaxed)
+            client->geom.x = e->x;
 
-		if (e->value_mask & XCB_CONFIG_WINDOW_Y
-				&& !client->maxed && !client->monocled && !client->vmaxed)
-			client->geom.y = e->y;
+        if (e->value_mask & XCB_CONFIG_WINDOW_Y
+                && !client->maxed && !client->monocled && !client->vmaxed)
+            client->geom.y = e->y;
 
-		if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH
-				&& !client->maxed && !client->monocled && !client->hmaxed)
-			client->geom.width= e->width;
+        if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH
+                && !client->maxed && !client->monocled && !client->hmaxed)
+            client->geom.width= e->width;
 
-		if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT
-				&& !client->maxed && !client->monocled && !client->vmaxed)
-			client->geom.height = e->height;
+        if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT
+                && !client->maxed && !client->monocled && !client->vmaxed)
+            client->geom.height = e->height;
 
-		if (e->value_mask & XCB_CONFIG_WINDOW_STACK_MODE) {
-			values[0] = e->stack_mode;
-			xcb_configure_window(conn, e->window,
-					XCB_CONFIG_WINDOW_STACK_MODE, values);
-		}
+        if (e->value_mask & XCB_CONFIG_WINDOW_STACK_MODE) {
+            values[0] = e->stack_mode;
+            xcb_configure_window(conn, e->window,
+                    XCB_CONFIG_WINDOW_STACK_MODE, values);
+        }
 
-		if (!client->maxed) {
-			fit_on_screen(client);
-		}
+        if (!client->maxed) {
+            fit_on_screen(client);
+        }
 
-		teleport_window(client->window, client->geom.x, client->geom.y);
-		resize_window_absolute(client->window, client->geom.width, client->geom.height);
-		if (!client->maxed)
-			set_borders(client, conf.focus_color);
-	} else {
-		if (e->value_mask & XCB_CONFIG_WINDOW_X) {
-			values[i] = e->x;
-			i++;
-		}
+        teleport_window(client->window, client->geom.x, client->geom.y);
+        resize_window_absolute(client->window, client->geom.width, client->geom.height);
+        if (!client->maxed)
+            set_borders(client, conf.focus_color);
+    } else {
+        if (e->value_mask & XCB_CONFIG_WINDOW_X) {
+            values[i] = e->x;
+            i++;
+        }
 
-		if (e->value_mask & XCB_CONFIG_WINDOW_Y) {
-			values[i] = e->y;
-			i++;
-		}
+        if (e->value_mask & XCB_CONFIG_WINDOW_Y) {
+            values[i] = e->y;
+            i++;
+        }
 
-		if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH) {
-			values[i] = e->width;
-			i++;
-		}
+        if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH) {
+            values[i] = e->width;
+            i++;
+        }
 
-		if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT) {
-			values[i] = e->height;
-			i++;
-		}
+        if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT) {
+            values[i] = e->height;
+            i++;
+        }
 
-		if (e->value_mask & XCB_CONFIG_WINDOW_SIBLING) {
-			values[i] = e->sibling;
-			i++;
-		}
+        if (e->value_mask & XCB_CONFIG_WINDOW_SIBLING) {
+            values[i] = e->sibling;
+            i++;
+        }
 
-		if (e->value_mask & XCB_CONFIG_WINDOW_STACK_MODE) {
-			values[i] = e->stack_mode;
-			i++;
-		}
+        if (e->value_mask & XCB_CONFIG_WINDOW_STACK_MODE) {
+            values[i] = e->stack_mode;
+            i++;
+        }
 
-		if (i == 0)
-			return;
-		xcb_configure_window(conn, e->window, e->value_mask, values);
-	}
+        if (i == 0)
+            return;
+        xcb_configure_window(conn, e->window, e->value_mask, values);
+    }
 }
 
 /*
  * Window has been destroyed.
  */
 
-static void
+    static void
 event_destroy_notify(xcb_generic_event_t *ev)
 {
-	struct client *client;
-	xcb_destroy_notify_event_t *e = (xcb_destroy_notify_event_t *)ev;
+    struct client *client;
+    xcb_destroy_notify_event_t *e = (xcb_destroy_notify_event_t *)ev;
 
-	client = find_client(&e->window);
-	if (focused_win != NULL && focused_win == client)
-		focused_win = NULL;
+    client = find_client(&e->window);
+    if (focused_win != NULL && focused_win == client)
+        focused_win = NULL;
 
-	if (client != NULL) {
-		free_window(client);
-	}
+    if (client != NULL) {
+        free_window(client);
+    }
 
-	update_client_list();
-	update_group_list();
+    update_client_list();
+    update_group_list();
 }
 
 /*
  * The mouse pointer has entered the window.
  */
 
-static void
+    static void
 event_enter_notify(xcb_generic_event_t *ev)
 {
-	xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *)ev;
-	struct client *client;
+    xcb_enter_notify_event_t *e = (xcb_enter_notify_event_t *)ev;
+    struct client *client;
 
-	if (conf.sloppy_focus == false)
-		return;
+    if (conf.sloppy_focus == false)
+        return;
 
-	if (focused_win != NULL && e->event == focused_win->window)
-		return;
+    if (focused_win != NULL && e->event == focused_win->window)
+        return;
 
-	client = find_client(&e->event);
+    client = find_client(&e->event);
 
-	if (client != NULL)
-		set_focused_no_raise(client);
+    if (client != NULL)
+        set_focused_no_raise(client);
 }
 
 /*
  * A window wants to show up on the screen.
  */
 
-static void
+    static void
 event_map_request(xcb_generic_event_t *ev)
 {
-	xcb_map_request_event_t *e = (xcb_map_request_event_t *)ev;
-	struct client *client;
-	long data[] = {
-		XCB_ICCCM_WM_STATE_NORMAL,
-		XCB_NONE,
-	};
+    xcb_map_request_event_t *e = (xcb_map_request_event_t *)ev;
+    struct client *client;
+    long data[] = {
+        XCB_ICCCM_WM_STATE_NORMAL,
+        XCB_NONE,
+    };
 
-	/* create window if new */
-	client = find_client(&e->window);
-	if (client == NULL) {
-		client = setup_window(e->window);
+    /* create window if new */
+    client = find_client(&e->window);
+    if (client == NULL) {
+        client = setup_window(e->window);
 
-		/* client is a dock or some kind of window that needs to be ignored */
-		if (client == NULL)
-			return;
+        /* client is a dock or some kind of window that needs to be ignored */
+        if (client == NULL)
+            return;
 
-		if (!client->geom.set_by_user) {
-			if (!get_pointer_location(&scr->root, &client->geom.x, &client->geom.y))
-				client->geom.x = client->geom.y = 0;
+        if (!client->geom.set_by_user) {
+            if (!get_pointer_location(&scr->root, &client->geom.x, &client->geom.y))
+                client->geom.x = client->geom.y = 0;
 
-			client->geom.x -= client->geom.width / 2;
-			client->geom.y -= client->geom.height / 2;
-			teleport_window(client->window, client->geom.x, client->geom.y);
-		}
-		if (conf.sticky_windows)
-			group_add_window(client, last_group);
-	}
+            client->geom.x -= client->geom.width / 2;
+            client->geom.y -= client->geom.height / 2;
+            teleport_window(client->window, client->geom.x, client->geom.y);
+        }
+        if (conf.sticky_windows)
+            group_add_window(client, last_group);
+    }
 
-	xcb_map_window(conn, e->window);
+    xcb_map_window(conn, e->window);
 
-	/* in case of fire, abort */
-	if (client == NULL)
-		return;
+    /* in case of fire, abort */
+    if (client == NULL)
+        return;
 
-	if (randr_base != -1) {
-		client->monitor = find_monitor_by_coord(client->geom.x, client->geom.y);
-		if (client->monitor == NULL && mon_list != NULL)
-			client->monitor = mon_list->data;
-	}
+    if (randr_base != -1) {
+        client->monitor = find_monitor_by_coord(client->geom.x, client->geom.y);
+        if (client->monitor == NULL && mon_list != NULL)
+            client->monitor = mon_list->data;
+    }
 
-	fit_on_screen(client);
+    fit_on_screen(client);
 
-	/* window is normal */
-	xcb_change_property(conn, XCB_PROP_MODE_REPLACE, client->window,
-			ewmh->_NET_WM_STATE, ewmh->_NET_WM_STATE, 32, 2, data);
+    /* window is normal */
+    xcb_change_property(conn, XCB_PROP_MODE_REPLACE, client->window,
+            ewmh->_NET_WM_STATE, ewmh->_NET_WM_STATE, 32, 2, data);
 
-	center_pointer(client);
-	update_client_list();
+    center_pointer(client);
+    update_client_list();
 
-	if (!client->maxed)
-		set_borders(client, conf.focus_color);
+    if (!client->maxed)
+        set_borders(client, conf.focus_color);
 }
 
-static void
+    static void
 event_map_notify(xcb_generic_event_t *ev)
 {
-	xcb_map_notify_event_t *e = (xcb_map_notify_event_t *)ev;
-	struct client *client = find_client(&e->window);
+    xcb_map_notify_event_t *e = (xcb_map_notify_event_t *)ev;
+    struct client *client = find_client(&e->window);
 
-	if (client != NULL) {
-		client->mapped = true;
-		set_focused(client);
-	}
+    if (client != NULL) {
+        client->mapped = true;
+        set_focused(client);
+    }
 }
 
 /*
  * Window has been unmapped (became invisible).
  */
 
-static void
+    static void
 event_unmap_notify(xcb_generic_event_t *ev)
 {
-	xcb_map_request_event_t *e = (xcb_map_request_event_t *)ev;
-	struct client *client = NULL;
+    xcb_map_request_event_t *e = (xcb_map_request_event_t *)ev;
+    struct client *client = NULL;
 
-	client = find_client(&e->window);
-	if (client == NULL)
-		return;
+    client = find_client(&e->window);
+    if (client == NULL)
+        return;
 
-	if (focused_win != NULL && client->window == focused_win->window)
-		focused_win = NULL;
+    if (focused_win != NULL && client->window == focused_win->window)
+        focused_win = NULL;
 
-	client->mapped = false;
+    client->mapped = false;
 
-	update_client_list();
+    update_client_list();
 }
 
 /*
  * Window has been configured.
  */
 
-static void
+    static void
 event_configure_notify(xcb_generic_event_t *ev)
 {
-	xcb_configure_notify_event_t *e = (xcb_configure_notify_event_t *)ev;
-	struct client *client;
-	struct list_item *item;
+    xcb_configure_notify_event_t *e = (xcb_configure_notify_event_t *)ev;
+    struct client *client;
+    struct list_item *item;
 
-	/* The root window changes its geometry when the
-	 * user adds/removes/tilts screens */
-	if (e->window == scr->root) {
-		if (e->window != scr->width_in_pixels
-				|| e->height != scr->height_in_pixels) {
-			scr->width_in_pixels = e->width;
-			scr->height_in_pixels = e->height;
+    /* The root window changes its geometry when the
+     * user adds/removes/tilts screens */
+    if (e->window == scr->root) {
+        if (e->window != scr->width_in_pixels
+                || e->height != scr->height_in_pixels) {
+            scr->width_in_pixels = e->width;
+            scr->height_in_pixels = e->height;
 
-			if (randr_base != -1) {
-				get_randr();
-				for (item = win_list; item != NULL; item = item->next) {
-					client = item->data;
-					fit_on_screen(client);
-				}
-			}
-		}
-	} else {
-		client = find_client(&e->window);
-		if (client != NULL)
-			client->monitor = find_monitor_by_coord(client->geom.x, client->geom.y);
-	}
+            if (randr_base != -1) {
+                get_randr();
+                for (item = win_list; item != NULL; item = item->next) {
+                    client = item->data;
+                    fit_on_screen(client);
+                }
+            }
+        }
+    } else {
+        client = find_client(&e->window);
+        if (client != NULL)
+            client->monitor = find_monitor_by_coord(client->geom.x, client->geom.y);
+    }
 }
 
 /*
  * Window wants to change its position in the stacking order.
  */
 
-static void
+    static void
 event_circulate_request(xcb_generic_event_t *ev)
 {
-	xcb_circulate_request_event_t *e = (xcb_circulate_request_event_t *)ev;
+    xcb_circulate_request_event_t *e = (xcb_circulate_request_event_t *)ev;
 
-	xcb_circulate_window(conn, e->window, e->place);
+    xcb_circulate_window(conn, e->window, e->place);
 }
 
 /*
@@ -2218,662 +2218,662 @@ event_circulate_request(xcb_generic_event_t *ev)
  * message from the client.
  */
 
-static void
+    static void
 event_client_message(xcb_generic_event_t *ev)
 {
-	xcb_client_message_event_t *e = (xcb_client_message_event_t *)ev;
-	uint32_t ipc_command;
-	uint32_t *data;
-	bool maxed, vmaxed, hmaxed;
-	struct client *client;
-	int16_t mon_x, mon_y;
-	uint16_t mon_w, mon_h;
-	xcb_atom_t action;
+    xcb_client_message_event_t *e = (xcb_client_message_event_t *)ev;
+    uint32_t ipc_command;
+    uint32_t *data;
+    bool maxed, vmaxed, hmaxed;
+    struct client *client;
+    int16_t mon_x, mon_y;
+    uint16_t mon_w, mon_h;
+    xcb_atom_t action;
 
-	if (e->type == ATOMS[_IPC_ATOM_COMMAND] && e->format == 32) {
-		/* Message from the client */
-		data = e->data.data32;
-		ipc_command = data[0];
-		if (ipc_handlers[ipc_command] != NULL)
-			(ipc_handlers[ipc_command])(data + 1);
-		DMSG("IPC Command %u with arguments %u %u %u\n", data[1], data[2], data[3], data[4]);
-	} else {
-		client = find_client(&e->window);
-		if (client == NULL)
-			return;
-		if (e->type == ewmh->_NET_WM_STATE) {
-			handle_wm_state(client, e->data.data32[1], e->data.data32[0]);
-			handle_wm_state(client, e->data.data32[2], e->data.data32[0]);
-		}
-	}
+    if (e->type == ATOMS[_IPC_ATOM_COMMAND] && e->format == 32) {
+        /* Message from the client */
+        data = e->data.data32;
+        ipc_command = data[0];
+        if (ipc_handlers[ipc_command] != NULL)
+            (ipc_handlers[ipc_command])(data + 1);
+        DMSG("IPC Command %u with arguments %u %u %u\n", data[1], data[2], data[3], data[4]);
+    } else {
+        client = find_client(&e->window);
+        if (client == NULL)
+            return;
+        if (e->type == ewmh->_NET_WM_STATE) {
+            handle_wm_state(client, e->data.data32[1], e->data.data32[0]);
+            handle_wm_state(client, e->data.data32[2], e->data.data32[0]);
+        }
+    }
 }
 
-static void
+    static void
 event_focus_out(xcb_generic_event_t *ev)
 {
-	(void)(ev);
-	xcb_get_input_focus_reply_t *focus = xcb_get_input_focus_reply(conn,
-			xcb_get_input_focus(conn), NULL);
-	struct client *client = NULL;
+    (void)(ev);
+    xcb_get_input_focus_reply_t *focus = xcb_get_input_focus_reply(conn,
+            xcb_get_input_focus(conn), NULL);
+    struct client *client = NULL;
 
-	if (focused_win != NULL && focus->focus == focused_win->window)
-		return;
+    if (focused_win != NULL && focus->focus == focused_win->window)
+        return;
 
-	if (focus->focus == scr->root) {
-		focused_win = NULL;
-	} else {
-		client = find_client(&focus->focus);
-		if (client != NULL)
-			set_focused_no_raise(client);
-	}
+    if (focus->focus == scr->root) {
+        focused_win = NULL;
+    } else {
+        client = find_client(&focus->focus);
+        if (client != NULL)
+            set_focused_no_raise(client);
+    }
 }
 
 /*
  * Populates array with functions for handling IPC commands.
  */
 
-static void
+    static void
 register_ipc_handlers(void)
 {
-	ipc_handlers[IPCWindowMove]            = ipc_window_move;
-	ipc_handlers[IPCWindowMoveAbsolute]    = ipc_window_move_absolute;
-	ipc_handlers[IPCWindowResize]          = ipc_window_resize;
-	ipc_handlers[IPCWindowResizeAbsolute]  = ipc_window_resize_absolute;
-	ipc_handlers[IPCWindowMaximize]        = ipc_window_maximize;
-	ipc_handlers[IPCWindowHorMaximize]     = ipc_window_hor_maximize;
-	ipc_handlers[IPCWindowVerMaximize]     = ipc_window_ver_maximize;
-	ipc_handlers[IPCWindowMonocle]         = ipc_window_monocle;
-	ipc_handlers[IPCWindowClose]           = ipc_window_close;
-	ipc_handlers[IPCWindowPutInGrid]       = ipc_window_put_in_grid;
-	ipc_handlers[IPCWindowSnap]            = ipc_window_snap;
-	ipc_handlers[IPCWindowCycle]           = ipc_window_cycle;
-	ipc_handlers[IPCWindowRevCycle]        = ipc_window_rev_cycle;
-	ipc_handlers[IPCWindowCycleInGroup]    = ipc_window_cycle_in_group;
-	ipc_handlers[IPCWindowRevCycleInGroup] = ipc_window_rev_cycle_in_group;
-	ipc_handlers[IPCWindowCardinalFocus]   = ipc_window_cardinal_focus;
-	ipc_handlers[IPCWindowFocus]           = ipc_window_focus;
-	ipc_handlers[IPCGroupAddWindow]        = ipc_group_add_window;
-	ipc_handlers[IPCGroupRemoveWindow]     = ipc_group_remove_window;
-	ipc_handlers[IPCGroupActivate]         = ipc_group_activate;
-	ipc_handlers[IPCGroupDeactivate]       = ipc_group_deactivate;
-	ipc_handlers[IPCGroupToggle]           = ipc_group_toggle;
-	ipc_handlers[IPCGroupActivateSpecific] = ipc_group_activate_specific;
-	ipc_handlers[IPCWMQuit]                = ipc_wm_quit;
-	ipc_handlers[IPCWMConfig]              = ipc_wm_config;
+    ipc_handlers[IPCWindowMove]            = ipc_window_move;
+    ipc_handlers[IPCWindowMoveAbsolute]    = ipc_window_move_absolute;
+    ipc_handlers[IPCWindowResize]          = ipc_window_resize;
+    ipc_handlers[IPCWindowResizeAbsolute]  = ipc_window_resize_absolute;
+    ipc_handlers[IPCWindowMaximize]        = ipc_window_maximize;
+    ipc_handlers[IPCWindowHorMaximize]     = ipc_window_hor_maximize;
+    ipc_handlers[IPCWindowVerMaximize]     = ipc_window_ver_maximize;
+    ipc_handlers[IPCWindowMonocle]         = ipc_window_monocle;
+    ipc_handlers[IPCWindowClose]           = ipc_window_close;
+    ipc_handlers[IPCWindowPutInGrid]       = ipc_window_put_in_grid;
+    ipc_handlers[IPCWindowSnap]            = ipc_window_snap;
+    ipc_handlers[IPCWindowCycle]           = ipc_window_cycle;
+    ipc_handlers[IPCWindowRevCycle]        = ipc_window_rev_cycle;
+    ipc_handlers[IPCWindowCycleInGroup]    = ipc_window_cycle_in_group;
+    ipc_handlers[IPCWindowRevCycleInGroup] = ipc_window_rev_cycle_in_group;
+    ipc_handlers[IPCWindowCardinalFocus]   = ipc_window_cardinal_focus;
+    ipc_handlers[IPCWindowFocus]           = ipc_window_focus;
+    ipc_handlers[IPCGroupAddWindow]        = ipc_group_add_window;
+    ipc_handlers[IPCGroupRemoveWindow]     = ipc_group_remove_window;
+    ipc_handlers[IPCGroupActivate]         = ipc_group_activate;
+    ipc_handlers[IPCGroupDeactivate]       = ipc_group_deactivate;
+    ipc_handlers[IPCGroupToggle]           = ipc_group_toggle;
+    ipc_handlers[IPCGroupActivateSpecific] = ipc_group_activate_specific;
+    ipc_handlers[IPCWMQuit]                = ipc_wm_quit;
+    ipc_handlers[IPCWMConfig]              = ipc_wm_config;
 }
 
-static void
+    static void
 ipc_window_move(uint32_t *d)
 {
-	int16_t x, y;
+    int16_t x, y;
 
-	if (focused_win == NULL)
-		return;
+    if (focused_win == NULL)
+        return;
 
-	if (is_maxed(focused_win)) {
-		unmaximize_window(focused_win);
-		set_focused(focused_win);
-	}
+    if (is_maxed(focused_win)) {
+        unmaximize_window(focused_win);
+        set_focused(focused_win);
+    }
 
-	x = d[2];
-	y = d[3];
-if (d[0])
-		x = -x;
-	if (d[1])
-		y = -y;
+    x = d[2];
+    y = d[3];
+    if (d[0])
+        x = -x;
+    if (d[1])
+        y = -y;
 
-	focused_win->geom.x += x;
-	focused_win->geom.y += y;
+    focused_win->geom.x += x;
+    focused_win->geom.y += y;
 
-	move_window(focused_win->window, x, y);
-	center_pointer(focused_win);
+    move_window(focused_win->window, x, y);
+    center_pointer(focused_win);
 }
 
-static void
+    static void
 ipc_window_move_absolute(uint32_t *d)
 {
-	int16_t x, y;
+    int16_t x, y;
 
-	if (focused_win == NULL)
-		return;
+    if (focused_win == NULL)
+        return;
 
-	if (is_maxed(focused_win)) {
-		unmaximize_window(focused_win);
-		set_focused(focused_win);
-	}
+    if (is_maxed(focused_win)) {
+        unmaximize_window(focused_win);
+        set_focused(focused_win);
+    }
 
-	x = d[2];
-	y = d[3];
+    x = d[2];
+    y = d[3];
 
-	if (d[0])
-		x = -x;
-	if (d[1])
-		y = -y;
+    if (d[0])
+        x = -x;
+    if (d[1])
+        y = -y;
 
-	focused_win->geom.x = x;
-	focused_win->geom.y = y;
+    focused_win->geom.x = x;
+    focused_win->geom.y = y;
 
-	teleport_window(focused_win->window, x, y);
-	center_pointer(focused_win);
+    teleport_window(focused_win->window, x, y);
+    center_pointer(focused_win);
 }
 
-static void
+    static void
 ipc_window_resize(uint32_t *d)
 {
-	int16_t w, h;
-	int32_t aw, ah;
+    int16_t w, h;
+    int32_t aw, ah;
 
-	if (focused_win == NULL)
-		return;
+    if (focused_win == NULL)
+        return;
 
-	if (is_maxed(focused_win)) {
-		unmaximize_window(focused_win);
-		set_focused(focused_win);
-	}
+    if (is_maxed(focused_win)) {
+        unmaximize_window(focused_win);
+        set_focused(focused_win);
+    }
 
-	w = d[2];
-	h = d[3];
+    w = d[2];
+    h = d[3];
 
-	if (d[0])
-		w = -w;
-	if (d[1])
-		h = -h;
+    if (d[0])
+        w = -w;
+    if (d[1])
+        h = -h;
 
-	aw = focused_win->geom.width;
-	ah = focused_win->geom.height;
-	if (aw + w > 0)
-		aw += w;
-	if (ah + h > 0)
-		ah += h;
+    aw = focused_win->geom.width;
+    ah = focused_win->geom.height;
+    if (aw + w > 0)
+        aw += w;
+    if (ah + h > 0)
+        ah += h;
 
-	if (aw < 0)
-		aw = 0;
-	if (ah < 0)
-		ah = 0;
+    if (aw < 0)
+        aw = 0;
+    if (ah < 0)
+        ah = 0;
 
-	if (focused_win->min_width != 0 && aw < focused_win->min_width)
-		aw = focused_win->min_width;
+    if (focused_win->min_width != 0 && aw < focused_win->min_width)
+        aw = focused_win->min_width;
 
-	if (focused_win->min_height != 0 && ah < focused_win->min_height)
-		ah = focused_win->min_height;
+    if (focused_win->min_height != 0 && ah < focused_win->min_height)
+        ah = focused_win->min_height;
 
-	focused_win->geom.width  = aw;
-	focused_win->geom.height = ah;
+    focused_win->geom.width  = aw;
+    focused_win->geom.height = ah;
 
-	resize_window_absolute(focused_win->window, aw, ah);
-	center_pointer(focused_win);
+    resize_window_absolute(focused_win->window, aw, ah);
+    center_pointer(focused_win);
 }
 
-static void
+    static void
 ipc_window_resize_absolute(uint32_t *d)
 {
-	int16_t w, h;
+    int16_t w, h;
 
-	if (focused_win == NULL)
-		return;
+    if (focused_win == NULL)
+        return;
 
-	if (is_maxed(focused_win)) {
-		unmaximize_window(focused_win);
-		set_focused(focused_win);
-	}
+    if (is_maxed(focused_win)) {
+        unmaximize_window(focused_win);
+        set_focused(focused_win);
+    }
 
-	w = d[0];
-	h = d[1];
+    w = d[0];
+    h = d[1];
 
-	if (focused_win->min_width != 0 && w < focused_win->min_width)
-		w = focused_win->min_width;
+    if (focused_win->min_width != 0 && w < focused_win->min_width)
+        w = focused_win->min_width;
 
-	if (focused_win->min_height != 0 && h < focused_win->min_height)
-		h = focused_win->min_height;
+    if (focused_win->min_height != 0 && h < focused_win->min_height)
+        h = focused_win->min_height;
 
-	focused_win->geom.width = w;
-	focused_win->geom.height = h;
+    focused_win->geom.width = w;
+    focused_win->geom.height = h;
 
-	resize_window_absolute(focused_win->window, w, h);
-	center_pointer(focused_win);
+    resize_window_absolute(focused_win->window, w, h);
+    center_pointer(focused_win);
 }
 
-static void
+    static void
 ipc_window_maximize(uint32_t *d)
 {
-	(void)(d);
-	int16_t mon_x, mon_y;
-	uint16_t mon_w, mon_h;
+    (void)(d);
+    int16_t mon_x, mon_y;
+    uint16_t mon_w, mon_h;
 
-	if (focused_win == NULL)
-		return;
+    if (focused_win == NULL)
+        return;
 
-	if (focused_win->maxed) {
-		unmaximize_window(focused_win);
-	} else {
-		get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
-		maximize_window(focused_win, mon_x, mon_y, mon_w, mon_h);
-	}
+    if (focused_win->maxed) {
+        unmaximize_window(focused_win);
+    } else {
+        get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
+        maximize_window(focused_win, mon_x, mon_y, mon_w, mon_h);
+    }
 
-	set_focused(focused_win);
+    set_focused(focused_win);
 
-	xcb_flush(conn);
+    xcb_flush(conn);
 }
 
-static void
+    static void
 ipc_window_hor_maximize(uint32_t *d)
 {
-	(void)(d);
-	int16_t mon_x, mon_y;
-	uint16_t mon_w;
+    (void)(d);
+    int16_t mon_x, mon_y;
+    uint16_t mon_w;
 
-	if (focused_win == NULL)
-		return;
+    if (focused_win == NULL)
+        return;
 
-	if (focused_win->hmaxed) {
-		unmaximize_window(focused_win);
-	} else {
-		get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, NULL);
-		hmaximize_window(focused_win, mon_x, mon_w);
-	}
+    if (focused_win->hmaxed) {
+        unmaximize_window(focused_win);
+    } else {
+        get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, NULL);
+        hmaximize_window(focused_win, mon_x, mon_w);
+    }
 
-	set_focused(focused_win);
+    set_focused(focused_win);
 
-	xcb_flush(conn);
+    xcb_flush(conn);
 }
 
-static void
+    static void
 ipc_window_ver_maximize(uint32_t *d)
 {
-	(void)(d);
-	int16_t mon_x, mon_y;
-	uint16_t mon_h;
+    (void)(d);
+    int16_t mon_x, mon_y;
+    uint16_t mon_h;
 
-	if (focused_win == NULL)
-		return;
+    if (focused_win == NULL)
+        return;
 
-	if (focused_win->vmaxed) {
-		unmaximize_window(focused_win);
-	} else {
-		get_monitor_size(focused_win, &mon_x, &mon_y, NULL, &mon_h);
-		vmaximize_window(focused_win, mon_y, mon_h);
-	}
+    if (focused_win->vmaxed) {
+        unmaximize_window(focused_win);
+    } else {
+        get_monitor_size(focused_win, &mon_x, &mon_y, NULL, &mon_h);
+        vmaximize_window(focused_win, mon_y, mon_h);
+    }
 
-	set_focused(focused_win);
+    set_focused(focused_win);
 
-	xcb_flush(conn);
+    xcb_flush(conn);
 }
 
-static void
+    static void
 ipc_window_monocle(uint32_t *d)
 {
-	(void)(d);
-	int16_t mon_x, mon_y;
-	uint16_t mon_w, mon_h;
+    (void)(d);
+    int16_t mon_x, mon_y;
+    uint16_t mon_w, mon_h;
 
-	if (focused_win == NULL)
-		return;
+    if (focused_win == NULL)
+        return;
 
-	if (focused_win->monocled) {
-		unmaximize_window(focused_win);
-	} else {
-		get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
-		monocle_window(focused_win, mon_x, mon_y, mon_w, mon_h);
-	}
+    if (focused_win->monocled) {
+        unmaximize_window(focused_win);
+    } else {
+        get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
+        monocle_window(focused_win, mon_x, mon_y, mon_w, mon_h);
+    }
 
-	set_focused(focused_win);
+    set_focused(focused_win);
 
-	xcb_flush(conn);
+    xcb_flush(conn);
 }
 
-static void
+    static void
 ipc_window_close(uint32_t *d)
 {
-	(void)(d);
-	close_window(focused_win);
-	focused_win = NULL;
+    (void)(d);
+    close_window(focused_win);
+    focused_win = NULL;
 }
 
-static void
+    static void
 ipc_window_put_in_grid(uint32_t *d)
 {
-	uint32_t grid_width, grid_height;
-	uint32_t grid_x, grid_y;
-	int step_x, step_y;
-	int16_t mon_x, mon_y;
-	uint16_t mon_w, mon_h;
+    uint32_t grid_width, grid_height;
+    uint32_t grid_x, grid_y;
+    int step_x, step_y;
+    int16_t mon_x, mon_y;
+    uint16_t mon_w, mon_h;
 
-	grid_width  = d[0];
-	grid_height = d[1];
-	grid_x      = d[2];
-	grid_y      = d[3];
+    grid_width  = d[0];
+    grid_height = d[1];
+    grid_x      = d[2];
+    grid_y      = d[3];
 
-	if (focused_win == NULL || grid_x >= grid_width || grid_y >= grid_height)
-		return;
+    if (focused_win == NULL || grid_x >= grid_width || grid_y >= grid_height)
+        return;
 
-	if (is_maxed(focused_win)) {
-		unmaximize_window(focused_win);
-		set_focused(focused_win);
-	}
+    if (is_maxed(focused_win)) {
+        unmaximize_window(focused_win);
+        set_focused(focused_win);
+    }
 
-	get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
-	/* width and height of windows in the grid */
-	step_x = (mon_w - (grid_width - 1) * conf.grid_gap
-			- grid_width * 2 * conf.border_width - conf.gap_left - conf.gap_right) / grid_width;
-	step_y = (mon_h - (grid_width - 1) * conf.grid_gap
-			- grid_width * 2 * conf.border_width - conf.gap_up - conf.gap_down) / grid_height;
+    get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
+    /* width and height of windows in the grid */
+    step_x = (mon_w - (grid_width - 1) * conf.grid_gap
+            - grid_width * 2 * conf.border_width - conf.gap_left - conf.gap_right) / grid_width;
+    step_y = (mon_h - (grid_width - 1) * conf.grid_gap
+            - grid_width * 2 * conf.border_width - conf.gap_up - conf.gap_down) / grid_height;
 
-	focused_win->geom.width = step_x;
-	focused_win->geom.height = step_y;
+    focused_win->geom.width = step_x;
+    focused_win->geom.height = step_y;
 
-	focused_win->geom.x = mon_x + conf.gap_left
-		+ grid_x * (conf.grid_gap + 2 * conf.border_width + step_x);
-	focused_win->geom.y = mon_y + conf.gap_up
-		+ grid_y * (conf.grid_gap + 2 * conf.border_width + step_y);
+    focused_win->geom.x = mon_x + conf.gap_left
+        + grid_x * (conf.grid_gap + 2 * conf.border_width + step_x);
+    focused_win->geom.y = mon_y + conf.gap_up
+        + grid_y * (conf.grid_gap + 2 * conf.border_width + step_y);
 
-	teleport_window(focused_win->window, focused_win->geom.x, focused_win->geom.y);
-	resize_window_absolute(focused_win->window, focused_win->geom.width, focused_win->geom.height);
+    teleport_window(focused_win->window, focused_win->geom.x, focused_win->geom.y);
+    resize_window_absolute(focused_win->window, focused_win->geom.width, focused_win->geom.height);
 
-	xcb_flush(conn);
+    xcb_flush(conn);
 }
 
-static void
+    static void
 ipc_window_snap(uint32_t *d)
 {
-	uint32_t mode = d[0];
-	int16_t mon_x, mon_y, win_x, win_y;
-	uint16_t mon_w, mon_h, win_w, win_h;
+    uint32_t mode = d[0];
+    int16_t mon_x, mon_y, win_x, win_y;
+    uint16_t mon_w, mon_h, win_w, win_h;
 
-	if (focused_win == NULL)
-		return;
+    if (focused_win == NULL)
+        return;
 
-	if (is_maxed(focused_win)) {
-		unmaximize_window(focused_win);
-		set_focused(focused_win);
-	}
+    if (is_maxed(focused_win)) {
+        unmaximize_window(focused_win);
+        set_focused(focused_win);
+    }
 
-	fit_on_screen(focused_win);
+    fit_on_screen(focused_win);
 
-	win_x = focused_win->geom.x;
-	win_y = focused_win->geom.y;
-	win_w = focused_win->geom.width + 2 * conf.border_width;
-	win_h = focused_win->geom.height + 2 * conf.border_width;
+    win_x = focused_win->geom.x;
+    win_y = focused_win->geom.y;
+    win_w = focused_win->geom.width + 2 * conf.border_width;
+    win_h = focused_win->geom.height + 2 * conf.border_width;
 
-	get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
+    get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
 
-	switch (mode) {
-		case TOP_LEFT:
-			win_x = mon_x + conf.gap_left;
-			win_y = mon_y + conf.gap_up;
-			break;
+    switch (mode) {
+        case TOP_LEFT:
+            win_x = mon_x + conf.gap_left;
+            win_y = mon_y + conf.gap_up;
+            break;
 
-		case TOP_RIGHT:
-			win_x = mon_x + mon_w - conf.gap_right - win_w;
-			win_y = mon_y + conf.gap_up;
-			break;
+        case TOP_RIGHT:
+            win_x = mon_x + mon_w - conf.gap_right - win_w;
+            win_y = mon_y + conf.gap_up;
+            break;
 
-		case BOTTOM_LEFT:
-			win_x = mon_x + conf.gap_left;
-			win_y = mon_y + mon_h - conf.gap_down - win_h;
-			break;
+        case BOTTOM_LEFT:
+            win_x = mon_x + conf.gap_left;
+            win_y = mon_y + mon_h - conf.gap_down - win_h;
+            break;
 
-		case BOTTOM_RIGHT:
-			win_x = mon_x + mon_w - conf.gap_right - win_w;
-			win_y = mon_y + mon_h - conf.gap_down - win_h;
-			break;
+        case BOTTOM_RIGHT:
+            win_x = mon_x + mon_w - conf.gap_right - win_w;
+            win_y = mon_y + mon_h - conf.gap_down - win_h;
+            break;
 
-		case CENTER:
-			win_x = mon_x + (mon_w - win_w) / 2;
-			win_y = mon_y + (mon_h - win_h) / 2;
-			break;
+        case CENTER:
+            win_x = mon_x + (mon_w - win_w) / 2;
+            win_y = mon_y + (mon_h - win_h) / 2;
+            break;
 
-		default:
-			return;
-	}
+        default:
+            return;
+    }
 
-	focused_win->geom.x = win_x;
-	focused_win->geom.y = win_y;
-	teleport_window(focused_win->window, win_x, win_y);
-	center_pointer(focused_win);
-	xcb_flush(conn);
+    focused_win->geom.x = win_x;
+    focused_win->geom.y = win_y;
+    teleport_window(focused_win->window, win_x, win_y);
+    center_pointer(focused_win);
+    xcb_flush(conn);
 }
 
-static
+    static
 void ipc_window_cycle(uint32_t *d)
 {
-	(void)(d);
+    (void)(d);
 
-	cycle_window(focused_win);
+    cycle_window(focused_win);
 }
 
-static
+    static
 void ipc_window_rev_cycle(uint32_t *d)
 {
-	(void)(d);
+    (void)(d);
 
-	rcycle_window(focused_win);
+    rcycle_window(focused_win);
 }
 
-static void
+    static void
 ipc_window_cardinal_focus(uint32_t *d)
 {
     uint32_t mode = d[0];
-    cardinal_focus(mode); 
+    cardinal_focus(mode);
 }
 
-static void
+    static void
 ipc_window_cycle_in_group(uint32_t *d)
 {
-	(void)(d);
+    (void)(d);
 
-	if (focused_win == NULL)
-		return;
+    if (focused_win == NULL)
+        return;
 
-	cycle_window_in_group(focused_win);
+    cycle_window_in_group(focused_win);
 }
-static void
+    static void
 ipc_window_rev_cycle_in_group(uint32_t *d)
 {
-	(void)(d);
+    (void)(d);
 
-	rcycle_window_in_group(focused_win);
+    rcycle_window_in_group(focused_win);
 }
 
-static void
+    static void
 ipc_window_focus(uint32_t *d)
 {
-	struct client *client = find_client(&d[0]);
+    struct client *client = find_client(&d[0]);
 
-	if (client != NULL)
-		set_focused(client);
+    if (client != NULL)
+        set_focused(client);
 }
 
-static void
+    static void
 ipc_group_add_window(uint32_t *d)
 {
-	if (focused_win!= NULL)
-		group_add_window(focused_win, d[0] - 1);
+    if (focused_win!= NULL)
+        group_add_window(focused_win, d[0] - 1);
 }
 
-static void
+    static void
 ipc_group_remove_window(uint32_t *d)
 {
-	(void)(d);
-	if (focused_win != NULL)
-		group_remove_window(focused_win);
+    (void)(d);
+    if (focused_win != NULL)
+        group_remove_window(focused_win);
 }
 
-static void
+    static void
 ipc_group_remove_all_windows(uint32_t *d)
 {
     group_remove_all_windows(d[0] - 1);
 }
 
-static void
+    static void
 ipc_group_activate(uint32_t *d)
 {
-	group_activate(d[0] - 1);
+    group_activate(d[0] - 1);
 }
 
-static void
+    static void
 ipc_group_deactivate(uint32_t *d)
 {
-	group_deactivate(d[0] - 1);
+    group_deactivate(d[0] - 1);
 }
 
-static void
+    static void
 ipc_group_toggle(uint32_t *d)
 {
-	group_toggle(d[0] - 1);
+    group_toggle(d[0] - 1);
 }
 
-static void
+    static void
 ipc_group_activate_specific(uint32_t *d)
 {
-	group_activate_specific(d[0] - 1);
+    group_activate_specific(d[0] - 1);
 }
 
-static void
+    static void
 ipc_wm_quit(uint32_t *d)
 {
-	uint32_t code = d[0];
-	halt = true;
-	exit_code = code;
+    uint32_t code = d[0];
+    halt = true;
+    exit_code = code;
 }
 
-static void
+    static void
 ipc_wm_config(uint32_t *d)
 {
-	enum IPCConfig key;
+    enum IPCConfig key;
 
-	key = d[0];
+    key = d[0];
 
-	switch (key) {
-		case IPCConfigBorderWidth:
-			conf.border_width = d[1];
-			refresh_borders();
-			break;
-		case IPCConfigColorFocused:
-			conf.focus_color = d[1];
-			refresh_borders();
-			break;
-		case IPCConfigColorUnfocused:
-			conf.unfocus_color = d[1];
-			refresh_borders();
-			break;
-		case IPCConfigGapWidth:
-			switch (d[1]) {
-				case LEFT: conf.gap_left   = d[2]; break;
-				case BOTTOM: conf.gap_down = d[2]; break;
-				case TOP: conf.gap_up      = d[2]; break;
-				case RIGHT: conf.gap_right = d[2]; break;
-				case ALL: conf.gap_left = conf.gap_down
-						  = conf.gap_up = conf.gap_right = d[2];
-				default: break;
-			}
-			break;
-		case IPCConfigGridGapWidth:
-			conf.grid_gap = d[1];
-		case IPCConfigCursorPosition:
-			conf.cursor_position = d[1];
-			break;
-		case IPCConfigGroupsNr:
-			change_nr_of_groups(d[1]);
-			break;
-		case IPCConfigEnableSloppyFocus:
-			conf.sloppy_focus = d[1];
-			break;
-		case IPCConfigStickyWindows:
-			conf.sticky_windows = d[1];
-			break;
-		case IPCConfigEnableBorders:
-			conf.borders = d[1];
-			break;
-		default:
-			DMSG("!!! unhandled config key %d\n", key);
-			break;
-	}
+    switch (key) {
+        case IPCConfigBorderWidth:
+            conf.border_width = d[1];
+            refresh_borders();
+            break;
+        case IPCConfigColorFocused:
+            conf.focus_color = d[1];
+            refresh_borders();
+            break;
+        case IPCConfigColorUnfocused:
+            conf.unfocus_color = d[1];
+            refresh_borders();
+            break;
+        case IPCConfigGapWidth:
+            switch (d[1]) {
+                case LEFT: conf.gap_left   = d[2]; break;
+                case BOTTOM: conf.gap_down = d[2]; break;
+                case TOP: conf.gap_up      = d[2]; break;
+                case RIGHT: conf.gap_right = d[2]; break;
+                case ALL: conf.gap_left = conf.gap_down
+                          = conf.gap_up = conf.gap_right = d[2];
+                default: break;
+            }
+            break;
+        case IPCConfigGridGapWidth:
+            conf.grid_gap = d[1];
+        case IPCConfigCursorPosition:
+            conf.cursor_position = d[1];
+            break;
+        case IPCConfigGroupsNr:
+            change_nr_of_groups(d[1]);
+            break;
+        case IPCConfigEnableSloppyFocus:
+            conf.sloppy_focus = d[1];
+            break;
+        case IPCConfigStickyWindows:
+            conf.sticky_windows = d[1];
+            break;
+        case IPCConfigEnableBorders:
+            conf.borders = d[1];
+            break;
+        default:
+            DMSG("!!! unhandled config key %d\n", key);
+            break;
+    }
 }
 
-static void
+    static void
 usage(char *name)
 {
-	fprintf(stderr, "Usage: %s [-h|-c CONFIG_PATH]\n", name);
+    fprintf(stderr, "Usage: %s [-h|-c CONFIG_PATH]\n", name);
 
-	exit(EXIT_SUCCESS);
+    exit(EXIT_SUCCESS);
 }
 
 static void version(void)
 {
-	fprintf(stderr, "%s %s\n", __NAME__, __THIS_VERSION__);
-	fprintf(stderr, "Copyright (c) 2016-2017 Tudor Ioan Roman\n");
-	fprintf(stderr, "Released under the ISC License\n");
+    fprintf(stderr, "%s %s\n", __NAME__, __THIS_VERSION__);
+    fprintf(stderr, "Copyright (c) 2016-2017 Tudor Ioan Roman\n");
+    fprintf(stderr, "Released under the ISC License\n");
 
-	exit(EXIT_SUCCESS);
+    exit(EXIT_SUCCESS);
 }
 
-static void
+    static void
 load_defaults(void)
 {
-	conf.border_width    = BORDER_WIDTH;
-	conf.focus_color     = COLOR_FOCUS;
-	conf.unfocus_color   = COLOR_UNFOCUS;
-	conf.gap_left = conf.gap_down
-		= conf.gap_up = conf.gap_right = GAP;
-	conf.grid_gap        = GRID_GAP;
-	conf.cursor_position = CURSOR_POSITION;
-	conf.groups          = GROUPS;
-	conf.sloppy_focus    = SLOPPY_FOCUS;
-	conf.sticky_windows  = STICKY_WINDOWS;
-	conf.borders         = BORDERS;
+    conf.border_width    = BORDER_WIDTH;
+    conf.focus_color     = COLOR_FOCUS;
+    conf.unfocus_color   = COLOR_UNFOCUS;
+    conf.gap_left = conf.gap_down
+        = conf.gap_up = conf.gap_right = GAP;
+    conf.grid_gap        = GRID_GAP;
+    conf.cursor_position = CURSOR_POSITION;
+    conf.groups          = GROUPS;
+    conf.sloppy_focus    = SLOPPY_FOCUS;
+    conf.sticky_windows  = STICKY_WINDOWS;
+    conf.borders         = BORDERS;
 }
 
-static void
+    static void
 load_config(char *config_path)
 {
-	if (fork() == 0) {
-		setsid();
-		DMSG("loading %s\n", config_path);
-		execl(config_path, config_path, NULL);
-		errx(EXIT_FAILURE, "couldn't load config file");
-	}
+    if (fork() == 0) {
+        setsid();
+        DMSG("loading %s\n", config_path);
+        execl(config_path, config_path, NULL);
+        errx(EXIT_FAILURE, "couldn't load config file");
+    }
 }
 
 int main(int argc, char *argv[])
 {
-	int opt;
-	char *config_path = malloc(MAXLEN * sizeof(char));
-	config_path[0] = '\0';
-	while ((opt = getopt(argc, argv, "hvc:")) != -1) {
-		switch (opt) {
-			case 'h':
-				usage(argv[0]);
-				break;
-			case 'c':
-				snprintf(config_path, MAXLEN * sizeof(char), "%s", optarg);
-				break;
-			case 'v':
-				version();
-				break;
-		}
-	}
-	atexit(cleanup);
+    int opt;
+    char *config_path = malloc(MAXLEN * sizeof(char));
+    config_path[0] = '\0';
+    while ((opt = getopt(argc, argv, "hvc:")) != -1) {
+        switch (opt) {
+            case 'h':
+                usage(argv[0]);
+                break;
+            case 'c':
+                snprintf(config_path, MAXLEN * sizeof(char), "%s", optarg);
+                break;
+            case 'v':
+                version();
+                break;
+        }
+    }
+    atexit(cleanup);
 
-	register_event_handlers();
-	register_ipc_handlers();
-	load_defaults();
+    register_event_handlers();
+    register_ipc_handlers();
+    load_defaults();
 
-	if (setup() < 0)
-		errx(EXIT_FAILURE, "error connecting to X");
-	/* if not set, get path of the rc file */
-	if (config_path[0] == '\0') {
-		char *xdg_home = getenv("XDG_CONFIG_HOME");
-		if (xdg_home != NULL)
-			snprintf(config_path, MAXLEN * sizeof(char), "%s/%s/%s", xdg_home, __NAME__, __CONFIG_NAME__);
-		else
-			snprintf(config_path, MAXLEN * sizeof(char), "%s/%s/%s/%s", getenv("HOME"), ".config",
-					__NAME__, __CONFIG_NAME__);
-	}
-	/* execute config file */
-	load_config(config_path);
-	run();
+    if (setup() < 0)
+        errx(EXIT_FAILURE, "error connecting to X");
+    /* if not set, get path of the rc file */
+    if (config_path[0] == '\0') {
+        char *xdg_home = getenv("XDG_CONFIG_HOME");
+        if (xdg_home != NULL)
+            snprintf(config_path, MAXLEN * sizeof(char), "%s/%s/%s", xdg_home, __NAME__, __CONFIG_NAME__);
+        else
+            snprintf(config_path, MAXLEN * sizeof(char), "%s/%s/%s/%s", getenv("HOME"), ".config",
+                    __NAME__, __CONFIG_NAME__);
+    }
+    /* execute config file */
+    load_config(config_path);
+    run();
 
-	free(config_path);
+    free(config_path);
 
-	return exit_code;
+    return exit_code;
 }
