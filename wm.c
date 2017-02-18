@@ -1188,7 +1188,7 @@ rcycle_window_in_group(struct client *client)
 static void
 cardinal_focus(uint32_t dir)
 {
-    // Don't focus if we don't have a current focus!
+    /* Don't focus if we don't have a current focus! */
     if (focused_win == NULL)
         return;
 
@@ -1204,18 +1204,15 @@ cardinal_focus(uint32_t dir)
 
     win = win_list;
 
-    while(win != NULL)
-    {
-        // Skip focused window
-        if (((struct client *)win->data)->window == focused_win->window)
-        {
+    while(win != NULL) {
+        /* Skip focused window */
+        if (((struct client *)win->data)->window == focused_win->window) {
             win = win->next;
             continue;
         }
 
-        // Skip unmapped windows
-        if (!((struct client *)win->data)->mapped)
-        {
+        /* Skip unmapped windows */
+        if (!((struct client *)win->data)->mapped) {
             win = win->next;
             continue;
         }
@@ -1224,8 +1221,7 @@ cardinal_focus(uint32_t dir)
 
         valid_window = NULL;
 
-        switch (dir)
-        {
+        switch (dir) {
             case NORTH:
                 if (win_pos.y < focus_win_pos.y)
                     valid_window = list_add_item(&valid_windows);
@@ -1251,40 +1247,34 @@ cardinal_focus(uint32_t dir)
     }
 
     win = valid_windows;
-    while(win != NULL)
-    {
+    while(win != NULL) {
         float cur_distance;
         float cur_angle;
 
         cur_distance = get_distance_between_windows(focused_win, (struct client *)win->data);
         cur_angle = get_angle_between_windows(focused_win, (struct client *)win->data);
 
-        if (is_in_valid_direction(dir, cur_angle, 10))
-        {
+        if (is_in_valid_direction(dir, cur_angle, 10)) {
             if (is_overlapping(focused_win, (struct client *)win->data))
                 cur_distance = cur_distance * 0.1;
             cur_distance = cur_distance * 0.80;
         }
-        else if (is_in_valid_direction(dir, cur_angle, 25))
-        {
+        else if (is_in_valid_direction(dir, cur_angle, 25)) {
             if (is_overlapping(focused_win, (struct client *)win->data))
                 cur_distance = cur_distance * 0.1;
             cur_distance = cur_distance * 0.85;
         }
-        else if (is_in_valid_direction(dir, cur_angle, 35))
-        {
+        else if (is_in_valid_direction(dir, cur_angle, 35)) {
             if (is_overlapping(focused_win, (struct client *)win->data))
                 cur_distance = cur_distance * 0.1;
             cur_distance = cur_distance * 0.9;
         }
-        else if (is_in_valid_direction(dir, cur_angle, 50))
-        {
+        else if (is_in_valid_direction(dir, cur_angle, 50)) {
             if (is_overlapping(focused_win, (struct client *)win->data))
                 cur_distance = cur_distance * 0.1;
             cur_distance = cur_distance * 3;
         }
-        else
-        {
+        else {
             win = win->next;
             continue;
         }
@@ -1293,8 +1283,7 @@ cardinal_focus(uint32_t dir)
             cur_distance = cur_distance * 0.9;
 
 
-        if (closest_distance == -1 || (cur_distance < closest_distance))
-        {
+        if (closest_distance == -1 || (cur_distance < closest_distance)) {
             closest_distance = cur_distance;
             closest_angle = cur_angle;
             desired_window = win;
@@ -1317,8 +1306,7 @@ get_window_position(uint32_t mode, struct client *win)
     pos.x = 0;
     pos.y = 0;
 
-    switch (mode)
-    {
+    switch (mode) {
         case CENTER:
             pos.x = win->geom.x + (win->geom.width / 2);
             pos.y = win->geom.y + (win->geom.height / 2);
@@ -1354,8 +1342,7 @@ is_in_cardinal_direction(uint32_t direction, struct client *a, struct client *b)
 
     struct win_position pos_b_center = get_window_position(CENTER, b);
 
-    switch(direction)
-    {
+    switch(direction) {
         case NORTH:
         case SOUTH:
             return pos_a_top_left.x <= pos_b_center.x && pos_a_top_right.x >= pos_b_center.x;
@@ -1371,8 +1358,7 @@ is_in_cardinal_direction(uint32_t direction, struct client *a, struct client *b)
 static bool
 is_in_valid_direction(uint32_t direction, float window_direction, float delta)
 {
-    switch((uint32_t)direction)
-    {
+    switch((uint32_t)direction) {
         case NORTH:
             if (window_direction >= (180 - delta) || window_direction <= (-180 + delta))
                 return true;
@@ -1692,7 +1678,8 @@ group_remove_window(struct client *client)
 }
 
 static void
-group_remove_all_windows(uint32_t group) {
+group_remove_all_windows(uint32_t group)
+{
     if (group >= conf.groups)
         return;
 
