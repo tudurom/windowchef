@@ -43,6 +43,9 @@ super + {_,shift +}{1-4}
 super + ctrl + r
   ./waitron group_remove_window
 
+super + alt + ctrl + r
+  ./waitron group_remove_all_windows
+
 super + Return
   urxvt
 
