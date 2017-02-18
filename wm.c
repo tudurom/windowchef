@@ -2294,6 +2294,7 @@ register_ipc_handlers(void)
 	ipc_handlers[IPCWindowFocus]           = ipc_window_focus;
 	ipc_handlers[IPCGroupAddWindow]        = ipc_group_add_window;
 	ipc_handlers[IPCGroupRemoveWindow]     = ipc_group_remove_window;
+	ipc_handlers[IPCGroupRemoveAllWindows] = ipc_group_remove_all_windows;
 	ipc_handlers[IPCGroupActivate]         = ipc_group_activate;
 	ipc_handlers[IPCGroupDeactivate]       = ipc_group_deactivate;
 	ipc_handlers[IPCGroupToggle]           = ipc_group_toggle;
