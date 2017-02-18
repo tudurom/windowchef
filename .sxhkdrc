@@ -11,7 +11,7 @@ super + shift + alt + {h,j,k,l}
   ./waitron window_resize {-50 0, 0 50, 0 -50, 50 0}
 
 super + ctrl {h,j,k,l}
-  ./waitron window_cardinal_focus {up,left,down,right}
+  ./waitron window_cardinal_focus {left,down,up,right}
 
 super + alt + Escape
   ./waitron wm_quit 0
