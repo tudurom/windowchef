@@ -4,7 +4,9 @@ Windowchef
 Disclaimer
 ----------
 
-This software is a work in progress and may [break your workflow](https://xkcd.com/1172/) (yeah, it's that one xkcd comic, everyone
+This software is constantly changing and
+may [break your workflow](https://xkcd.com/1172/) (yeah, it's that one
+xkcd comic, everyone
 knows it).
 
 Cooking windows since 2016
@@ -34,7 +36,7 @@ being easily extensible using the standard UNIX way: shell scripts. Cool
 features like sorting windows by size on a specific monitor are not
 included in windowchef. Instead, the user is encouraged to write a script that
 does this using available tools like [wmutils](https://github.com/wmutils)
-for window manipulation and [disputils](https://arcetera.moe/git/disputils/log.html) for getting information regarding randr outputs.
+for window manipulation and [disputils](https://github.com/tudurom/disputils) for getting information regarding randr outputs.
 
 Have fun!
 
@@ -42,7 +44,7 @@ Usage
 -----
 
 See the bundled `.sxhkdrc` and `.windowchefrc` for an example of a basic
-configuration. Additionally, you can read the manual page (`windowchef(1)`).
+configuration. Additionally, you can read the manual pages (`windowchef(1)` and `waitron(1)`).
 
 The default configuration file is `~/.config/windowchef/windowchefrc`. It is usually
 a shell script that calls `waitron wm_config` for configuration. See the
@@ -82,8 +84,10 @@ Features
 --------
 
 * Move, teleport, enlarge/shrink and resize windows
+* Focus windows by direction
 * Maximize windows vertically/horizontally/fully
 	* Supports maximizing via EWMH
+* Monocle mode
 * Close windows (either by killing them or via ICCCM)
 * Put windows in a virtual grid.
 * Snap windows in the corners or in the middle of the screen
@@ -170,3 +174,12 @@ Thanks to venam, Michaell Cardell and baskerville for the window managers they
 made: 2bwm, mcwm and bspwm (ironically they all end in wm :). Their
 programs were and still are a very good source of inspiration for anyone who
 wants to write a window manager.
+
+And many, many thanks to contributors:
+* @neosilky
+* @n1kolas
+* @nullrndtx
+* @dialuplama
+* @allora
+
+Thank you for using `windowchef`!
