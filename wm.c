@@ -1688,7 +1688,9 @@ group_remove_all_windows(uint32_t group)
 
 	for (item = win_list; item != NULL; item = item->next) {
         client = item->data;
-        group_remove_window(client);
+	    if (client != NULL && client->group == group) {
+            group_remove_window(client);
+        }
     }
 
     group_in_use[group] = false;
