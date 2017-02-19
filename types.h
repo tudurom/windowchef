@@ -19,10 +19,10 @@ enum position {
 };
 
 enum direction {
-    NORTH,
-    SOUTH,
-    EAST,
-    WEST,
+	NORTH,
+	SOUTH,
+	EAST,
+	WEST,
 };
 
 enum mouse_mode {
@@ -32,7 +32,7 @@ enum mouse_mode {
 };
 
 struct win_position {
-    int16_t x, y;
+	int16_t x, y;
 };
 
 struct window_geom {

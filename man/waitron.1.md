@@ -29,6 +29,9 @@ anything on `stdout`.
 
 	false values: `false` | `f` | `no` | `n` | `0`
 
+* `DIRECTION`:
+	`up` | `down` | `left` | `right`
+
 ## COMMANDS
 
 * `window_move` <x> <y>:
@@ -92,6 +95,10 @@ anything on `stdout`.
 	Focus window by <id>. The <id> can be found using pfw(1) or lsw(1) from
 	[wmutils](https://github.com/wmutils/core/).
 
+* `window_cardinal_focus` <DIRECTION>:
+	Focus the closest window in a direction, relative to the currently
+	currently focused window. Does nothing if there is no window focused.
+
 * `group_add_window` <group_nr>:
 	Add the focused window to the <group_nr> group.
 
@@ -99,6 +106,9 @@ anything on `stdout`.
 
 * `group_remove_window`:
 	Remove the focused window from its current group.
+
+* `group_remove_all_windows` <group_nr>:
+	Remove all windows from the <group_nr> group.
 
 * `group_activate` <group_nr>:
 	Map all windows that belong to the <group_nr> group.

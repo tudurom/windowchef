@@ -35,6 +35,10 @@ true values: \fBtrue\fR | \fBt\fR | \fByes\fR | \fBy\fR | \fB1\fR
 .IP
 false values: \fBfalse\fR | \fBf\fR | \fBno\fR | \fBn\fR | \fB0\fR
 .
+.TP
+\fBDIRECTION\fR
+\fBup\fR | \fBdown\fR | \fBleft\fR | \fBright\fR
+.
 .SH "COMMANDS"
 .
 .TP
@@ -102,6 +106,10 @@ Reverse cycle through mapped windows that belong to the same group as the focuse
 Focus window by \fIid\fR\. The \fIid\fR can be found using pfw(1) or lsw(1) from wmutils \fIhttps://github\.com/wmutils/core/\fR\.
 .
 .TP
+\fBwindow_cardinal_focus\fR \fIDIRECTION\fR
+Focus the closest window in a direction, relative to the currently currently focused window\. Does nothing if there is no window focused\.
+.
+.TP
 \fBgroup_add_window\fR \fIgroup_nr\fR
 Add the focused window to the \fIgroup_nr\fR group\.
 .
@@ -111,6 +119,10 @@ Group numbers start from 0 and end at \fIGROUPS_NO\fR \- 1\.
 .TP
 \fBgroup_remove_window\fR
 Remove the focused window from its current group\.
+.
+.TP
+\fBgroup_remove_all_windows\fR \fIgroup_nr\fR
+Remove all windows from the \fIgroup_nr\fR group\.
 .
 .TP
 \fBgroup_activate\fR \fIgroup_nr\fR

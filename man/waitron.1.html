@@ -101,6 +101,7 @@ anything on <code>stdout</code>.</p>
 <dt class="flush"><code>BOOL</code></dt><dd><p>  true values: <code>true</code> | <code>t</code> | <code>yes</code> | <code>y</code> | <code>1</code></p>
 
 <p>  false values: <code>false</code> | <code>f</code> | <code>no</code> | <code>n</code> | <code>0</code></p></dd>
+<dt><code>DIRECTION</code></dt><dd><p>  <code>up</code> | <code>down</code> | <code>left</code> | <code>right</code></p></dd>
 </dl>
 
 
@@ -136,10 +137,13 @@ anything on <code>stdout</code>.</p>
   focused window.</p></dd>
 <dt><code>window_focus</code> <var>id</var></dt><dd><p>  Focus window by <var>id</var>. The <var>id</var> can be found using <span class="man-ref">pfw<span class="s">(1)</span></span> or <span class="man-ref">lsw<span class="s">(1)</span></span> from
   <a href="https://github.com/wmutils/core/">wmutils</a>.</p></dd>
+<dt><code>window_cardinal_focus</code> <var>DIRECTION</var></dt><dd><p>  Focus the closest window in a direction, relative to the currently
+  currently focused window. Does nothing if there is no window focused.</p></dd>
 <dt><code>group_add_window</code> <var>group_nr</var></dt><dd><p>  Add the focused window to the <var>group_nr</var> group.</p>
 
 <p>  Group numbers start from 0 and end at <var>GROUPS_NO</var> - 1.</p></dd>
 <dt><code>group_remove_window</code></dt><dd><p>  Remove the focused window from its current group.</p></dd>
+<dt><code>group_remove_all_windows</code> <var>group_nr</var></dt><dd><p>  Remove all windows from the <var>group_nr</var> group.</p></dd>
 <dt><code>group_activate</code> <var>group_nr</var></dt><dd><p>  Map all windows that belong to the <var>group_nr</var> group.</p></dd>
 <dt><code>group_deactivate</code> <var>group_nr</var></dt><dd><p>  Unmap all windows that belong to the <var>group_nr</var> group.</p></dd>
 <dt><code>group_toggle</code> <var>group_nr</var></dt><dd><p>  Toggle the <var>group_nr</var> group.</p></dd>
