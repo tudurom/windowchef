@@ -27,6 +27,7 @@ static bool fn_config(uint32_t *, int, char **);
 static bool fn_hex(uint32_t *, int, char **);
 static bool fn_position(uint32_t *, int, char **);
 static bool fn_gap(uint32_t *, int, char **);
+static bool fn_direction(uint32_t *, int, char **);
 
 static void usage(char *, int);
 static void version(void);
@@ -61,9 +62,11 @@ static struct Command c[] = {
 	{ "window_rev_cycle"          , IPCWindowRevCycle        ,  0 , NULL        } ,
 	{ "window_cycle_in_group"     , IPCWindowCycleInGroup    ,  0 , NULL        } ,
 	{ "window_rev_cycle_in_group" , IPCWindowRevCycleInGroup ,  0 , NULL        } ,
+	{ "window_cardinal_focus"     , IPCWindowCardinalFocus   ,  1 , fn_direction} ,
 	{ "window_focus"              , IPCWindowFocus           ,  1 , fn_hex      } ,
 	{ "group_add_window"          , IPCGroupAddWindow        ,  1 , fn_naturals } ,
 	{ "group_remove_window"       , IPCGroupRemoveWindow     ,  0 , NULL        } ,
+	{ "group_remove_all_windows"  , IPCGroupRemoveAllWindows ,  1 , fn_naturals } ,
 	{ "group_activate"            , IPCGroupActivate         ,  1 , fn_naturals } ,
 	{ "group_deactivate"          , IPCGroupDeactivate       ,  1 , fn_naturals } ,
 	{ "group_toggle"              , IPCGroupToggle           ,  1 , fn_naturals } ,
@@ -181,6 +184,29 @@ fn_hex(uint32_t *data, int argc, char **argv)
 		return false;
 	else
 		return true;
+}
+
+static bool
+fn_direction(uint32_t *data, int argc, char **argv)
+{
+    char *pos = argv[0];
+    enum direction dir_sel;
+    
+    if (strcasecmp(pos, "up") == 0)
+        dir_sel = NORTH;
+    else if (strcasecmp(pos, "down") == 0)
+        dir_sel = SOUTH;
+    else if (strcasecmp(pos, "left") == 0)
+        dir_sel = WEST;
+    else if (strcasecmp(pos, "right") == 0)
+        dir_sel = EAST;
+    else
+        return false;
+
+    (void)(argc);
+    data[0] = dir_sel;
+
+    return true;
 }
 
 static bool

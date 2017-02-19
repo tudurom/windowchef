@@ -10,6 +10,9 @@ super + shift + {h,j,k,l}
 super + shift + alt + {h,j,k,l}
   ./waitron window_resize {-50 0, 0 50, 0 -50, 50 0}
 
+super + ctrl {h,j,k,l}
+  ./waitron window_cardinal_focus {left,down,up,right}
+
 super + alt + Escape
   ./waitron wm_quit 0
 
@@ -39,6 +42,9 @@ super + {_,shift +}{1-4}
 
 super + ctrl + r
   ./waitron group_remove_window
+
+super + alt + ctrl + {1-4}
+  ./waitron group_remove_all_windows {1-4}
 
 super + Return
   urxvt

@@ -78,13 +78,14 @@ list_delete_item(struct list_item **list, struct list_item *item)
  */
 
 void
-list_delete_all_items(struct list_item **list)
+list_delete_all_items(struct list_item **list, bool can_free_data)
 {
 	struct list_item *item, *next;
 
 	for (item = *list; item->next != NULL; item = next) {
 		next = item->next;
-		free(item->data);
+		if (can_free_data)
+		    free(item->data);
 		list_delete_item(list, item);
 	}
 }

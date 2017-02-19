@@ -13,6 +13,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <math.h>
 
 #include "common.h"
 #include "ipc.h"
@@ -24,6 +25,7 @@
 /* XCB event with the biggest value */
 #define LAST_XCB_EVENT XCB_GET_MODIFIER_MAPPING
 #define NULL_GROUP 0xffffffff
+#define PI 3.14159265
 
 /* atoms identifiers */
 enum { WM_DELETE_WINDOW, WINDOWCHEF_ACTIVE_GROUPS, _IPC_ATOM_COMMAND, NR_ATOMS };
@@ -91,6 +93,13 @@ static void cycle_window(struct client *);
 static void rcycle_window(struct client *);
 static void cycle_window_in_group(struct client *);
 static void rcycle_window_in_group(struct client *);
+static void cardinal_focus(uint32_t dir);
+static float get_distance_between_windows(struct client *, struct client *);
+static float get_angle_between_windows(struct client *, struct client *);
+static struct win_position get_window_position(uint32_t mode, struct client *win);
+static bool is_overlapping(struct client *, struct client *);
+static bool is_in_valid_direction(uint32_t direction, float window_direction, float delta);
+static bool is_in_cardinal_direction(uint32_t direction, struct client *, struct client *);
 static void save_original_size(struct client *);
 static xcb_atom_t get_atom(char *);
 static bool get_pointer_location(xcb_window_t *, int16_t *, int16_t *);
@@ -105,6 +114,7 @@ static void update_client_list(void);
 static void update_wm_desktop(struct client *);
 static void group_add_window(struct client *, uint32_t);
 static void group_remove_window(struct client *);
+static void group_remove_all_windows(uint32_t group);
 static void group_activate(uint32_t);
 static void group_deactivate(uint32_t);
 static void group_toggle(uint32_t);
@@ -142,9 +152,11 @@ static void ipc_window_cycle(uint32_t *);
 static void ipc_window_rev_cycle(uint32_t *);
 static void ipc_window_cycle_in_group(uint32_t *);
 static void ipc_window_rev_cycle_in_group(uint32_t *);
+static void ipc_window_cardinal_focus(uint32_t *);
 static void ipc_window_focus(uint32_t *);
 static void ipc_group_add_window(uint32_t *);
 static void ipc_group_remove_window(uint32_t *);
+static void ipc_group_remove_all_windows(uint32_t *);
 static void ipc_group_activate(uint32_t *);
 static void ipc_group_deactivate(uint32_t *);
 static void ipc_group_toggle(uint32_t *);
@@ -169,7 +181,7 @@ cleanup(void)
 	if (ewmh != NULL)
 		xcb_ewmh_connection_wipe(ewmh);
 	if (win_list != NULL)
-		list_delete_all_items(&win_list);
+		list_delete_all_items(&win_list, true);
 	if (conn != NULL)
 		xcb_disconnect(conn);
 }
@@ -1174,6 +1186,246 @@ rcycle_window_in_group(struct client *client)
 }
 
 static void
+cardinal_focus(uint32_t dir)
+{
+    /* Don't focus if we don't have a current focus! */
+    if (focused_win == NULL)
+        return;
+
+    struct list_item *valid_windows = NULL;
+    struct list_item *desired_window = NULL;
+    struct list_item *valid_window;
+    struct list_item *win;
+
+    struct win_position focus_win_pos = get_window_position(CENTER, focused_win);
+
+    float closest_distance = -1;
+    float closest_angle = -360;
+
+    win = win_list;
+
+    while(win != NULL) {
+        /* Skip focused window */
+        if (((struct client *)win->data)->window == focused_win->window) {
+            win = win->next;
+            continue;
+        }
+
+        /* Skip unmapped windows */
+        if (!((struct client *)win->data)->mapped) {
+            win = win->next;
+            continue;
+        }
+
+        struct win_position win_pos = get_window_position(CENTER, (struct client *)win->data);
+
+        valid_window = NULL;
+
+        switch (dir) {
+            case NORTH:
+                if (win_pos.y < focus_win_pos.y)
+                    valid_window = list_add_item(&valid_windows);
+                break;
+            case SOUTH:
+                if (win_pos.y >= focus_win_pos.y)
+                    valid_window = list_add_item(&valid_windows);
+                break;
+            case WEST:
+                if (win_pos.x < focus_win_pos.x)
+                    valid_window = list_add_item(&valid_windows);
+                break;
+            case EAST:
+                if (win_pos.x >= focus_win_pos.x)
+                    valid_window = list_add_item(&valid_windows);
+                break;
+        }
+
+        if (valid_window != NULL)
+            valid_window->data = win->data;
+
+        win = win->next;
+    }
+
+    win = valid_windows;
+    while(win != NULL) {
+        float cur_distance;
+        float cur_angle;
+
+        cur_distance = get_distance_between_windows(focused_win, (struct client *)win->data);
+        cur_angle = get_angle_between_windows(focused_win, (struct client *)win->data);
+
+        if (is_in_valid_direction(dir, cur_angle, 10)) {
+            if (is_overlapping(focused_win, (struct client *)win->data))
+                cur_distance = cur_distance * 0.1;
+            cur_distance = cur_distance * 0.80;
+        }
+        else if (is_in_valid_direction(dir, cur_angle, 25)) {
+            if (is_overlapping(focused_win, (struct client *)win->data))
+                cur_distance = cur_distance * 0.1;
+            cur_distance = cur_distance * 0.85;
+        }
+        else if (is_in_valid_direction(dir, cur_angle, 35)) {
+            if (is_overlapping(focused_win, (struct client *)win->data))
+                cur_distance = cur_distance * 0.1;
+            cur_distance = cur_distance * 0.9;
+        }
+        else if (is_in_valid_direction(dir, cur_angle, 50)) {
+            if (is_overlapping(focused_win, (struct client *)win->data))
+                cur_distance = cur_distance * 0.1;
+            cur_distance = cur_distance * 3;
+        }
+        else {
+            win = win->next;
+            continue;
+        }
+
+        if (is_in_cardinal_direction(dir, focused_win, (struct client *)win->data))
+            cur_distance = cur_distance * 0.9;
+
+
+        if (closest_distance == -1 || (cur_distance < closest_distance)) {
+            closest_distance = cur_distance;
+            closest_angle = cur_angle;
+            desired_window = win;
+        }
+
+        win = win->next;
+    }
+
+    if (desired_window != NULL)
+        set_focused(desired_window->data);
+
+    if (valid_windows != NULL)
+        list_delete_all_items(&valid_windows, false);
+}
+
+static struct win_position
+get_window_position(uint32_t mode, struct client *win)
+{
+    struct win_position pos;
+    pos.x = 0;
+    pos.y = 0;
+
+    switch (mode) {
+        case CENTER:
+            pos.x = win->geom.x + (win->geom.width / 2);
+            pos.y = win->geom.y + (win->geom.height / 2);
+            break;
+        case TOP_LEFT:
+            pos.x = win->geom.x;
+            pos.y = win->geom.y;
+            break;
+        case TOP_RIGHT:
+            pos.x = win->geom.x + win->geom.width;
+            pos.y = win->geom.y;
+            break;
+        case BOTTOM_RIGHT:
+            pos.x = win->geom.x + win->geom.width;
+            pos.y = win->geom.y + win->geom.height;
+            break;
+        case BOTTOM_LEFT:
+            pos.x = win->geom.x;
+            pos.y = win->geom.y + win->geom.height;
+            break;
+    }
+    return pos;
+}
+
+static bool
+is_in_cardinal_direction(uint32_t direction, struct client *a, struct client *b)
+{
+    bool is_x_left_valid, is_x_right_valid, is_y_top_valid, is_y_bot_valid;
+
+    struct win_position pos_a_top_left = get_window_position(TOP_LEFT, a);
+    struct win_position pos_a_top_right = get_window_position(TOP_RIGHT, a);
+    struct win_position pos_a_bot_left = get_window_position(BOTTOM_LEFT, a);
+
+    struct win_position pos_b_center = get_window_position(CENTER, b);
+
+    switch(direction) {
+        case NORTH:
+        case SOUTH:
+            return pos_a_top_left.x <= pos_b_center.x && pos_a_top_right.x >= pos_b_center.x;
+
+        case WEST:
+        case EAST:
+            return pos_a_top_left.y <= pos_b_center.y && pos_a_bot_left.y >= pos_b_center.y;
+    }
+
+    return false;
+}
+
+static bool
+is_in_valid_direction(uint32_t direction, float window_direction, float delta)
+{
+    switch((uint32_t)direction) {
+        case NORTH:
+            if (window_direction >= (180 - delta) || window_direction <= (-180 + delta))
+                return true;
+            break;
+        case SOUTH:
+            if (abs(window_direction) <= ( 0 + delta))
+                return true;
+            break;
+        case EAST:
+            if (window_direction <= (90 + delta) && window_direction > (90 - delta))
+                return true;
+            break;
+        case WEST:
+            if (window_direction <= (-90 + delta) && window_direction >= (-90 - delta))
+                return true;
+            break;
+    }
+
+    return false;
+}
+
+static bool
+is_overlapping(struct client *a, struct client *b)
+{
+    struct win_position pos_a_top_left = get_window_position(TOP_LEFT, a);
+    struct win_position pos_a_top_right = get_window_position(TOP_RIGHT, a);
+    struct win_position pos_a_bot_left = get_window_position(BOTTOM_LEFT, a);
+
+    struct win_position pos_b_top_left = get_window_position(TOP_LEFT, b);
+    struct win_position pos_b_top_right = get_window_position(TOP_RIGHT, b);
+    struct win_position pos_b_bot_left = get_window_position(BOTTOM_LEFT, b);
+
+    bool is_x_top_overlapped = pos_a_top_left.x <= pos_b_top_left.x && pos_a_top_right.x >= pos_b_top_left.x;
+    bool is_x_bot_overlapped = pos_a_top_left.x <= pos_b_top_right.x && pos_a_top_right.x >= pos_b_top_right.x;
+
+    bool is_y_top_overlapped = pos_a_top_left.y <= pos_b_top_left.y && pos_a_bot_left.y >= pos_b_top_left.y;
+    bool is_y_bot_overlapped = pos_a_top_left.y <= pos_b_bot_left.y && pos_a_bot_left.y >= pos_b_bot_left.y;
+
+    return (is_x_top_overlapped || is_x_bot_overlapped) && (is_y_top_overlapped || is_y_bot_overlapped);
+}
+
+static float
+get_angle_between_windows(struct client *a, struct client *b)
+{
+    struct win_position a_pos = get_window_position(CENTER, a);
+    struct win_position b_pos = get_window_position(CENTER, b);
+
+    float dx = (float)(b_pos.x - a_pos.x);
+    float dy = (float)(b_pos.y - a_pos.y);
+
+    if (dx == 0.0 && dy == 0.0)
+        return 0.0;
+
+    return atan2(dx,dy) * (180 / PI);
+}
+
+static float
+get_distance_between_windows(struct client *a, struct client *b)
+{
+    struct win_position a_pos = get_window_position(CENTER, a);
+    struct win_position b_pos = get_window_position(CENTER, b);
+
+    float distance = hypot((float)(b_pos.x - a_pos.x), (float)(b_pos.y - a_pos.y));
+    return distance;
+}
+
+static void
 save_original_size(struct client *client)
 {
 	client->orig_geom.x = client->geom.x;
@@ -1423,6 +1675,25 @@ group_remove_window(struct client *client)
 		update_wm_desktop(client);
 		update_group_list();
 	}
+}
+
+static void
+group_remove_all_windows(uint32_t group)
+{
+    if (group >= conf.groups)
+        return;
+
+    struct list_item *item;
+    struct client *client;
+
+	for (item = win_list; item != NULL; item = item->next) {
+        client = item->data;
+	    if (client != NULL && client->group == group) {
+            group_remove_window(client);
+        }
+    }
+
+    group_in_use[group] = false;
 }
 
 static void
@@ -2008,9 +2279,11 @@ register_ipc_handlers(void)
 	ipc_handlers[IPCWindowRevCycle]        = ipc_window_rev_cycle;
 	ipc_handlers[IPCWindowCycleInGroup]    = ipc_window_cycle_in_group;
 	ipc_handlers[IPCWindowRevCycleInGroup] = ipc_window_rev_cycle_in_group;
+	ipc_handlers[IPCWindowCardinalFocus]   = ipc_window_cardinal_focus;
 	ipc_handlers[IPCWindowFocus]           = ipc_window_focus;
 	ipc_handlers[IPCGroupAddWindow]        = ipc_group_add_window;
 	ipc_handlers[IPCGroupRemoveWindow]     = ipc_group_remove_window;
+	ipc_handlers[IPCGroupRemoveAllWindows] = ipc_group_remove_all_windows;
 	ipc_handlers[IPCGroupActivate]         = ipc_group_activate;
 	ipc_handlers[IPCGroupDeactivate]       = ipc_group_deactivate;
 	ipc_handlers[IPCGroupToggle]           = ipc_group_toggle;
@@ -2371,6 +2644,13 @@ void ipc_window_rev_cycle(uint32_t *d)
 }
 
 static void
+ipc_window_cardinal_focus(uint32_t *d)
+{
+    uint32_t mode = d[0];
+    cardinal_focus(mode);
+}
+
+static void
 ipc_window_cycle_in_group(uint32_t *d)
 {
 	(void)(d);
@@ -2410,6 +2690,12 @@ ipc_group_remove_window(uint32_t *d)
 	(void)(d);
 	if (focused_win != NULL)
 		group_remove_window(focused_win);
+}
+
+static void
+ipc_group_remove_all_windows(uint32_t *d)
+{
+    group_remove_all_windows(d[0] - 1);
 }
 
 static void
