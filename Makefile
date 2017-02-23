@@ -1,12 +1,6 @@
 include config.mk
 
-VERCMD ?= git describe 2> /dev/null
 
-__NAME__ = windowchef
-__NAME_CLIENT__ = waitron
-__CONFIG_NAME__ = windowchefrc
-__THIS_VERSION__ = $(shell $(VERCMD) || cat VERSION)
-__THIS_VERSION__ ?= 0.2.6
 NAME_DEFINES = -D__NAME__=\"$(__NAME__)\"                 \
 			   -D__NAME_CLIENT__=\"$(__NAME_CLIENT__)\"   \
 			   -D__THIS_VERSION__=\"$(__THIS_VERSION__)\" \
@@ -34,9 +28,9 @@ $(__NAME_CLIENT__): client.o
 $(OBJ): common.h list.h ipc.h types.h config.h
 
 install: all
-	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	install $(__NAME__) $(DESTDIR)$(PREFIX)/bin/$(__NAME__)
-	install $(__NAME_CLIENT__) $(DESTDIR)$(PREFIX)/bin/$(__NAME_CLIENT__)
+	mkdir -p "$(DESTDIR)$(PREFIX)/bin"
+	install $(__NAME__) "$(DESTDIR)$(PREFIX)/bin/$(__NAME__)"
+	install $(__NAME_CLIENT__) "$(DESTDIR)$(PREFIX)/bin/$(__NAME_CLIENT__)"
 	cd ./man; $(MAKE) install
 
 uninstall:

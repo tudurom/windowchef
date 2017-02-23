@@ -7,21 +7,21 @@
 
 #include <assert.h>
 #include <err.h>
+#include <getopt.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <getopt.h>
 #include <tgmath.h>
+#include <unistd.h>
 
 #include "common.h"
+#include "config.h"
 #include "ipc.h"
 #include "list.h"
 #include "types.h"
-#include "config.h"
 
-#define EVENT_MASK(ev) ((ev & ~0x80))
+#define EVENT_MASK(ev) (((ev) & ~0x80))
 /* XCB event with the biggest value */
 #define LAST_XCB_EVENT XCB_GET_MODIFIER_MAPPING
 #define NULL_GROUP 0xffffffff
@@ -99,7 +99,7 @@ static float get_angle_between_windows(struct client *, struct client *);
 static struct win_position get_window_position(uint32_t, struct client *);
 static bool is_overlapping(struct client *, struct client *);
 static bool is_in_valid_direction(uint32_t, float, float);
-static bool is_in_cardinal_direction(uint32_t direction, struct client *, struct client *);
+static bool is_in_cardinal_direction(uint32_t , struct client *, struct client *);
 static void save_original_size(struct client *);
 static xcb_atom_t get_atom(char *);
 static bool get_pointer_location(xcb_window_t *, int16_t *, int16_t *);
