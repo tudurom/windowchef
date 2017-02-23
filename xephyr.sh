@@ -6,5 +6,5 @@ Xephyr -screen 1280x720 :$D&
 sleep 1
 
 export DISPLAY=:$D
-sxhkd -c .sxhkdrc &
-exec ./windowchef -c windowchefrc
+sxhkd -c examples/sxhkdrc &
+exec ./windowchef -c examples/windowchefrc

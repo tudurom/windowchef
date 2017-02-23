@@ -58,7 +58,7 @@ Windowchef depends on `xcb` to communicate with the X11 server, `xcb-randr` to
 gather information about connected displays and `xcb-util-wm` for ewmh and icccm helper functions.
 
 I couldn't find compiled documentation for `xcb-util-wm` so I compiled it and
-put it on my website [here](http://thetudor.ddns.net/res).
+put it on my website [here](https://tudorr.xyz/res/).
 
 Building windowchef and installing it
 -------------------------------------

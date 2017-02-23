@@ -7,6 +7,7 @@ __THIS_VERSION__ = $(shell $(VERCMD) || cat VERSION)
 PREFIX    = /usr/local
 MANPREFIX = $(PREFIX)/share/man
 MANDIR    = $(MANPREFIX)/man1
+DOCPREFIX = $(PREFIX)/share/doc
 
 CFLAGS += -std=c99 -Wextra -O2
 LDFLAGS += -lm -lxcb -lxcb-ewmh -lxcb-icccm -lxcb-randr

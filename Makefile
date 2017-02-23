@@ -31,6 +31,10 @@ install: all
 	mkdir -p "$(DESTDIR)$(PREFIX)/bin"
 	install $(__NAME__) "$(DESTDIR)$(PREFIX)/bin/$(__NAME__)"
 	install $(__NAME_CLIENT__) "$(DESTDIR)$(PREFIX)/bin/$(__NAME_CLIENT__)"
+	mkdir -p "$(DESTDIR)$(DOCPREFIX)"
+	cp -fR contrib "$(DESTDIR)$(DOCPREFIX)/"
+	cp -fR examples "$(DESTDIR)$(DOCPREFIX)/"
+	cp -f README.md LICENSE "$(DESTDIR)$(DOCPREFIX)/"
 	cd ./man; $(MAKE) install
 
 uninstall:

@@ -19,8 +19,8 @@ clean:
 	rm *.1.html
 
 install:
-	mkdir -p $(DESTDIR)$(MANDIR)/
-	cp -f $(MAN) $(DESTDIR)$(MANDIR)/
+	mkdir -p "$(DESTDIR)$(MANDIR)/"
+	cp -f $(MAN) "$(DESTDIR)$(MANDIR)/"
 
 uninstall:
 	@echo "uninstalling manpages"
