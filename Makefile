@@ -1,6 +1,5 @@
 include config.mk
 
-
 NAME_DEFINES = -D__NAME__=\"$(__NAME__)\"                 \
 			   -D__NAME_CLIENT__=\"$(__NAME_CLIENT__)\"   \
 			   -D__THIS_VERSION__=\"$(__THIS_VERSION__)\" \
@@ -31,15 +30,16 @@ install: all
 	mkdir -p "$(DESTDIR)$(PREFIX)/bin"
 	install $(__NAME__) "$(DESTDIR)$(PREFIX)/bin/$(__NAME__)"
 	install $(__NAME_CLIENT__) "$(DESTDIR)$(PREFIX)/bin/$(__NAME_CLIENT__)"
-	mkdir -p "$(DESTDIR)$(DOCPREFIX)"
-	cp -fR contrib "$(DESTDIR)$(DOCPREFIX)/"
-	cp -fR examples "$(DESTDIR)$(DOCPREFIX)/"
-	cp -f README.md LICENSE "$(DESTDIR)$(DOCPREFIX)/"
+	mkdir -p "$(DESTDIR)$(DOCPREFIX)/$(__NAME__)/"
+	cp -fR contrib "$(DESTDIR)$(DOCPREFIX)/$(__NAME__)/"
+	cp -fR examples "$(DESTDIR)$(DOCPREFIX)/$(__NAME__)/"
+	cp -f README.md LICENSE "$(DESTDIR)$(DOCPREFIX)/$(__NAME__)/"
 	cd ./man; $(MAKE) install
 
 uninstall:
-	rm -f $(__NAME__) $(DESTDIR)$(PREFIX)/bin/$(__NAME__)
-	rm -f $(__NAME_CLIENT__) $(DESTDIR)$(PREFIX)/bin/$(__NAME_CLIENT__)
+	rm -f "$(DESTDIR)$(PREFIX)/bin/$(__NAME__)"
+	rm -f "$(DESTDIR)$(PREFIX)/bin/$(__NAME_CLIENT__)"
+	rm -rf "$(DESTDIR)$(DOCPREFIX)/$(__NAME__)"
 	cd ./man; $(MAKE) uninstall
 
 clean:
