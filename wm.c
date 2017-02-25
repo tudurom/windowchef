@@ -112,6 +112,7 @@ static void free_window(struct client *);
 static void add_to_client_list(xcb_window_t);
 static void update_client_list(void);
 static void update_wm_desktop(struct client *);
+static void update_current_desktop(struct client *);
 static void group_add_window(struct client *, uint32_t);
 static void group_remove_window(struct client *);
 static void group_remove_all_windows(uint32_t);
@@ -134,6 +135,7 @@ static void event_unmap_notify(xcb_generic_event_t *);
 static void event_configure_notify(xcb_generic_event_t *);
 static void event_circulate_request(xcb_generic_event_t *);
 static void event_client_message(xcb_generic_event_t *);
+static void event_focus_in(xcb_generic_event_t *);
 static void event_focus_out(xcb_generic_event_t *);
 static void register_ipc_handlers(void);
 static void ipc_window_move(uint32_t *);
@@ -1657,6 +1659,13 @@ update_wm_desktop(struct client *client)
 }
 
 static void
+update_current_desktop(struct client *client)
+{
+	if (client != NULL)
+		xcb_ewmh_set_current_desktop(ewmh, 0, client->group);
+}
+
+static void
 group_add_window(struct client *client, uint32_t group)
 {
 	if (client != NULL && group < conf.groups) {
@@ -1664,6 +1673,7 @@ group_add_window(struct client *client, uint32_t group)
 		group_in_use[group] = true;
 		update_wm_desktop(client);
 		update_group_list();
+		update_current_desktop(client);
 	}
 }
 
@@ -1674,6 +1684,7 @@ group_remove_window(struct client *client)
 		client->group = NULL_GROUP;
 		update_wm_desktop(client);
 		update_group_list();
+		update_current_desktop(client);
 	}
 }
 
@@ -1714,6 +1725,7 @@ group_activate(uint32_t group) {
 	group_in_use[group] = true;
 	last_group = group;
 	update_group_list();
+	update_current_desktop(focused_win);
 }
 
 static void
@@ -1767,23 +1779,20 @@ static void update_group_list(void)
 {
 	struct list_item *item;
 	struct client *client;
-	int in_group;
 	bool first = true;
+	uint32_t data[1];
 
 	for (unsigned int i = 0; i < conf.groups; i++) {
 		/* deactivate group if no window in group */
-		in_group = 0;
-		for (item = win_list; item != NULL; item = item->next) {
-			client = item->data;
-			if (client->group == i)
-				in_group++;
-		}
-		if (in_group == 0)
+		item = win_list;
+		while (item != NULL && (client = item->data)->group != i)
+			item = item->next;
+		if (item == NULL)
 			group_in_use[i] = false;
 
 		if (group_in_use[i]) {
 			uint8_t mode = XCB_PROP_MODE_APPEND;
-			uint32_t data[] = { i + 1 };
+			data[0] = i + 1;
 			if (first) {
 				mode = XCB_PROP_MODE_REPLACE;
 				first = false;
@@ -1792,8 +1801,10 @@ static void update_group_list(void)
 		}
 	}
 
-	if (first)
-		xcb_change_property(conn, XCB_PROP_MODE_REPLACE, scr->root, ATOMS[WINDOWCHEF_ACTIVE_GROUPS], XCB_ATOM_INTEGER, 32, 0, NULL);
+	if (first) {
+		data[0] = 0;
+		xcb_change_property(conn, XCB_PROP_MODE_REPLACE, scr->root, ATOMS[WINDOWCHEF_ACTIVE_GROUPS], XCB_ATOM_INTEGER, 32, 1, data);
+	}
 }
 
 static void
@@ -1933,6 +1944,7 @@ register_event_handlers(void)
 	events[XCB_CLIENT_MESSAGE]    = event_client_message;
 	events[XCB_CONFIGURE_NOTIFY]  = event_configure_notify;
 	events[XCB_CIRCULATE_REQUEST] = event_circulate_request;
+	events[XCB_FOCUS_IN]          = event_focus_in;
 	events[XCB_FOCUS_OUT]         = event_focus_out;
 }
 
@@ -2235,6 +2247,17 @@ event_client_message(xcb_generic_event_t *ev)
 			handle_wm_state(client, e->data.data32[2], e->data.data32[0]);
 		}
 	}
+}
+
+static void
+event_focus_in(xcb_generic_event_t *ev)
+{
+	xcb_focus_in_event_t *e = (xcb_focus_in_event_t *)ev;
+	xcb_window_t win = e->event;
+	struct client *client = find_client(&win);
+
+	if (client != NULL)
+		update_current_desktop(client);
 }
 
 static void
