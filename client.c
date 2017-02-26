@@ -189,24 +189,24 @@ fn_hex(uint32_t *data, int argc, char **argv)
 static bool
 fn_direction(uint32_t *data, int argc, char **argv)
 {
-    char *pos = argv[0];
-    enum direction dir_sel;
-    
-    if (strcasecmp(pos, "up") == 0)
-        dir_sel = NORTH;
-    else if (strcasecmp(pos, "down") == 0)
-        dir_sel = SOUTH;
-    else if (strcasecmp(pos, "left") == 0)
-        dir_sel = WEST;
-    else if (strcasecmp(pos, "right") == 0)
-        dir_sel = EAST;
-    else
-        return false;
+	char *pos = argv[0];
+	enum direction dir_sel;
 
-    (void)(argc);
-    data[0] = dir_sel;
+	if (strcasecmp(pos, "up") == 0 || strcasecmp(pos, "north") == 0)
+		dir_sel = NORTH;
+	else if (strcasecmp(pos, "down") == 0 || strcasecmp(pos, "south") == 0)
+		dir_sel = SOUTH;
+	else if (strcasecmp(pos, "left") == 0 || strcasecmp(pos, "west") == 0)
+		dir_sel = WEST;
+	else if (strcasecmp(pos, "right") == 0 || strcasecmp(pos, "east") == 0)
+		dir_sel = EAST;
+	else
+		return false;
 
-    return true;
+	(void)(argc);
+	data[0] = dir_sel;
+
+	return true;
 }
 
 static bool

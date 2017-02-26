@@ -31,13 +31,12 @@ overridden with the `-c` flag.
 
 waitron(1), sxhkd(1), xinit(1), xmmv(1), xmrs(1)
 
+## REPORTING BUGS
+
+`windowchef` issue tracker: https://github.com/tudurom/windowchef/issues
+
 ## AUTHOR
 
 Tudor Roman `<tudurom at gmail dot com>`
 
 The default color scheme that comes with `windowchef` is [5725](https://github.com/dkeg/crayolo#5725) by dkeg.
-
-## DERP
-
-I deleted all the manpages from my system by mistake while writing this manual
-page.

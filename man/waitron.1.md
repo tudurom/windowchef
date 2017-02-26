@@ -30,7 +30,7 @@ anything on `stdout`.
 	false values: `false` | `f` | `no` | `n` | `0`
 
 * `DIRECTION`:
-	`up` | `down` | `left` | `right`
+	`up` | `down` | `left` | `right` | `north` | `south` | `west` | `east`
 
 ## COMMANDS
 
@@ -192,6 +192,10 @@ are:
 ## SEE ALSO
 
 windowchef(1), sxhkd(1), wmutils(1), pfw(1), lsw(1), chwb2(1), lemonbar(1)
+
+## REPORTING BUGS
+
+`windowchef` issue tracker: https://github.com/tudurom/windowchef/issues
 
 ## AUTHOR
 
