@@ -14,6 +14,7 @@ WLIST="${WLIST:-/tmp/wlist}"
 pfw > "$WLIST"
 
 wew -m 2097152 | while IFS=: read ev wid; do
+	wattr o "$wid" && continue
 	case $ev in
 		# Focus in event. Write wid to the window list
 		# and remove the previous entry
