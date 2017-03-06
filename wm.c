@@ -48,6 +48,7 @@ static struct client * hovered_client = NULL;
 /* list of all windows. NULL is the empty list */
 static struct list_item *win_list   = NULL;
 static struct list_item *mon_list   = NULL;
+static struct list_item *focus_list = NULL;
 static char *atom_names[NR_ATOMS] = {
 	"WM_DELETE_WINDOW",
 	"WINDOWCHEF_ACTIVE_GROUPS",
@@ -75,6 +76,7 @@ static void handle_events(void);
 static struct client * setup_window(xcb_window_t);
 static void set_focused_no_raise(struct client *);
 static void set_focused(struct client *);
+static void set_focused_last_best();
 static void raise_window(xcb_window_t);
 static void close_window(struct client *);
 static void delete_window(xcb_window_t);
@@ -184,6 +186,8 @@ cleanup(void)
 		xcb_ewmh_connection_wipe(ewmh);
 	if (win_list != NULL)
 		list_delete_all_items(&win_list, true);
+	if (focus_list != NULL)
+	    list_delete_all_items(&focus_list, true);
 	if (conn != NULL)
 		xcb_disconnect(conn);
 }
@@ -600,6 +604,7 @@ setup_window(xcb_window_t win)
 	xcb_atom_t atom;
 	struct client *client;
 	struct list_item *item;
+	struct list_item *focus_item;
 	xcb_size_hints_t hints;
 
 	if (xcb_ewmh_get_wm_window_type_reply(ewmh,
@@ -634,11 +639,17 @@ setup_window(xcb_window_t win)
 	if (item == NULL)
 		return NULL;
 
+	focus_item = list_add_item(&focus_list);
+	if (focus_item == NULL)
+	    return NULL;
+
 	client = malloc(sizeof(struct client));
 	if (client == NULL)
 		return NULL;
 
 	/* initialize variables */
+	focus_item->data = client;
+    client->focus_item = focus_item;
 	item->data = client;
 	client->item = item;
 	client->window = win;
@@ -701,6 +712,11 @@ set_focused_no_raise(struct client *client)
 			set_borders(focused_win, conf.unfocus_color);
 	}
 
+    fprintf(stderr, "\nMoving client focus item to front of list\n");
+    if (client->focus_item != NULL)
+        list_move_to_head(&focus_list, client->focus_item);
+    fprintf(stderr, "Success!\n");
+
 	focused_win = client;
 }
 
@@ -713,6 +729,30 @@ set_focused(struct client *client)
 {
 	set_focused_no_raise(client);
 	raise_window(client->window);
+}
+
+/*
+ * Focus last best focus (in a valid group, mapped, etc)
+ */
+
+static void
+set_focused_last_best()
+{
+    struct list_item *focused_item;
+    struct client *client;
+
+    focused_item = focus_list;
+
+    while (focused_item != NULL) {
+        client = focused_item->data;
+
+        if (client != NULL && client->mapped) {
+            set_focused(client);
+            return;
+        }
+
+        focused_item = focused_item->next;
+    }
 }
 
 /*
@@ -1598,12 +1638,16 @@ static void
 free_window(struct client *client)
 {
 	struct list_item *item;
+	struct list_item *focus_item;
 
 	DMSG("freeing 0x%08x\n", client->window);
 	item = client->item;
+	focus_item = client->focus_item;
+
 
 	free(client);
 	list_delete_item(&win_list, item);
+	list_delete_item(&focus_list, focus_item);
 }
 
 /*
@@ -2042,11 +2086,13 @@ event_destroy_notify(xcb_generic_event_t *ev)
 
 	client = find_client(&e->window);
 	if (focused_win != NULL && focused_win == client)
-		focused_win = NULL;
+	    focused_win = NULL;
 
 	if (client != NULL) {
 		free_window(client);
 	}
+
+    set_focused_last_best();
 
 	update_client_list();
 	update_group_list();
@@ -2165,6 +2211,7 @@ event_unmap_notify(xcb_generic_event_t *ev)
 
 	client->mapped = false;
 
+    set_focused_last_best();
 	update_client_list();
 }
 
