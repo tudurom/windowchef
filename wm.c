@@ -712,10 +712,8 @@ set_focused_no_raise(struct client *client)
 			set_borders(focused_win, conf.unfocus_color);
 	}
 
-    fprintf(stderr, "\nMoving client focus item to front of list\n");
     if (client->focus_item != NULL)
         list_move_to_head(&focus_list, client->focus_item);
-    fprintf(stderr, "Success!\n");
 
 	focused_win = client;
 }
@@ -2085,14 +2083,15 @@ event_destroy_notify(xcb_generic_event_t *ev)
 	xcb_destroy_notify_event_t *e = (xcb_destroy_notify_event_t *)ev;
 
 	client = find_client(&e->window);
-	if (focused_win != NULL && focused_win == client)
+	if (focused_win != NULL && focused_win == client) {
 	    focused_win = NULL;
+        set_focused_last_best();
+    }
 
 	if (client != NULL) {
 		free_window(client);
 	}
 
-    set_focused_last_best();
 
 	update_client_list();
 	update_group_list();
@@ -2206,12 +2205,13 @@ event_unmap_notify(xcb_generic_event_t *ev)
 	if (client == NULL)
 		return;
 
-	if (focused_win != NULL && client->window == focused_win->window)
-		focused_win = NULL;
-
 	client->mapped = false;
 
-    set_focused_last_best();
+    if (focused_win != NULL && client->window == focused_win->window) {
+        focused_win = NULL;
+        set_focused_last_best();
+    }
+
 	update_client_list();
 }
 
