@@ -739,7 +739,7 @@ set_focused_last_best()
     struct list_item *focused_item;
     struct client *client;
 
-    focused_item = focus_list;
+    focused_item = focus_list->next;
 
     while (focused_item != NULL) {
         client = focused_item->data;
@@ -773,6 +773,9 @@ close_window(struct client *client)
 {
 	if (client == NULL)
 		return;
+
+	if (client != NULL && client == focused_win)
+	    set_focused_last_best();
 
 	xcb_window_t win = client->window;
 	xcb_get_property_cookie_t cookie =
