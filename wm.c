@@ -39,15 +39,15 @@ static struct conf conf;
 /* number of the screen we're using */
 static int scrno;
 /* base for checking randr events */
-static int  randr_base;
+static int	randr_base;
 static bool halt;
-static int  exit_code;
+static int	exit_code;
 static bool *group_in_use = NULL;
-static int  last_group = 0;
+static int	last_group = 0;
 static struct client * hovered_client = NULL;
 /* list of all windows. NULL is the empty list */
-static struct list_item *win_list   = NULL;
-static struct list_item *mon_list   = NULL;
+static struct list_item *win_list	= NULL;
+static struct list_item *mon_list	= NULL;
 static struct list_item *focus_list = NULL;
 static char *atom_names[NR_ATOMS] = {
 	"WM_DELETE_WINDOW",
@@ -61,8 +61,8 @@ static void (*ipc_handlers[NR_IPC_COMMANDS])(uint32_t *);
 static void (*events[LAST_XCB_EVENT + 1])(xcb_generic_event_t *);
 
 static void cleanup(void);
-static int  setup(void);
-static int  setup_randr(void);
+static int	setup(void);
+static int	setup_randr(void);
 static void get_randr(void);
 static void get_outputs(xcb_randr_output_t *, int len, xcb_timestamp_t);
 static struct monitor * find_monitor(xcb_randr_output_t);
@@ -187,7 +187,7 @@ cleanup(void)
 	if (win_list != NULL)
 		list_delete_all_items(&win_list, true);
 	if (focus_list != NULL)
-	    list_delete_all_items(&focus_list, true);
+		list_delete_all_items(&focus_list, true);
 	if (conn != NULL)
 		xcb_disconnect(conn);
 }
@@ -235,14 +235,14 @@ setup(void)
 	xcb_ewmh_set_number_of_desktops(ewmh, 0, GROUPS);
 
 	xcb_atom_t supported_atoms[] = {
-		ewmh->_NET_SUPPORTED               , ewmh->_NET_WM_DESKTOP              ,
-		ewmh->_NET_NUMBER_OF_DESKTOPS      , ewmh->_NET_CURRENT_DESKTOP         ,
-		ewmh->_NET_ACTIVE_WINDOW           , ewmh->_NET_WM_STATE                ,
-		ewmh->_NET_WM_STATE_FULLSCREEN     , ewmh->_NET_WM_STATE_MAXIMIZED_VERT ,
-		ewmh->_NET_WM_STATE_MAXIMIZED_HORZ , ewmh->_NET_WM_NAME                 ,
-		ewmh->_NET_WM_ICON_NAME            , ewmh->_NET_WM_WINDOW_TYPE          ,
-		ewmh->_NET_WM_WINDOW_TYPE_DOCK     , ewmh->_NET_WM_PID                  ,
-		ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR  , ewmh->_NET_WM_WINDOW_TYPE_DESKTOP  ,
+		ewmh->_NET_SUPPORTED			   , ewmh->_NET_WM_DESKTOP				,
+		ewmh->_NET_NUMBER_OF_DESKTOPS	   , ewmh->_NET_CURRENT_DESKTOP			,
+		ewmh->_NET_ACTIVE_WINDOW		   , ewmh->_NET_WM_STATE				,
+		ewmh->_NET_WM_STATE_FULLSCREEN	   , ewmh->_NET_WM_STATE_MAXIMIZED_VERT ,
+		ewmh->_NET_WM_STATE_MAXIMIZED_HORZ , ewmh->_NET_WM_NAME					,
+		ewmh->_NET_WM_ICON_NAME			   , ewmh->_NET_WM_WINDOW_TYPE			,
+		ewmh->_NET_WM_WINDOW_TYPE_DOCK	   , ewmh->_NET_WM_PID					,
+		ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR  , ewmh->_NET_WM_WINDOW_TYPE_DESKTOP	,
 	};
 	xcb_ewmh_set_supported(ewmh, scrno, sizeof(supported_atoms) / sizeof(xcb_atom_t), supported_atoms);
 
@@ -641,7 +641,7 @@ setup_window(xcb_window_t win)
 
 	focus_item = list_add_item(&focus_list);
 	if (focus_item == NULL)
-	    return NULL;
+		return NULL;
 
 	client = malloc(sizeof(struct client));
 	if (client == NULL)
@@ -649,7 +649,7 @@ setup_window(xcb_window_t win)
 
 	/* initialize variables */
 	focus_item->data = client;
-    client->focus_item = focus_item;
+	client->focus_item = focus_item;
 	item->data = client;
 	client->item = item;
 	client->window = win;
@@ -659,8 +659,8 @@ setup_window(xcb_window_t win)
 	client->maxed  = client->hmaxed = client->vmaxed
 		= client->monocled = client->geom.set_by_user = false;
 	client->monitor = NULL;
-	client->mapped  = false;
-	client->group   = NULL_GROUP;
+	client->mapped	= false;
+	client->group	= NULL_GROUP;
 	get_geometry(&client->window, &client->geom.x, &client->geom.y,
 			&client->geom.width, &client->geom.height);
 
@@ -712,8 +712,8 @@ set_focused_no_raise(struct client *client)
 			set_borders(focused_win, conf.unfocus_color);
 	}
 
-    if (client->focus_item != NULL)
-        list_move_to_head(&focus_list, client->focus_item);
+	if (client->focus_item != NULL)
+		list_move_to_head(&focus_list, client->focus_item);
 
 	focused_win = client;
 }
@@ -736,21 +736,21 @@ set_focused(struct client *client)
 static void
 set_focused_last_best()
 {
-    struct list_item *focused_item;
-    struct client *client;
+	struct list_item *focused_item;
+	struct client *client;
 
-    focused_item = focus_list->next;
+	focused_item = focus_list->next;
 
-    while (focused_item != NULL) {
-        client = focused_item->data;
+	while (focused_item != NULL) {
+		client = focused_item->data;
 
-        if (client != NULL && client->mapped) {
-            set_focused(client);
-            return;
-        }
+		if (client != NULL && client->mapped) {
+			set_focused(client);
+			return;
+		}
 
-        focused_item = focused_item->next;
-    }
+		focused_item = focused_item->next;
+	}
 }
 
 /*
@@ -775,7 +775,7 @@ close_window(struct client *client)
 		return;
 
 	if (client != NULL && client == focused_win)
-	    set_focused_last_best();
+		set_focused_last_best();
 
 	xcb_window_t win = client->window;
 	xcb_get_property_cookie_t cookie =
@@ -1981,16 +1981,16 @@ register_event_handlers(void)
 		events[i] = NULL;
 
 	events[XCB_CONFIGURE_REQUEST] = event_configure_request;
-	events[XCB_DESTROY_NOTIFY]    = event_destroy_notify;
-	events[XCB_ENTER_NOTIFY]      = event_enter_notify;
-	events[XCB_MAP_REQUEST]       = event_map_request;
-	events[XCB_MAP_NOTIFY]        = event_map_notify;
-	events[XCB_UNMAP_NOTIFY]      = event_unmap_notify;
-	events[XCB_CLIENT_MESSAGE]    = event_client_message;
+	events[XCB_DESTROY_NOTIFY]	  = event_destroy_notify;
+	events[XCB_ENTER_NOTIFY]	  = event_enter_notify;
+	events[XCB_MAP_REQUEST]		  = event_map_request;
+	events[XCB_MAP_NOTIFY]		  = event_map_notify;
+	events[XCB_UNMAP_NOTIFY]	  = event_unmap_notify;
+	events[XCB_CLIENT_MESSAGE]	  = event_client_message;
 	events[XCB_CONFIGURE_NOTIFY]  = event_configure_notify;
 	events[XCB_CIRCULATE_REQUEST] = event_circulate_request;
-	events[XCB_FOCUS_IN]          = event_focus_in;
-	events[XCB_FOCUS_OUT]         = event_focus_out;
+	events[XCB_FOCUS_IN]		  = event_focus_in;
+	events[XCB_FOCUS_OUT]		  = event_focus_out;
 }
 
 /*
@@ -2087,9 +2087,9 @@ event_destroy_notify(xcb_generic_event_t *ev)
 
 	client = find_client(&e->window);
 	if (focused_win != NULL && focused_win == client) {
-	    focused_win = NULL;
-        set_focused_last_best();
-    }
+		focused_win = NULL;
+		set_focused_last_best();
+	}
 
 	if (client != NULL) {
 		free_window(client);
@@ -2210,10 +2210,10 @@ event_unmap_notify(xcb_generic_event_t *ev)
 
 	client->mapped = false;
 
-    if (focused_win != NULL && client->window == focused_win->window) {
-        focused_win = NULL;
-        set_focused_last_best();
-    }
+	if (focused_win != NULL && client->window == focused_win->window) {
+		focused_win = NULL;
+		set_focused_last_best();
+	}
 
 	update_client_list();
 }
@@ -2337,32 +2337,32 @@ event_focus_out(xcb_generic_event_t *ev)
 static void
 register_ipc_handlers(void)
 {
-	ipc_handlers[IPCWindowMove]            = ipc_window_move;
+	ipc_handlers[IPCWindowMove]			   = ipc_window_move;
 	ipc_handlers[IPCWindowMoveAbsolute]    = ipc_window_move_absolute;
-	ipc_handlers[IPCWindowResize]          = ipc_window_resize;
+	ipc_handlers[IPCWindowResize]		   = ipc_window_resize;
 	ipc_handlers[IPCWindowResizeAbsolute]  = ipc_window_resize_absolute;
-	ipc_handlers[IPCWindowMaximize]        = ipc_window_maximize;
-	ipc_handlers[IPCWindowHorMaximize]     = ipc_window_hor_maximize;
-	ipc_handlers[IPCWindowVerMaximize]     = ipc_window_ver_maximize;
-	ipc_handlers[IPCWindowMonocle]         = ipc_window_monocle;
-	ipc_handlers[IPCWindowClose]           = ipc_window_close;
-	ipc_handlers[IPCWindowPutInGrid]       = ipc_window_put_in_grid;
-	ipc_handlers[IPCWindowSnap]            = ipc_window_snap;
-	ipc_handlers[IPCWindowCycle]           = ipc_window_cycle;
-	ipc_handlers[IPCWindowRevCycle]        = ipc_window_rev_cycle;
+	ipc_handlers[IPCWindowMaximize]		   = ipc_window_maximize;
+	ipc_handlers[IPCWindowHorMaximize]	   = ipc_window_hor_maximize;
+	ipc_handlers[IPCWindowVerMaximize]	   = ipc_window_ver_maximize;
+	ipc_handlers[IPCWindowMonocle]		   = ipc_window_monocle;
+	ipc_handlers[IPCWindowClose]		   = ipc_window_close;
+	ipc_handlers[IPCWindowPutInGrid]	   = ipc_window_put_in_grid;
+	ipc_handlers[IPCWindowSnap]			   = ipc_window_snap;
+	ipc_handlers[IPCWindowCycle]		   = ipc_window_cycle;
+	ipc_handlers[IPCWindowRevCycle]		   = ipc_window_rev_cycle;
 	ipc_handlers[IPCWindowCycleInGroup]    = ipc_window_cycle_in_group;
 	ipc_handlers[IPCWindowRevCycleInGroup] = ipc_window_rev_cycle_in_group;
 	ipc_handlers[IPCWindowCardinalFocus]   = ipc_window_cardinal_focus;
-	ipc_handlers[IPCWindowFocus]           = ipc_window_focus;
-	ipc_handlers[IPCGroupAddWindow]        = ipc_group_add_window;
-	ipc_handlers[IPCGroupRemoveWindow]     = ipc_group_remove_window;
+	ipc_handlers[IPCWindowFocus]		   = ipc_window_focus;
+	ipc_handlers[IPCGroupAddWindow]		   = ipc_group_add_window;
+	ipc_handlers[IPCGroupRemoveWindow]	   = ipc_group_remove_window;
 	ipc_handlers[IPCGroupRemoveAllWindows] = ipc_group_remove_all_windows;
-	ipc_handlers[IPCGroupActivate]         = ipc_group_activate;
-	ipc_handlers[IPCGroupDeactivate]       = ipc_group_deactivate;
-	ipc_handlers[IPCGroupToggle]           = ipc_group_toggle;
+	ipc_handlers[IPCGroupActivate]		   = ipc_group_activate;
+	ipc_handlers[IPCGroupDeactivate]	   = ipc_group_deactivate;
+	ipc_handlers[IPCGroupToggle]		   = ipc_group_toggle;
 	ipc_handlers[IPCGroupActivateSpecific] = ipc_group_activate_specific;
-	ipc_handlers[IPCWMQuit]                = ipc_wm_quit;
-	ipc_handlers[IPCWMConfig]              = ipc_wm_config;
+	ipc_handlers[IPCWMQuit]				   = ipc_wm_quit;
+	ipc_handlers[IPCWMConfig]			   = ipc_wm_config;
 }
 
 static void
@@ -2601,10 +2601,10 @@ ipc_window_put_in_grid(uint32_t *d)
 	uint16_t new_w, new_h;
 	uint16_t mon_w, mon_h;
 
-	grid_width  = d[0];
+	grid_width	= d[0];
 	grid_height = d[1];
-	grid_x      = d[2];
-	grid_y      = d[3];
+	grid_x		= d[2];
+	grid_y		= d[3];
 
 	if (focused_win == NULL || grid_x >= grid_width || grid_y >= grid_height)
 		return;
@@ -2827,7 +2827,7 @@ ipc_wm_config(uint32_t *d)
 			switch (d[1]) {
 				case LEFT: conf.gap_left   = d[2]; break;
 				case BOTTOM: conf.gap_down = d[2]; break;
-				case TOP: conf.gap_up      = d[2]; break;
+				case TOP: conf.gap_up	   = d[2]; break;
 				case RIGHT: conf.gap_right = d[2]; break;
 				case ALL: conf.gap_left = conf.gap_down
 						  = conf.gap_up = conf.gap_right = d[2];
@@ -2877,17 +2877,17 @@ static void version(void)
 static void
 load_defaults(void)
 {
-	conf.border_width    = BORDER_WIDTH;
-	conf.focus_color     = COLOR_FOCUS;
-	conf.unfocus_color   = COLOR_UNFOCUS;
+	conf.border_width	 = BORDER_WIDTH;
+	conf.focus_color	 = COLOR_FOCUS;
+	conf.unfocus_color	 = COLOR_UNFOCUS;
 	conf.gap_left = conf.gap_down
 		= conf.gap_up = conf.gap_right = GAP;
-	conf.grid_gap        = GRID_GAP;
+	conf.grid_gap		 = GRID_GAP;
 	conf.cursor_position = CURSOR_POSITION;
-	conf.groups          = GROUPS;
-	conf.sloppy_focus    = SLOPPY_FOCUS;
+	conf.groups			 = GROUPS;
+	conf.sloppy_focus	 = SLOPPY_FOCUS;
 	conf.sticky_windows  = STICKY_WINDOWS;
-	conf.borders         = BORDERS;
+	conf.borders		 = BORDERS;
 }
 
 static void
