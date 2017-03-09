@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "WAITRON" "1" "February 2017" "Windowchef" "Windowchef Manual"
+.TH "WAITRON" "1" "March 2017" "Windowchef" "Windowchef Manual"
 .
 .SH "NAME"
 \fBwaitron\fR \- A client for windowchef(1)
@@ -104,6 +104,10 @@ Reverse cycle through mapped windows that belong to the same group as the focuse
 .TP
 \fBwindow_focus\fR \fIid\fR
 Focus window by \fIid\fR\. The \fIid\fR can be found using pfw(1) or lsw(1) from wmutils \fIhttps://github\.com/wmutils/core/\fR\.
+.
+.TP
+\fBwindow_focus_last\fR
+Focus the window that was focused before the currently focused window\.
 .
 .TP
 \fBwindow_cardinal_focus\fR \fIDIRECTION\fR

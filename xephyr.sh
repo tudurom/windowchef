@@ -17,4 +17,4 @@ cp examples/sxhkdrc sxhkdrc
 cp examples/windowchefrc windowchefrc
 sed -i 's/waitron/.\/waitron/g' sxhkdrc windowchefrc
 sxhkd -c sxhkdrc &
-./windowchef -c examples/windowchefrc
+./windowchef -c windowchefrc

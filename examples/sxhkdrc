@@ -37,8 +37,11 @@ alt + Tab
 alt + shift + Tab
 	waitron window_rev_cycle
 
-super + {_,shift +}{1-10}
-	waitron {group_toggle,group_add_window} {1-10}
+alt + ctrl + Tab
+	waitron window_focus_last
+
+super + {_,shift +}{1-9}
+	waitron {group_toggle,group_add_window} {1-9}
 
 super + ctrl + r
 	waitron group_remove_window

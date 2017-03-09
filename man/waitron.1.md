@@ -95,6 +95,9 @@ anything on `stdout`.
 	Focus window by <id>. The <id> can be found using pfw(1) or lsw(1) from
 	[wmutils](https://github.com/wmutils/core/).
 
+* `window_focus_last`:
+	Focus the window that was focused before the currently focused window.
+
 * `window_cardinal_focus` <DIRECTION>:
 	Focus the closest window in a direction, relative to the currently
 	currently focused window. Does nothing if there is no window focused.

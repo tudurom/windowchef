@@ -158,6 +158,7 @@ static void ipc_window_cycle_in_group(uint32_t *);
 static void ipc_window_rev_cycle_in_group(uint32_t *);
 static void ipc_window_cardinal_focus(uint32_t *);
 static void ipc_window_focus(uint32_t *);
+static void ipc_window_focus_last(uint32_t *);
 static void ipc_group_add_window(uint32_t *);
 static void ipc_group_remove_window(uint32_t *);
 static void ipc_group_remove_all_windows(uint32_t *);
@@ -649,7 +650,7 @@ setup_window(xcb_window_t win)
 
 	/* initialize variables */
 	focus_item->data = client;
-    client->focus_item = focus_item;
+	client->focus_item = focus_item;
 	item->data = client;
 	client->item = item;
 	client->window = win;
@@ -712,8 +713,8 @@ set_focused_no_raise(struct client *client)
 			set_borders(focused_win, conf.unfocus_color);
 	}
 
-    if (client->focus_item != NULL)
-        list_move_to_head(&focus_list, client->focus_item);
+	if (client->focus_item != NULL)
+		list_move_to_head(&focus_list, client->focus_item);
 
 	focused_win = client;
 }
@@ -736,21 +737,21 @@ set_focused(struct client *client)
 static void
 set_focused_last_best()
 {
-    struct list_item *focused_item;
-    struct client *client;
+	struct list_item *focused_item;
+	struct client *client;
 
-    focused_item = focus_list->next;
+	focused_item = focus_list->next;
 
-    while (focused_item != NULL) {
-        client = focused_item->data;
+	while (focused_item != NULL) {
+		client = focused_item->data;
 
-        if (client != NULL && client->mapped) {
-            set_focused(client);
-            return;
-        }
+		if (client != NULL && client->mapped) {
+			set_focused(client);
+			return;
+		}
 
-        focused_item = focused_item->next;
-    }
+		focused_item = focused_item->next;
+	}
 }
 
 /*
@@ -2088,8 +2089,8 @@ event_destroy_notify(xcb_generic_event_t *ev)
 	client = find_client(&e->window);
 	if (focused_win != NULL && focused_win == client) {
 	    focused_win = NULL;
-        set_focused_last_best();
-    }
+		set_focused_last_best();
+	}
 
 	if (client != NULL) {
 		free_window(client);
@@ -2210,10 +2211,10 @@ event_unmap_notify(xcb_generic_event_t *ev)
 
 	client->mapped = false;
 
-    if (focused_win != NULL && client->window == focused_win->window) {
-        focused_win = NULL;
-        set_focused_last_best();
-    }
+	if (focused_win != NULL && client->window == focused_win->window) {
+		focused_win = NULL;
+		set_focused_last_best();
+	}
 
 	update_client_list();
 }
@@ -2354,6 +2355,7 @@ register_ipc_handlers(void)
 	ipc_handlers[IPCWindowRevCycleInGroup] = ipc_window_rev_cycle_in_group;
 	ipc_handlers[IPCWindowCardinalFocus]   = ipc_window_cardinal_focus;
 	ipc_handlers[IPCWindowFocus]           = ipc_window_focus;
+	ipc_handlers[IPCWindowFocusLast]       = ipc_window_focus_last;
 	ipc_handlers[IPCGroupAddWindow]        = ipc_group_add_window;
 	ipc_handlers[IPCGroupRemoveWindow]     = ipc_group_remove_window;
 	ipc_handlers[IPCGroupRemoveAllWindows] = ipc_group_remove_all_windows;
@@ -2751,9 +2753,17 @@ ipc_window_focus(uint32_t *d)
 }
 
 static void
+ipc_window_focus_last(uint32_t *d)
+{
+	(void)(d);
+	if (focused_win != NULL)
+		set_focused_last_best();
+}
+
+static void
 ipc_group_add_window(uint32_t *d)
 {
-	if (focused_win!= NULL)
+	if (focused_win != NULL)
 		group_add_window(focused_win, d[0] - 1);
 }
 
