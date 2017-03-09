@@ -47,6 +47,7 @@ struct client {
 	struct window_geom orig_geom;
 	bool maxed, hmaxed, vmaxed, monocled;
 	struct list_item *item;
+	struct list_item *focus_item;
 	struct monitor *monitor;
 	uint16_t min_width, min_height;
 	uint16_t max_width, max_height;

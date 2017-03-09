@@ -15,8 +15,10 @@ list_move_to_head(struct list_item **list, struct list_item *item)
 		return;
 
 	/* fill the hole */
-	item->prev->next = item->next;
-	item->next->prev = item->prev;
+	if (item->prev != NULL)
+	    item->prev->next = item->next;
+	if (item->next != NULL)
+	    item->next->prev = item->prev;
 
 	/* we are at the head, nothing is behind us now */
 	item->prev = NULL;
