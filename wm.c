@@ -775,7 +775,7 @@ close_window(struct client *client)
 	if (client == NULL)
 		return;
 
-	if (client != NULL && client == focused_win)
+	if (conf.last_window_focusing && client != NULL && client == focused_win)
 	    set_focused_last_best();
 
 	xcb_window_t win = client->window;
@@ -2087,7 +2087,7 @@ event_destroy_notify(xcb_generic_event_t *ev)
 	xcb_destroy_notify_event_t *e = (xcb_destroy_notify_event_t *)ev;
 
 	client = find_client(&e->window);
-	if (focused_win != NULL && focused_win == client) {
+	if (conf.last_window_focusing && focused_win != NULL && focused_win == client) {
 	    focused_win = NULL;
 		set_focused_last_best();
 	}
@@ -2211,7 +2211,7 @@ event_unmap_notify(xcb_generic_event_t *ev)
 
 	client->mapped = false;
 
-	if (focused_win != NULL && client->window == focused_win->window) {
+	if (conf.last_window_focusing && focused_win != NULL && client->window == focused_win->window) {
 		focused_win = NULL;
 		set_focused_last_best();
 	}
@@ -2861,6 +2861,9 @@ ipc_wm_config(uint32_t *d)
 		case IPCConfigEnableBorders:
 			conf.borders = d[1];
 			break;
+		case IPCConfigEnableLastWindowFocusing:
+			conf.last_window_focusing = d[1];
+			break;
 		default:
 			DMSG("!!! unhandled config key %d\n", key);
 			break;
@@ -2898,6 +2901,7 @@ load_defaults(void)
 	conf.sloppy_focus    = SLOPPY_FOCUS;
 	conf.sticky_windows  = STICKY_WINDOWS;
 	conf.borders         = BORDERS;
+	conf.last_window_focusing = LAST_WINDOW_FOCUSING;
 }
 
 static void

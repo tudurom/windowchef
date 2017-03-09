@@ -72,6 +72,7 @@ struct conf {
 	bool sloppy_focus;
 	bool sticky_windows;
 	bool borders;
+	bool last_window_focusing;
 };
 
 #endif

@@ -87,6 +87,7 @@ static struct ConfigEntry configs[] = {
 	{ "enable_sloppy_focus" , IPCConfigEnableSloppyFocus , fn_bool     },
 	{ "sticky_windows"      , IPCConfigStickyWindows     , fn_bool     },
 	{ "enable_borders"      , IPCConfigEnableBorders     , fn_bool     },
+	{ "enable_last_window_focusing", IPCConfigEnableLastWindowFocusing, fn_bool },
 };
 
 static bool

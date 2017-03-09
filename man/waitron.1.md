@@ -192,6 +192,10 @@ are:
 	Setting it to false is useful when using another program to draw the borders
 	(example: `chwb2` from wmutils).
 
+* `enable_last_window_focusing` <BOOL>:
+	If true, when the currently focused window is unmapped or closed, `windowchef` will focus the
+	previously focused window. See the `window_focus_last` command.
+
 ## SEE ALSO
 
 windowchef(1), sxhkd(1), wmutils(1), pfw(1), lsw(1), chwb2(1), lemonbar(1)

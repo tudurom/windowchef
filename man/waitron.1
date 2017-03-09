@@ -218,6 +218,10 @@ If \fIsticky_windows\fR is true, new windows will be assigned to the last activa
 \fBenable_borders\fR \fIBOOL\fR
 If true, border colors will be set each time a window gets/loses focus\. Setting it to false is useful when using another program to draw the borders (example: \fBchwb2\fR from wmutils)\.
 .
+.TP
+\fBenable_last_window_focusing\fR \fIBOOL\fR
+If true, when the currently focused window is unmapped or closed, \fBwindowchef\fR will focus the previously focused window\. See the \fBwindow_focus_last\fR command\.
+.
 .SH "SEE ALSO"
 windowchef(1), sxhkd(1), wmutils(1), pfw(1), lsw(1), chwb2(1), lemonbar(1)
 .

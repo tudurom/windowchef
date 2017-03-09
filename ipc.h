@@ -50,6 +50,7 @@ enum IPCConfig {
 	IPCConfigEnableSloppyFocus,
 	IPCConfigStickyWindows,
 	IPCConfigEnableBorders,
+	IPCConfigEnableLastWindowFocusing,
 	NR_IPC_CONFIGS
 };
 
