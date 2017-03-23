@@ -90,6 +90,12 @@ static struct ConfigEntry configs[] = {
 	{ "enable_last_window_focusing", IPCConfigEnableLastWindowFocusing, fn_bool },
 };
 
+/*
+ * An offset is a pair of two signed integers.
+ *
+ * data[0], data[1] - if 1, then the number in negative
+ * data[2], data[3] - the actual numbers, unsigned
+ */
 static bool
 fn_offset(uint32_t *data, int argc, char **argv)
 {
@@ -287,7 +293,6 @@ send_command(struct Command *c, int argc, char **argv)
 	xcb_generic_error_t *err;
 	xcb_void_cookie_t cookie;
 	bool status = true;
-	size_t str_size;
 
 	msg.response_type = XCB_CLIENT_MESSAGE;
 	msg.type = get_atom(ATOM_COMMAND);
@@ -332,7 +337,6 @@ int main(int argc, char **argv)
 	int i;
 	int command_argc;
 	char **command_argv;
-	int opt;
 
 	if (argc == 1) {
 		usage(argv[0], EXIT_FAILURE);

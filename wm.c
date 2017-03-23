@@ -44,7 +44,6 @@ static bool halt;
 static int  exit_code;
 static bool *group_in_use = NULL;
 static int  last_group = 0;
-static struct client * hovered_client = NULL;
 /* list of all windows. NULL is the empty list */
 static struct list_item *win_list   = NULL;
 static struct list_item *mon_list   = NULL;
@@ -72,7 +71,6 @@ static struct monitor * add_monitor(xcb_randr_output_t, char *, int16_t, int16_t
 static void free_monitor(struct monitor *);
 static void get_monitor_size(struct client *, int16_t *, int16_t *, uint16_t *, uint16_t *);
 static void arrange_by_monitor(struct monitor *);
-static void handle_events(void);
 static struct client * setup_window(xcb_window_t);
 static void set_focused_no_raise(struct client *);
 static void set_focused(struct client *);
@@ -148,7 +146,6 @@ static void ipc_window_maximize(uint32_t *);
 static void ipc_window_hor_maximize(uint32_t *);
 static void ipc_window_ver_maximize(uint32_t *);
 static void ipc_window_monocle(uint32_t *);
-static void ipc_window_unmaximize(uint32_t *);
 static void ipc_window_close(uint32_t *);
 static void ipc_window_put_in_grid(uint32_t *);
 static void ipc_window_snap(uint32_t *);
@@ -707,6 +704,10 @@ set_focused_no_raise(struct client *client)
 	xcb_change_property(conn, XCB_PROP_MODE_REPLACE, scr->root,
 			ewmh->_NET_ACTIVE_WINDOW, XCB_ATOM_WINDOW, 32, 1, &client->window);
 
+	/* set window state */
+	xcb_change_property(conn, XCB_PROP_MODE_REPLACE, client->window,
+						ewmh->_NET_WM_STATE, ewmh->_NET_WM_STATE, 32, 2, data);
+
 	/* set the focus state to inactive on the previously focused window */
 	if (client != focused_win) {
 		if (focused_win != NULL && !focused_win->maxed)
@@ -884,10 +885,37 @@ resize_window_absolute(xcb_window_t win, uint16_t w, uint16_t h)
 static void
 resize_window(xcb_window_t win, int16_t w, int16_t h)
 {
-	uint16_t win_w, win_h;
+	struct client *client;
+	int32_t aw, ah;
 
-	get_geometry(&win, NULL, NULL, &win_w, &win_h);
-	resize_window_absolute(win, win_w + w, win_h + h);
+	client = find_client(&win);
+	if (client == NULL)
+		return;
+
+	aw = client->geom.width;
+	ah = client->geom.height;
+
+	if (aw + w > 0)
+		aw += w;
+	if (ah + h > 0)
+		ah += h;
+
+	/* avoid weird stuff */
+	if (aw < 0)
+		aw = 0;
+	if (ah < 0)
+		ah = 0;
+
+	if (client->min_width != 0 && aw < client->min_width)
+		aw = client->min_width;
+
+	if (client->min_height != 0 && ah < client->min_height)
+		ah = client->min_height;
+
+	focused_win->geom.width  = aw;
+	focused_win->geom.height = ah;
+
+	resize_window_absolute(win, aw, ah);
 }
 
 /*
@@ -1378,8 +1406,6 @@ get_window_position(uint32_t mode, struct client *win)
 static bool
 is_in_cardinal_direction(uint32_t direction, struct client *a, struct client *b)
 {
-	bool is_x_left_valid, is_x_right_valid, is_y_top_valid, is_y_bot_valid;
-
 	struct win_position pos_a_top_left = get_window_position(TOP_LEFT, a);
 	struct win_position pos_a_top_right = get_window_position(TOP_RIGHT, a);
 	struct win_position pos_a_bot_left = get_window_position(BOTTOM_LEFT, a);
@@ -2276,11 +2302,7 @@ event_client_message(xcb_generic_event_t *ev)
 	xcb_client_message_event_t *e = (xcb_client_message_event_t *)ev;
 	uint32_t ipc_command;
 	uint32_t *data;
-	bool maxed, vmaxed, hmaxed;
 	struct client *client;
-	int16_t mon_x, mon_y;
-	uint16_t mon_w, mon_h;
-	xcb_atom_t action;
 
 	if (e->type == ATOMS[_IPC_ATOM_COMMAND] && e->format == 32) {
 		/* Message from the client */
@@ -2410,9 +2432,9 @@ ipc_window_move_absolute(uint32_t *d)
 	x = d[2];
 	y = d[3];
 
-	if (d[0])
+	if (d[0] == IPC_MUL_MINUS)
 		x = -x;
-	if (d[1])
+	if (d[1] == IPC_MUL_MINUS)
 		y = -y;
 
 	focused_win->geom.x = x;
@@ -2426,7 +2448,6 @@ static void
 ipc_window_resize(uint32_t *d)
 {
 	int16_t w, h;
-	int32_t aw, ah;
 
 	if (focused_win == NULL)
 		return;
@@ -2439,33 +2460,12 @@ ipc_window_resize(uint32_t *d)
 	w = d[2];
 	h = d[3];
 
-	if (d[0])
+	if (d[0] == IPC_MUL_MINUS)
 		w = -w;
-	if (d[1])
+	if (d[1] == IPC_MUL_MINUS)
 		h = -h;
 
-	aw = focused_win->geom.width;
-	ah = focused_win->geom.height;
-	if (aw + w > 0)
-		aw += w;
-	if (ah + h > 0)
-		ah += h;
-
-	if (aw < 0)
-		aw = 0;
-	if (ah < 0)
-		ah = 0;
-
-	if (focused_win->min_width != 0 && aw < focused_win->min_width)
-		aw = focused_win->min_width;
-
-	if (focused_win->min_height != 0 && ah < focused_win->min_height)
-		ah = focused_win->min_height;
-
-	focused_win->geom.width  = aw;
-	focused_win->geom.height = ah;
-
-	resize_window_absolute(focused_win->window, aw, ah);
+	resize_window(focused_win->window, w, h);
 	center_pointer(focused_win);
 }
 
