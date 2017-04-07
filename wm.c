@@ -125,6 +125,8 @@ static void change_nr_of_groups(uint32_t);
 static void refresh_borders(void);
 static void update_ewmh_wm_state(struct client *);
 static void handle_wm_state(struct client *, xcb_atom_t, unsigned int);
+static void snap_window(struct client *, enum position);
+static void grid_window(struct client *, uint32_t, uint32_t, uint32_t, uint32_t);
 static void register_event_handlers(void);
 static void event_configure_request(xcb_generic_event_t *);
 static void event_destroy_notify(xcb_generic_event_t *);
@@ -1950,12 +1952,18 @@ update_ewmh_wm_state(struct client *client)
 	xcb_ewmh_set_wm_state(ewmh, client->window, i, values);
 }
 
+/*
+ * Maximize / unmaximize windows based on ewmh requests.
+ */
+
 static void
 handle_wm_state(struct client *client, xcb_atom_t state, unsigned int action)
 {
 	int16_t mon_x, mon_y;
 	uint16_t mon_w, mon_h;
+
 	get_monitor_size(client, &mon_x, &mon_y, &mon_w, &mon_h);
+
 	if (state == ewmh->_NET_WM_STATE_FULLSCREEN) {
 		if (action == XCB_EWMH_WM_STATE_ADD) {
 			maximize_window(client, mon_x, mon_y, mon_w, mon_h);
@@ -1995,6 +2003,110 @@ handle_wm_state(struct client *client, xcb_atom_t state, unsigned int action)
 				hmaximize_window(client, mon_x, mon_w);
 		}
 	}
+}
+
+/*
+ * Snap window in corner.
+ */
+
+static void
+snap_window(struct client *client, enum position pos)
+{
+	int16_t mon_x, mon_y, win_x, win_y;
+	uint16_t mon_w, mon_h, win_w, win_h;
+
+	if (client == NULL)
+		return;
+
+	if (is_maxed(client)) {
+		unmaximize_window(client);
+		set_focused(client);
+	}
+
+	fit_on_screen(client);
+
+	win_x = client->geom.x;
+	win_y = client->geom.y;
+	win_w = client->geom.width + 2 * conf.border_width;
+	win_h = client->geom.height + 2 * conf.border_width;
+
+	get_monitor_size(client, &mon_x, &mon_y, &mon_w, &mon_h);
+
+	switch (pos) {
+		case TOP_LEFT:
+			win_x = mon_x + conf.gap_left;
+			win_y = mon_y + conf.gap_up;
+			break;
+
+		case TOP_RIGHT:
+			win_x = mon_x + mon_w - conf.gap_right - win_w;
+			win_y = mon_y + conf.gap_up;
+			break;
+
+		case BOTTOM_LEFT:
+			win_x = mon_x + conf.gap_left;
+			win_y = mon_y + mon_h - conf.gap_down - win_h;
+			break;
+
+		case BOTTOM_RIGHT:
+			win_x = mon_x + mon_w - conf.gap_right - win_w;
+			win_y = mon_y + mon_h - conf.gap_down - win_h;
+			break;
+
+		case CENTER:
+			win_x = mon_x + (mon_w - win_w) / 2;
+			win_y = mon_y + (mon_h - win_h) / 2;
+			break;
+
+		default:
+			return;
+	}
+
+	client->geom.x = win_x;
+	client->geom.y = win_y;
+	teleport_window(client->window, win_x, win_y);
+	center_pointer(client);
+	xcb_flush(conn);
+}
+
+static void
+grid_window(struct client *client, uint32_t grid_width, uint32_t grid_height, uint32_t grid_x, uint32_t grid_y)
+{
+	int16_t mon_x, mon_y;
+	uint16_t new_w, new_h;
+	uint16_t mon_w, mon_h;
+
+	if (client == NULL || grid_x >= grid_width || grid_y >= grid_height)
+		return;
+
+	if (is_maxed(client)) {
+		unmaximize_window(client);
+		set_focused(client);
+	}
+
+	get_monitor_size(client, &mon_x, &mon_y, &mon_w, &mon_h);
+
+	/* calculate new window size */
+	new_w = (mon_w - conf.gap_left - conf.gap_right - (grid_width - 1) * conf.grid_gap
+			- grid_width * 2 * conf.border_width) / grid_width;
+
+	new_h = (mon_h - conf.gap_up - conf.gap_down - (grid_height - 1) * conf.grid_gap
+			- grid_height * 2 * conf.border_width) / grid_height;
+
+	client->geom.width = new_w;
+	client->geom.height = new_h;
+
+	client->geom.x = mon_x + conf.gap_left + grid_x
+		* (conf.border_width + new_w + conf.border_width + conf.grid_gap);
+	client->geom.y = mon_y + conf.gap_up + grid_y
+		* (conf.border_width + new_h + conf.border_width + conf.grid_gap);
+
+	DMSG("w: %d\th: %d\n", new_w, new_h);
+
+	teleport_window(client->window, client->geom.x, client->geom.y);
+	resize_window_absolute(client->window, client->geom.width, client->geom.height);
+
+	xcb_flush(conn);
 }
 
 /*
@@ -2599,9 +2711,6 @@ ipc_window_put_in_grid(uint32_t *d)
 {
 	uint32_t grid_width, grid_height;
 	uint32_t grid_x, grid_y;
-	int16_t mon_x, mon_y;
-	uint16_t new_w, new_h;
-	uint16_t mon_w, mon_h;
 
 	grid_width  = d[0];
 	grid_height = d[1];
@@ -2611,95 +2720,14 @@ ipc_window_put_in_grid(uint32_t *d)
 	if (focused_win == NULL || grid_x >= grid_width || grid_y >= grid_height)
 		return;
 
-	if (is_maxed(focused_win)) {
-		unmaximize_window(focused_win);
-		set_focused(focused_win);
-	}
-
-	get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
-
-	/* calculate new window size */
-	new_w = (mon_w - conf.gap_left - conf.gap_right - (grid_width - 1) * conf.grid_gap
-			- grid_width * 2 * conf.border_width) / grid_width;
-
-	new_h = (mon_h - conf.gap_up - conf.gap_down - (grid_height - 1) * conf.grid_gap
-			- grid_height * 2 * conf.border_width) / grid_height;
-
-	focused_win->geom.width = new_w;
-	focused_win->geom.height = new_h;
-
-	focused_win->geom.x = mon_x + conf.gap_left + grid_x
-		* (conf.border_width + new_w + conf.border_width + conf.grid_gap);
-	focused_win->geom.y = mon_y + conf.gap_up + grid_y
-		* (conf.border_width + new_h + conf.border_width + conf.grid_gap);
-
-	DMSG("w: %d\th: %d\n", new_w, new_h);
-
-	teleport_window(focused_win->window, focused_win->geom.x, focused_win->geom.y);
-	resize_window_absolute(focused_win->window, focused_win->geom.width, focused_win->geom.height);
-
-	xcb_flush(conn);
+	grid_window(focused_win, grid_width, grid_height, grid_x, grid_y);
 }
 
 static void
 ipc_window_snap(uint32_t *d)
 {
-	uint32_t mode = d[0];
-	int16_t mon_x, mon_y, win_x, win_y;
-	uint16_t mon_w, mon_h, win_w, win_h;
-
-	if (focused_win == NULL)
-		return;
-
-	if (is_maxed(focused_win)) {
-		unmaximize_window(focused_win);
-		set_focused(focused_win);
-	}
-
-	fit_on_screen(focused_win);
-
-	win_x = focused_win->geom.x;
-	win_y = focused_win->geom.y;
-	win_w = focused_win->geom.width + 2 * conf.border_width;
-	win_h = focused_win->geom.height + 2 * conf.border_width;
-
-	get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
-
-	switch (mode) {
-		case TOP_LEFT:
-			win_x = mon_x + conf.gap_left;
-			win_y = mon_y + conf.gap_up;
-			break;
-
-		case TOP_RIGHT:
-			win_x = mon_x + mon_w - conf.gap_right - win_w;
-			win_y = mon_y + conf.gap_up;
-			break;
-
-		case BOTTOM_LEFT:
-			win_x = mon_x + conf.gap_left;
-			win_y = mon_y + mon_h - conf.gap_down - win_h;
-			break;
-
-		case BOTTOM_RIGHT:
-			win_x = mon_x + mon_w - conf.gap_right - win_w;
-			win_y = mon_y + mon_h - conf.gap_down - win_h;
-			break;
-
-		case CENTER:
-			win_x = mon_x + (mon_w - win_w) / 2;
-			win_y = mon_y + (mon_h - win_h) / 2;
-			break;
-
-		default:
-			return;
-	}
-
-	focused_win->geom.x = win_x;
-	focused_win->geom.y = win_y;
-	teleport_window(focused_win->window, win_x, win_y);
-	center_pointer(focused_win);
-	xcb_flush(conn);
+	enum position pos = d[0];
+	snap_window(focused_win, pos);
 }
 
 static
