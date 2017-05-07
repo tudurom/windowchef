@@ -1005,7 +1005,7 @@ maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mo
 	if (client == NULL)
 		return;
 
-	if (client->vmaxed || client->hmaxed || client->monocled)
+	if (is_maxed(client))
 		unmaximize_window(client);
 
 	/* maximized windows don't have borders */
@@ -1034,7 +1034,7 @@ hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width)
 	if (client == NULL)
 		return;
 
-	if (client->maxed || client->vmaxed || client->monocled)
+	if (is_maxed(client))
 		unmaximize_window(client);
 
 	if (client->geom.width != mon_width)
@@ -1055,7 +1055,7 @@ vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height)
 	if (client == NULL)
 		return;
 
-	if (client->maxed || client->hmaxed || client->monocled)
+	if (is_maxed(client))
 		unmaximize_window(client);
 
 	if (client->geom.height != mon_height)
@@ -1077,7 +1077,7 @@ monocle_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mon
 	if (client == NULL)
 		return;
 
-	if (client->maxed || client->vmaxed || client->monocled)
+	if (is_maxed(client))
 		unmaximize_window(client);
 
 	save_original_size(client);
