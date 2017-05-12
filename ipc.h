@@ -14,6 +14,7 @@ enum IPCCommand {
 	IPCWindowResize,
 	IPCWindowResizeAbsolute,
 	IPCWindowMaximize,
+	IPCWindowUnmaximize,
 	IPCWindowHorMaximize,
 	IPCWindowVerMaximize,
 	IPCWindowMonocle,
@@ -51,6 +52,7 @@ enum IPCConfig {
 	IPCConfigStickyWindows,
 	IPCConfigEnableBorders,
 	IPCConfigEnableLastWindowFocusing,
+	IPCConfigApplySettings,
 	NR_IPC_CONFIGS
 };
 

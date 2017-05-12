@@ -116,6 +116,7 @@ anything on <code>stdout</code>.</p>
 <dt><code>window_resize_absolute</code> <var>width</var> <var>height</var></dt><dd><p>  Resize the focused window up to <var>width</var> and <var>height</var>.</p></dd>
 <dt><code>window_maximize</code></dt><dd><p>  Hide the border and maximize the focused window on the current monitor.
   Execute it again after maximizing to revert the state of the window.</p></dd>
+<dt><code>window_unmaximize</code></dt><dd><p>  If the currently focused window is maximized in any way (fully, vertically, horizontally, monocled), return it to normal state.</p></dd>
 <dt><code>window_hor_maximize</code></dt><dd><p>  Horizontally maximize the focused window on the current monitor, preserving
   its <var>x</var> component. Leaves a gap at the left and right of the monitor that
   can be configured. Execute it again after maximizing to revert the state of the window.</p></dd>
@@ -200,6 +201,8 @@ are:</p>
   (example: <code>chwb2</code> from wmutils).</p></dd>
 <dt><code>enable_last_window_focusing</code> <var>BOOL</var></dt><dd><p>  If true, when the currently focused window is unmapped or closed, <code>windowchef</code> will focus the
   previously focused window. See the <code>window_focus_last</code> command.</p></dd>
+<dt><code>apply_settings</code> <var>BOOL</var></dt><dd><p>  If true, then some settings will be applied on all windows instead of newly created windows.
+  True by default.</p></dd>
 </dl>
 
 
@@ -218,7 +221,7 @@ are:</p>
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>Windowchef</li>
-    <li class='tc'>March 2017</li>
+    <li class='tc'>May 2017</li>
     <li class='tr'>waitron(1)</li>
   </ol>
 

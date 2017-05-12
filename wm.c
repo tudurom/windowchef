@@ -145,6 +145,7 @@ static void ipc_window_move_absolute(uint32_t *);
 static void ipc_window_resize(uint32_t *);
 static void ipc_window_resize_absolute(uint32_t *);
 static void ipc_window_maximize(uint32_t *);
+static void ipc_window_unmaximize(uint32_t *);
 static void ipc_window_hor_maximize(uint32_t *);
 static void ipc_window_ver_maximize(uint32_t *);
 static void ipc_window_monocle(uint32_t *);
@@ -1910,6 +1911,9 @@ change_nr_of_groups(uint32_t groups)
 static void
 refresh_borders(void)
 {
+	if (!conf.apply_settings)
+		return;
+
 	struct list_item *item;
 	struct client *client;
 
@@ -2068,6 +2072,11 @@ snap_window(struct client *client, enum position pos)
 	center_pointer(client);
 	xcb_flush(conn);
 }
+
+
+/*
+ * Put window in grid.
+ */
 
 static void
 grid_window(struct client *client, uint32_t grid_width, uint32_t grid_height, uint32_t grid_x, uint32_t grid_y)
@@ -2477,6 +2486,7 @@ register_ipc_handlers(void)
 	ipc_handlers[IPCWindowResize]          = ipc_window_resize;
 	ipc_handlers[IPCWindowResizeAbsolute]  = ipc_window_resize_absolute;
 	ipc_handlers[IPCWindowMaximize]        = ipc_window_maximize;
+	ipc_handlers[IPCWindowUnmaximize]      = ipc_window_unmaximize;
 	ipc_handlers[IPCWindowHorMaximize]     = ipc_window_hor_maximize;
 	ipc_handlers[IPCWindowVerMaximize]     = ipc_window_ver_maximize;
 	ipc_handlers[IPCWindowMonocle]         = ipc_window_monocle;
@@ -2626,6 +2636,21 @@ ipc_window_maximize(uint32_t *d)
 		get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
 		maximize_window(focused_win, mon_x, mon_y, mon_w, mon_h);
 	}
+
+	set_focused(focused_win);
+
+	xcb_flush(conn);
+}
+
+static void
+ipc_window_unmaximize(uint32_t *d)
+{
+	(void)(d);
+
+	if (focused_win == NULL)
+		return;
+
+	unmaximize_window(focused_win);
 
 	set_focused(focused_win);
 
@@ -2849,52 +2874,58 @@ ipc_wm_config(uint32_t *d)
 	key = d[0];
 
 	switch (key) {
-		case IPCConfigBorderWidth:
-			conf.border_width = d[1];
+	case IPCConfigBorderWidth:
+		conf.border_width = d[1];
+		if (conf.apply_settings)
 			refresh_borders();
-			break;
-		case IPCConfigColorFocused:
-			conf.focus_color = d[1];
+		break;
+	case IPCConfigColorFocused:
+		conf.focus_color = d[1];
+		if (conf.apply_settings)
 			refresh_borders();
-			break;
-		case IPCConfigColorUnfocused:
-			conf.unfocus_color = d[1];
+		break;
+	case IPCConfigColorUnfocused:
+		conf.unfocus_color = d[1];
+		if (conf.apply_settings)
 			refresh_borders();
-			break;
-		case IPCConfigGapWidth:
-			switch (d[1]) {
-				case LEFT: conf.gap_left   = d[2]; break;
-				case BOTTOM: conf.gap_down = d[2]; break;
-				case TOP: conf.gap_up      = d[2]; break;
-				case RIGHT: conf.gap_right = d[2]; break;
-				case ALL: conf.gap_left = conf.gap_down
-						  = conf.gap_up = conf.gap_right = d[2];
-				default: break;
-			}
-			break;
-		case IPCConfigGridGapWidth:
-			conf.grid_gap = d[1];
-		case IPCConfigCursorPosition:
-			conf.cursor_position = d[1];
-			break;
-		case IPCConfigGroupsNr:
-			change_nr_of_groups(d[1]);
-			break;
-		case IPCConfigEnableSloppyFocus:
-			conf.sloppy_focus = d[1];
-			break;
-		case IPCConfigStickyWindows:
-			conf.sticky_windows = d[1];
-			break;
-		case IPCConfigEnableBorders:
-			conf.borders = d[1];
-			break;
-		case IPCConfigEnableLastWindowFocusing:
-			conf.last_window_focusing = d[1];
-			break;
-		default:
-			DMSG("!!! unhandled config key %d\n", key);
-			break;
+		break;
+	case IPCConfigGapWidth:
+		switch (d[1]) {
+		case LEFT: conf.gap_left   = d[2]; break;
+		case BOTTOM: conf.gap_down = d[2]; break;
+		case TOP: conf.gap_up      = d[2]; break;
+		case RIGHT: conf.gap_right = d[2]; break;
+		case ALL: conf.gap_left = conf.gap_down
+				= conf.gap_up = conf.gap_right = d[2];
+		default: break;
+		}
+		break;
+	case IPCConfigGridGapWidth:
+		conf.grid_gap = d[1];
+	case IPCConfigCursorPosition:
+		conf.cursor_position = d[1];
+		break;
+	case IPCConfigGroupsNr:
+		change_nr_of_groups(d[1]);
+		break;
+	case IPCConfigEnableSloppyFocus:
+		conf.sloppy_focus = d[1];
+		break;
+	case IPCConfigStickyWindows:
+		conf.sticky_windows = d[1];
+		break;
+	case IPCConfigEnableBorders:
+		conf.borders = d[1];
+		break;
+	case IPCConfigEnableLastWindowFocusing:
+		conf.last_window_focusing = d[1];
+		break;
+	case IPCConfigApplySettings:
+		conf.apply_settings = d[1];
+		break;
+	default:
+		DMSG("!!! unhandled config key %d\n", key);
+		break;
 	}
 }
 
@@ -2930,6 +2961,7 @@ load_defaults(void)
 	conf.sticky_windows  = STICKY_WINDOWS;
 	conf.borders         = BORDERS;
 	conf.last_window_focusing = LAST_WINDOW_FOCUSING;
+	conf.apply_settings = APPLY_SETTINGS;
 }
 
 static void

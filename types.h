@@ -4,6 +4,7 @@
 #define _TYPES_H
 
 #include <xcb/randr.h>
+#include <stdbool.h>
 
 enum position {
 	BOTTOM_LEFT,
@@ -73,6 +74,7 @@ struct conf {
 	bool sticky_windows;
 	bool borders;
 	bool last_window_focusing;
+	bool apply_settings;
 };
 
 #endif

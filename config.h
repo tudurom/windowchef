@@ -33,4 +33,7 @@
 /* if true, focus last window when the currently focused window is unmapped */
 #define LAST_WINDOW_FOCUSING true
 
+/* if true, apply settings on windows when they are set (like border color, border width) */
+#define APPLY_SETTINGS true
+
 #endif

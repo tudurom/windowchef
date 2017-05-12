@@ -52,6 +52,7 @@ static struct Command c[] = {
 	{ "window_resize"             , IPCWindowResize          ,  2 , fn_offset   } ,
 	{ "window_resize_absolute"    , IPCWindowResizeAbsolute  ,  2 , fn_naturals } ,
 	{ "window_maximize"           , IPCWindowMaximize        ,  0 , NULL        } ,
+	{ "window_unmaximize"         , IPCWindowUnmaximize      ,  0 , NULL        } ,
 	{ "window_hor_maximize"       , IPCWindowHorMaximize     ,  0 , NULL        } ,
 	{ "window_ver_maximize"       , IPCWindowVerMaximize     ,  0 , NULL        } ,
 	{ "window_monocle"            , IPCWindowMonocle         ,  0 , NULL        } ,
@@ -88,6 +89,7 @@ static struct ConfigEntry configs[] = {
 	{ "sticky_windows"      , IPCConfigStickyWindows     , fn_bool     },
 	{ "enable_borders"      , IPCConfigEnableBorders     , fn_bool     },
 	{ "enable_last_window_focusing", IPCConfigEnableLastWindowFocusing, fn_bool },
+	{ "apply_settings"      , IPCConfigApplySettings     , fn_bool     },
 };
 
 /*
