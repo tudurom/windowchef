@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# dragger - A window dragging and resizing daemon
+# Copyright (c) Tudor Ioan Roman - WTFPL
+#
+
+DRAGGER_FIFO="${DRAGGER_FIFO:-/tmp/dragger.fifo}"
+
+test -e "$DRAGGER_FIFO" && rm "$DRAGGER_FIFO"
+mkfifo "$DRAGGER_FIFO"
+
+pid="0"
+quit="0"
+while [ "$quit" -eq 0 ]; do
+	command="$(cat "$DRAGGER_FIFO")"
+	case "$command" in
+		drag)
+			kill -0 "$pid" > /dev/null 2>&1 || pid="0"
+			(! pfw > /dev/null 2>&1 || [ "$pid" -ne 0 ]) && continue
+			xmmv &
+			pid="$!"
+		;;
+
+		resize)
+			kill -0 "$pid" > /dev/null 2>&1 || pid="0"
+			(! pfw > /dev/null 2>&1 || [ "$pid" -ne 0 ]) && continue
+			xmrs &
+			pid="$!"
+		;;
+
+		close)
+			[ "$pid" -eq 0 ] && continue
+			kill "$pid"
+		;;
+
+		quit)
+			quit="1"
+			;;
+	esac
+
+done
