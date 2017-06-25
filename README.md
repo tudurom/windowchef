@@ -50,6 +50,8 @@ The default configuration file is `~/.config/windowchef/windowchefrc`. It is usu
 a shell script that calls `waitron wm_config` for configuration. See the
 manual page for `waitron(1)` for details regarding this topic.
 
+If you want to use window rules, a feature that windowchef lacks, you can use
+[ruler](https://github.com/tudurom/ruler).
 
 Dependencies
 ------------
