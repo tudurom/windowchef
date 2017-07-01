@@ -86,6 +86,7 @@ static struct ConfigEntry configs[] = {
 	{ "cursor_position"     , IPCConfigCursorPosition    , fn_position },
 	{ "groups_nr"           , IPCConfigGroupsNr          , fn_naturals },
 	{ "enable_sloppy_focus" , IPCConfigEnableSloppyFocus , fn_bool     },
+	{ "resize_hints"        , IPCConfigEnableResizeHints , fn_bool     },
 	{ "sticky_windows"      , IPCConfigStickyWindows     , fn_bool     },
 	{ "enable_borders"      , IPCConfigEnableBorders     , fn_bool     },
 	{ "enable_last_window_focusing", IPCConfigEnableLastWindowFocusing, fn_bool },

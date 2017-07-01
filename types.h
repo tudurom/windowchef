@@ -52,6 +52,7 @@ struct client {
 	struct monitor *monitor;
 	uint16_t min_width, min_height;
 	uint16_t max_width, max_height;
+	uint16_t width_inc, height_inc;
 	bool mapped;
 	uint32_t group;
 };
@@ -71,6 +72,7 @@ struct conf {
 	enum position cursor_position;
 	uint32_t groups;
 	bool sloppy_focus;
+	bool resize_hints;
 	bool sticky_windows;
 	bool borders;
 	bool last_window_focusing;

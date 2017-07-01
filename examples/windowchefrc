@@ -7,6 +7,7 @@ waitron wm_config gap_width all 0
 waitron wm_config grid_gap_width 0
 waitron wm_config cursor_position middle
 waitron wm_config groups_nr 9
+waitron wm_config enable_resize_hints false
 waitron wm_config enable_sloppy_focus true
 waitron wm_config sticky_windows false
 waitron wm_config enable_borders true

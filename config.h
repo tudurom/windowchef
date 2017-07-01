@@ -3,29 +3,32 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#define BORDER_WIDTH 5
+#define BORDER_WIDTH 10
 
 /* colors are HTML colors that start in "0x" instead of "#" */
-#define COLOR_FOCUS 0x97a293
-#define COLOR_UNFOCUS 0x393638
+#define COLOR_FOCUS 0xEEEEEE
+#define COLOR_UNFOCUS 0xEEEEEE
 
 /* gap between the window and the edge of the monitor
  * when snapping or vertically/horizontally maximizing window */
-#define GAP 0
+#define GAP 32
 
-#define GRID_GAP 0
+#define GRID_GAP 32
 
 /* where to place the cursor when moving/resizing the window */
 #define CURSOR_POSITION CENTER
 
 /* number of starting groups, can be modified with waitron at run-time */
-#define GROUPS 10
+#define GROUPS 3
 
 /* focus windows after hovering them with the pointer */
 #define SLOPPY_FOCUS true
 
+/* respect window resize hints */
+#define RESIZE_HINTS true
+
 /* if true, new windows will be assigned to the last activated group */
-#define STICKY_WINDOWS false
+#define STICKY_WINDOWS true
 
 /* if true, paint borders */
 #define BORDERS true
