@@ -657,6 +657,7 @@ setup_window(xcb_window_t win)
 	client->geom.x = client->geom.y = client->geom.width
 				   = client->geom.height
 				   = client->min_width = client->min_height = 0;
+	client->width_inc = client->height_inc = 1;
 	client->maxed  = client->hmaxed = client->vmaxed
 		= client->monocled = client->geom.set_by_user = false;
 	client->monitor = NULL;
@@ -675,6 +676,12 @@ setup_window(xcb_window_t win)
 	if (hints.flags & XCB_ICCCM_SIZE_HINT_P_MIN_SIZE) {
 		client->min_width = hints.min_width;
 		client->min_height = hints.min_height;
+	}
+
+	if (hints.flags & XCB_ICCCM_SIZE_HINT_P_RESIZE_INC &&
+			conf.resize_hints) {
+		client->width_inc  = hints.width_inc;
+		client->height_inc = hints.height_inc;
 	}
 
 	DMSG("new window was born 0x%08x\n", client->window);
@@ -2166,11 +2173,11 @@ event_configure_request(xcb_generic_event_t *ev)
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH
 				&& !client->maxed && !client->monocled && !client->hmaxed)
-			client->geom.width= e->width;
+			client->geom.width = e->width - (e->width % client->width_inc);
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT
 				&& !client->maxed && !client->monocled && !client->vmaxed)
-			client->geom.height = e->height;
+			client->geom.height = e->height - (e->height % client->height_inc);
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_STACK_MODE) {
 			values[0] = e->stack_mode;
@@ -2911,6 +2918,8 @@ ipc_wm_config(uint32_t *d)
 	case IPCConfigEnableSloppyFocus:
 		conf.sloppy_focus = d[1];
 		break;
+	case IPCConfigEnableResizeHints:
+		conf.resize_hints = d[1];
 	case IPCConfigStickyWindows:
 		conf.sticky_windows = d[1];
 		break;
@@ -2958,6 +2967,7 @@ load_defaults(void)
 	conf.cursor_position = CURSOR_POSITION;
 	conf.groups          = GROUPS;
 	conf.sloppy_focus    = SLOPPY_FOCUS;
+	conf.resize_hints    = RESIZE_HINTS;
 	conf.sticky_windows  = STICKY_WINDOWS;
 	conf.borders         = BORDERS;
 	conf.last_window_focusing = LAST_WINDOW_FOCUSING;

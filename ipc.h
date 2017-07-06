@@ -49,6 +49,7 @@ enum IPCConfig {
 	IPCConfigCursorPosition,
 	IPCConfigGroupsNr,
 	IPCConfigEnableSloppyFocus,
+	IPCConfigEnableResizeHints,
 	IPCConfigStickyWindows,
 	IPCConfigEnableBorders,
 	IPCConfigEnableLastWindowFocusing,
