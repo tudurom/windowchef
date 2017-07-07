@@ -678,8 +678,7 @@ setup_window(xcb_window_t win)
 		client->min_height = hints.min_height;
 	}
 
-	if (hints.flags & XCB_ICCCM_SIZE_HINT_P_RESIZE_INC &&
-			conf.resize_hints) {
+	if (hints.flags & XCB_ICCCM_SIZE_HINT_P_RESIZE_INC) {
 		client->width_inc  = hints.width_inc;
 		client->height_inc = hints.height_inc;
 	}
@@ -922,10 +921,10 @@ resize_window(xcb_window_t win, int16_t w, int16_t h)
 	if (client->min_height != 0 && ah < client->min_height)
 		ah = client->min_height;
 
-	focused_win->geom.width  = aw;
-	focused_win->geom.height = ah;
+	client->geom.width  = aw - conf.resize_hints * (aw % client->width_inc);
+	client->geom.height = ah - conf.resize_hints * (ah % client->height_inc);
 
-	resize_window_absolute(win, aw, ah);
+	resize_window_absolute(win, client->geom.width, client->geom.height);
 }
 
 /*
@@ -2173,11 +2172,11 @@ event_configure_request(xcb_generic_event_t *ev)
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH
 				&& !client->maxed && !client->monocled && !client->hmaxed)
-			client->geom.width = e->width - (e->width % client->width_inc);
+			client->geom.width = e->width - conf.resize_hints * (e->width % client->width_inc);
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT
 				&& !client->maxed && !client->monocled && !client->vmaxed)
-			client->geom.height = e->height - (e->height % client->height_inc);
+			client->geom.height = e->height - conf.resize_hints * (e->height % client->height_inc);
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_STACK_MODE) {
 			values[0] = e->stack_mode;
