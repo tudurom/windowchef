@@ -192,6 +192,7 @@ are:</p>
 <dt><code>groups_nr</code> <var>nr</var></dt><dd><p>  Sets the number of groups to <var>nr</var>. If <var>nr</var> is less than the current number
   of groups, window that belong to groups whose numbers are greater than <var>nr</var>
   will be mapped to screen and assigned to the null group.</p></dd>
+<dt><code>enable_resize_hints</code> <var>BOOL</var></dt><dd><p>  If true, <code>windowchef</code> will respect window resize hints as defined by ICCCM. Most terminal emulators should have this feature.</p></dd>
 <dt><code>enable_sloppy_focus</code> <var>BOOL</var></dt><dd><p>  Enable sloppy focus.</p></dd>
 <dt><code>sticky_windows</code> <var>BOOL</var></dt><dd><p>  If <var>sticky_windows</var> is true, new windows will be assigned to the last
   activated group automatically. Recommended for people who like using
@@ -221,7 +222,7 @@ are:</p>
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>Windowchef</li>
-    <li class='tc'>May 2017</li>
+    <li class='tc'>July 2017</li>
     <li class='tr'>waitron(1)</li>
   </ol>
 

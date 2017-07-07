@@ -182,6 +182,9 @@ are:
 	of groups, window that belong to groups whose numbers are greater than <nr>
 	will be mapped to screen and assigned to the null group.
 
+* `enable_resize_hints` <BOOL>:
+	If true, `windowchef` will respect window resize hints as defined by ICCCM. Most terminal emulators should have this feature.
+
 * `enable_sloppy_focus` <BOOL>:
 	Enable sloppy focus.
 

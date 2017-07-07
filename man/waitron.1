@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "WAITRON" "1" "May 2017" "Windowchef" "Windowchef Manual"
+.TH "WAITRON" "1" "July 2017" "Windowchef" "Windowchef Manual"
 .
 .SH "NAME"
 \fBwaitron\fR \- A client for windowchef(1)
@@ -209,6 +209,10 @@ Sets the position of the cursor when moving or resizing windows\.
 .TP
 \fBgroups_nr\fR \fInr\fR
 Sets the number of groups to \fInr\fR\. If \fInr\fR is less than the current number of groups, window that belong to groups whose numbers are greater than \fInr\fR will be mapped to screen and assigned to the null group\.
+.
+.TP
+\fBenable_resize_hints\fR \fIBOOL\fR
+If true, \fBwindowchef\fR will respect window resize hints as defined by ICCCM\. Most terminal emulators should have this feature\.
 .
 .TP
 \fBenable_sloppy_focus\fR \fIBOOL\fR
