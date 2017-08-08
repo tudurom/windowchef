@@ -320,7 +320,7 @@ send_command(struct Command *c, int argc, char **argv)
 static void
 usage(char *name, int status)
 {
-	fprintf(stderr, "Usage: %s <command> [args...]\n", name);
+	fprintf(stderr, "Usage: %s [-h|-v] <command> [args...]\n", name);
 	exit(status);
 }
 

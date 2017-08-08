@@ -2443,6 +2443,7 @@ event_client_message(xcb_generic_event_t *ev)
 		if (client == NULL)
 			return;
 		if (e->type == ewmh->_NET_WM_STATE) {
+			DMSG("got _NET_WM_STATE for 0x%08x\n", client->window);
 			handle_wm_state(client, e->data.data32[1], e->data.data32[0]);
 			handle_wm_state(client, e->data.data32[2], e->data.data32[0]);
 		}
@@ -2940,7 +2941,7 @@ ipc_wm_config(uint32_t *d)
 static void
 usage(char *name)
 {
-	fprintf(stderr, "Usage: %s [-h|-c CONFIG_PATH]\n", name);
+	fprintf(stderr, "Usage: %s [-h|-v|-c CONFIG_PATH]\n", name);
 
 	exit(EXIT_SUCCESS);
 }
