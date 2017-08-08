@@ -12,6 +12,9 @@ CFLAGS += $(NAME_DEFINES)
 
 all: $(BIN)
 
+debug: CFLAGS += -O0 -g -DD
+debug: $(__NAME__) $(__NAME_CLIENT__)
+
 $(__NAME__): wm.o list.o
 	@echo $@
 	@$(CC) -o $@ $^ $(LDFLAGS)
