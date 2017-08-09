@@ -40,4 +40,15 @@
 /* if true, apply settings on windows when they are set (like border color, border width) */
 #define APPLY_SETTINGS true
 
+/* default pointer actions */
+#define DEFAULT_LEFT_BUTTON_ACTION POINTER_ACTION_MOVE
+#define DEFAULT_MIDDLE_BUTTON_ACTION POINTER_ACTION_RESIZE_SIDE
+#define DEFAULT_RIGHT_BUTTON_ACTION POINTER_ACTION_RESIZE_CORNER
+
+/* default pointer modifier (super key) */
+#define POINTER_MODIFIER XCB_MOD_MASK_4
+
+/* default mouse button for click to focus. -1 for none */
+#define CLICK_TO_FOCUS_BUTTON 0
+
 #endif

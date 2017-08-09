@@ -33,6 +33,26 @@ enum mouse_mode {
 	MOUSE_RESIZE,
 };
 
+enum pointer_action {
+	POINTER_ACTION_NOTHING,
+	POINTER_ACTION_FOCUS,
+	POINTER_ACTION_MOVE,
+	POINTER_ACTION_RESIZE_CORNER,
+	POINTER_ACTION_RESIZE_SIDE,
+};
+
+enum resize_handle {
+	HANDLE_LEFT,
+	HANDLE_BOTTOM,
+	HANDLE_TOP,
+	HANDLE_RIGHT,
+
+	HANDLE_TOP_LEFT,
+	HANDLE_TOP_RIGHT,
+	HANDLE_BOTTOM_LEFT,
+	HANDLE_BOTTOM_RIGHT,
+};
+
 struct win_position {
 	int16_t x, y;
 };
@@ -78,6 +98,9 @@ struct conf {
 	bool borders;
 	bool last_window_focusing;
 	bool apply_settings;
+	enum pointer_action pointer_actions[3];
+	uint16_t pointer_modifier;
+	int8_t click_to_focus;
 };
 
 #endif

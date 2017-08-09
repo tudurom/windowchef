@@ -10,4 +10,4 @@ MANDIR    = $(MANPREFIX)/man1
 DOCPREFIX = $(PREFIX)/share/doc
 
 CFLAGS += -std=c99 -Wall -Wextra -O2
-LDFLAGS += -lm -lxcb -lxcb-ewmh -lxcb-icccm -lxcb-randr
+LDFLAGS += -lm -lxcb -lxcb-ewmh -lxcb-icccm -lxcb-randr -lxcb-keysyms

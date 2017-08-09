@@ -1,10 +1,12 @@
 /* Copyright (c) 2016, 2017 Tudor Ioan Roman. All rights reserved. */
 /* Licensed under the ISC License. See the LICENSE file in the project root for full license information. */
 
-#include <xcb/xcb.h>
-#include <xcb/xcb_icccm.h>
-#include <xcb/xcb_ewmh.h>
 #include <xcb/randr.h>
+#include <xcb/xcb.h>
+#include <xcb/xcb_ewmh.h>
+#include <xcb/xcb_icccm.h>
+#include <xcb/xcb_keysyms.h>
+#include <X11/keysym.h>
 
 #include <assert.h>
 #include <err.h>
@@ -34,6 +36,9 @@
 /* atoms identifiers */
 enum { WM_DELETE_WINDOW, WINDOWCHEF_ACTIVE_GROUPS, _IPC_ATOM_COMMAND, NR_ATOMS };
 
+/* button identifiers */
+enum { BUTTON_LEFT, BUTTON_MIDDLE, BUTTON_RIGHT, NR_BUTTONS };
+
 /* connection to the X server */
 static xcb_connection_t *conn;
 static xcb_ewmh_connection_t *ewmh;
@@ -48,6 +53,13 @@ static bool halt;
 static int  exit_code;
 static bool *group_in_use = NULL;
 static int  last_group = 0;
+/* keyboard modifiers (for mouse support) */
+static uint16_t num_lock, caps_lock, scroll_lock;
+static const xcb_button_index_t mouse_buttons[] = {
+	XCB_BUTTON_INDEX_1,
+	XCB_BUTTON_INDEX_2,
+	XCB_BUTTON_INDEX_3,
+};
 /* list of all windows. NULL is the empty list */
 static struct list_item *win_list   = NULL;
 static struct list_item *mon_list   = NULL;
@@ -113,10 +125,12 @@ static bool get_geometry(xcb_window_t *, int16_t *, int16_t *, uint16_t *, uint1
 static void set_borders(struct client *client, uint32_t);
 static bool is_mapped(xcb_window_t);
 static void free_window(struct client *);
+
 static void add_to_client_list(xcb_window_t);
 static void update_client_list(void);
 static void update_wm_desktop(struct client *);
 static void update_current_desktop(struct client *);
+
 static void group_add_window(struct client *, uint32_t);
 static void group_remove_window(struct client *);
 static void group_remove_all_windows(uint32_t);
@@ -124,13 +138,16 @@ static void group_activate(uint32_t);
 static void group_deactivate(uint32_t);
 static void group_toggle(uint32_t);
 static void group_activate_specific(uint32_t);
+
 static void update_group_list(void);
 static void change_nr_of_groups(uint32_t);
 static void refresh_borders(void);
 static void update_ewmh_wm_state(struct client *);
 static void handle_wm_state(struct client *, xcb_atom_t, unsigned int);
+
 static void snap_window(struct client *, enum position);
 static void grid_window(struct client *, uint32_t, uint32_t, uint32_t, uint32_t);
+
 static void register_event_handlers(void);
 static void event_configure_request(xcb_generic_event_t *);
 static void event_destroy_notify(xcb_generic_event_t *);
@@ -143,6 +160,8 @@ static void event_circulate_request(xcb_generic_event_t *);
 static void event_client_message(xcb_generic_event_t *);
 static void event_focus_in(xcb_generic_event_t *);
 static void event_focus_out(xcb_generic_event_t *);
+static void event_button_press(xcb_generic_event_t *);
+
 static void register_ipc_handlers(void);
 static void ipc_window_move(uint32_t *);
 static void ipc_window_move_absolute(uint32_t *);
@@ -172,6 +191,14 @@ static void ipc_group_toggle(uint32_t *);
 static void ipc_group_activate_specific(uint32_t *);
 static void ipc_wm_quit(uint32_t *);
 static void ipc_wm_config(uint32_t *);
+
+static void pointer_init(void);
+static int16_t pointer_modfield_from_keysym(xcb_keysym_t);
+static void window_grab_buttons(xcb_window_t);
+static void window_grab_button(xcb_window_t, uint8_t, uint16_t);
+static bool pointer_grab(enum pointer_action);
+static enum resize_handle get_handle(struct client *, xcb_point_t, enum pointer_action);
+static void track_pointer(struct client *, enum pointer_action, xcb_point_t);
 
 static void usage(char *);
 static void version(void);
@@ -253,6 +280,8 @@ setup(void)
 	xcb_ewmh_set_supported(ewmh, scrno, sizeof(supported_atoms) / sizeof(xcb_atom_t), supported_atoms);
 
 	xcb_ewmh_set_supporting_wm_check(ewmh, scr->root, scr->root);
+
+	pointer_init();
 
 	/* send requests */
 	xcb_flush(conn);
@@ -734,6 +763,8 @@ set_focused_no_raise(struct client *client)
 		list_move_to_head(&focus_list, client->focus_item);
 
 	focused_win = client;
+
+	window_grab_buttons(focused_win->window);
 }
 
 /*
@@ -2152,6 +2183,7 @@ register_event_handlers(void)
 	events[XCB_CIRCULATE_REQUEST] = event_circulate_request;
 	events[XCB_FOCUS_IN]          = event_focus_in;
 	events[XCB_FOCUS_OUT]         = event_focus_out;
+	events[XCB_BUTTON_PRESS]      = event_button_press;
 }
 
 /*
@@ -2486,6 +2518,28 @@ event_focus_out(xcb_generic_event_t *ev)
 		if (client != NULL)
 			set_focused_no_raise(client);
 	}
+}
+
+static void
+event_button_press(xcb_generic_event_t *ev)
+{
+	xcb_button_press_event_t *e = (xcb_button_press_event_t *)ev;
+	bool replay = false;
+
+	for (int i = 0; i < NR_BUTTONS; i++) {
+		if (e->detail != mouse_buttons[i])
+			continue;
+		if ((conf.click_to_focus == (int8_t) XCB_BUTTON_INDEX_ANY ||
+			 conf.click_to_focus == (int8_t) mouse_buttons[i]) &&
+			(e->state & ~(num_lock | scroll_lock | caps_lock)) == XCB_NONE) {
+
+			replay = !pointer_grab(POINTER_ACTION_FOCUS);
+		} else {
+			pointer_grab(conf.pointer_actions[i]);
+		}
+	}
+	xcb_allow_events(conn, replay ? XCB_ALLOW_REPLAY_POINTER : XCB_ALLOW_SYNC_POINTER, e->time);
+	xcb_flush(conn);
 }
 
 /*
@@ -2946,6 +3000,290 @@ ipc_wm_config(uint32_t *d)
 }
 
 static void
+pointer_init(void)
+{
+	num_lock = pointer_modfield_from_keysym(XK_Num_Lock);
+	caps_lock = pointer_modfield_from_keysym(XK_Caps_Lock);
+	scroll_lock = pointer_modfield_from_keysym(XK_Scroll_Lock);
+
+	if (caps_lock == XCB_NO_SYMBOL)
+		caps_lock = XCB_MOD_MASK_LOCK;
+}
+
+static int16_t
+pointer_modfield_from_keysym(xcb_keysym_t keysym)
+{
+	uint16_t modfield = 0;
+	xcb_keycode_t *keycodes = NULL, *mod_keycodes = NULL;
+	xcb_get_modifier_mapping_reply_t *reply = NULL;
+	xcb_key_symbols_t *symbols = xcb_key_symbols_alloc(conn);
+
+	/* wrapped all of them in an ugly if to prevent getting values when
+	   we don't need them */
+	if (!((keycodes = xcb_key_symbols_get_keycode(symbols, keysym)) == NULL ||
+		  (reply = xcb_get_modifier_mapping_reply(conn, xcb_get_modifier_mapping(conn), NULL)) == NULL ||
+		  reply->keycodes_per_modifier < 1 ||
+		  (mod_keycodes = xcb_get_modifier_mapping_keycodes(reply)) == NULL)) {
+
+		int num_mod =
+			xcb_get_modifier_mapping_keycodes_length(reply) /
+			reply->keycodes_per_modifier;
+
+		for (int i = 0; i < num_mod; i++) {
+			for (int j = 0; j < reply->keycodes_per_modifier; j++) {
+				xcb_keycode_t mk = mod_keycodes[i * reply->keycodes_per_modifier + j];
+				if (mk != XCB_NO_SYMBOL) {
+					for (xcb_keycode_t *k = keycodes; *k != XCB_NO_SYMBOL; k++) {
+						if (*k == mk)
+							modfield |= (1 << i);
+					}
+				}
+			}
+		}
+	}
+
+	xcb_key_symbols_free(symbols);
+	free(keycodes);
+	free(reply);
+	return modfield;
+}
+
+static void
+window_grab_buttons(xcb_window_t win)
+{
+	for (int i = 0; i < NR_BUTTONS; i++) {
+		if (conf.click_to_focus == (int8_t) XCB_BUTTON_INDEX_ANY ||
+			conf.click_to_focus == (int8_t) mouse_buttons[i])
+			window_grab_button(win, mouse_buttons[i], XCB_NONE);
+		if (conf.pointer_actions[i] != POINTER_ACTION_NOTHING)
+			window_grab_button(win, mouse_buttons[i], conf.pointer_modifier);
+	}
+	DMSG("grabbed buttons on 0x%08x\n", win);
+}
+
+static void
+window_grab_button(xcb_window_t win, uint8_t button, uint16_t modifier)
+{
+#define GRAB(b, m)												   \
+	xcb_grab_button(conn, false, win, XCB_EVENT_MASK_BUTTON_PRESS, \
+	                XCB_GRAB_MODE_SYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, b, m)
+
+	GRAB(button, modifier);
+	if (num_lock != XCB_NO_SYMBOL && caps_lock != XCB_NO_SYMBOL && scroll_lock != XCB_NO_SYMBOL)
+		GRAB(button, modifier | num_lock | caps_lock | scroll_lock);
+	if (num_lock != XCB_NO_SYMBOL && caps_lock != XCB_NO_SYMBOL)
+		GRAB(button, modifier | num_lock | caps_lock);
+	if (caps_lock != XCB_NO_SYMBOL && scroll_lock != XCB_NO_SYMBOL)
+		GRAB(button, modifier | caps_lock | scroll_lock);
+	if (num_lock != XCB_NO_SYMBOL && scroll_lock != XCB_NO_SYMBOL)
+		GRAB(button, modifier | num_lock | scroll_lock);
+	if (num_lock != XCB_NO_SYMBOL)
+		GRAB(button, modifier | num_lock);
+	if (caps_lock != XCB_NO_SYMBOL)
+		GRAB(button, modifier | caps_lock);
+	if (scroll_lock != XCB_NO_SYMBOL)
+		GRAB(button, modifier | scroll_lock);
+}
+
+/*
+ * Returns true if pointer needs to be synced.
+ */
+static bool
+pointer_grab(enum pointer_action pac)
+{
+	xcb_window_t win = XCB_NONE;
+	xcb_point_t pos = (xcb_point_t) {0, 0};
+	struct client *client;
+
+	xcb_query_pointer_reply_t *qr =
+		xcb_query_pointer_reply(conn, xcb_query_pointer(conn, scr->root), NULL);
+
+	if (qr == NULL) {
+		return false;
+	}
+
+	win = qr->child;
+	pos = (xcb_point_t) {qr->root_x, qr->root_y};
+	free(qr);
+
+	client = find_client(&win);
+	if (client == NULL)
+		return true;
+
+	if (pac == POINTER_ACTION_FOCUS) {
+		DMSG("grabbing pointer to focus on 0x%08x\n", client->window);
+		if (client != focused_win) {
+			set_focused(client);
+			return true;
+		}
+		raise_window(client->window);
+		return false;
+	}
+
+	if (is_maxed(client)) {
+		return true;
+	}
+
+	xcb_grab_pointer_reply_t *reply =
+		xcb_grab_pointer_reply(conn, xcb_grab_pointer(conn, 0, scr->root, XCB_EVENT_MASK_BUTTON_RELEASE | XCB_EVENT_MASK_BUTTON_MOTION, XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE, XCB_CURRENT_TIME), NULL);
+
+	if (reply == NULL || reply->status != XCB_GRAB_STATUS_SUCCESS) {
+		free(reply);
+		return true;
+	}
+	free(reply);
+
+	track_pointer(client, pac, pos);
+
+	return true;
+}
+
+static enum resize_handle
+get_handle(struct client *client, xcb_point_t pos, enum pointer_action pac)
+{
+	if (client == NULL)
+		return pac == POINTER_ACTION_RESIZE_SIDE ? HANDLE_LEFT : HANDLE_TOP_LEFT;
+
+	enum resize_handle handle;
+	struct window_geom geom = client->geom;
+
+	if (pac == POINTER_ACTION_RESIZE_SIDE) {
+		/* coordinates relative to the window */
+		int16_t x = pos.x - geom.x;
+		int16_t y = pos.y - geom.y;
+		bool left_of_a = (x * geom.height) < (geom.width * y);
+		bool left_of_b = ((geom.width - x) * geom.height) > (geom.width * y);
+
+		/* Problem is that the above algorithm works in a 2d system
+		   where the origin is in the bottom-left. */
+		if (left_of_a) {
+			if (left_of_b) {
+				handle = HANDLE_LEFT;
+			}
+			else
+				handle = HANDLE_BOTTOM;
+		} else {
+			if (left_of_b)
+				handle = HANDLE_TOP;
+			else
+				handle = HANDLE_RIGHT;
+		}
+	} else if (pac == POINTER_ACTION_RESIZE_CORNER) {
+		int16_t mid_x = geom.x + geom.width / 2;
+		int16_t mid_y = geom.y + geom.height / 2;
+
+		if (pos.y < mid_y) {
+			if (pos.x < mid_x)
+				handle = HANDLE_TOP_LEFT;
+			else
+				handle = HANDLE_TOP_RIGHT;
+		} else {
+			if (pos.x < mid_x)
+				handle = HANDLE_BOTTOM_LEFT;
+			else
+				handle = HANDLE_BOTTOM_RIGHT;
+		}
+		switch (handle) {
+		case HANDLE_TOP_LEFT: DMSG("top left\n"); break;
+		case HANDLE_TOP_RIGHT: DMSG("top right\n"); break;
+		case HANDLE_BOTTOM_LEFT: DMSG("bottom left\n"); break;
+		case HANDLE_BOTTOM_RIGHT: DMSG("bottom right\n"); break;
+		}
+	} else {
+		handle = HANDLE_TOP_LEFT;
+	}
+
+	return handle;
+}
+static void
+track_pointer(struct client *client, enum pointer_action pac, xcb_point_t pos)
+{
+	enum resize_handle handle = get_handle(client, pos, pac);
+	uint16_t lx = pos.x, ly = pos.y;
+
+	xcb_generic_event_t *ev = NULL;
+
+	bool grabbing = true;
+	struct client *grabbed = client;
+
+	if (client == NULL)
+		return;
+
+	do {
+		free(ev);
+		while ((ev = xcb_wait_for_event(conn)) == NULL)
+			xcb_flush(conn);
+		uint8_t resp = EVENT_MASK(ev->response_type);
+
+		if (resp == XCB_MOTION_NOTIFY) {
+			xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *)ev;
+			DMSG("tracking window by mouse root_x = %d  root_y = %d  lx = %d  ly = %d\n", e->root_x, e->root_y, lx, ly);
+			int16_t dx = e->root_x - lx;
+			int16_t dy = e->root_y - ly;
+
+			if (pac == POINTER_ACTION_MOVE) {
+				client->geom.x += dx;
+				client->geom.y += dy;
+				teleport_window(client->window, client->geom.x, client->geom.y);
+			} else if (pac == POINTER_ACTION_RESIZE_SIDE || pac == POINTER_ACTION_RESIZE_CORNER) {
+				/* oh boy */
+				switch (handle) {
+				case HANDLE_LEFT:
+					client->geom.x += dx;
+					client->geom.width += -dx;
+					break;
+				case HANDLE_BOTTOM:
+					client->geom.height += dy;
+					break;
+				case HANDLE_TOP:
+					client->geom.y += dy;
+					client->geom.height += -dy;
+					break;
+				case HANDLE_RIGHT:
+					client->geom.width += dx;
+					break;
+
+				case HANDLE_TOP_LEFT:
+					client->geom.y += dy;
+					client->geom.height += -dy;
+					client->geom.x += dx;
+					client->geom.width += -dx;
+					break;
+				case HANDLE_TOP_RIGHT:
+					client->geom.y += dy;
+					client->geom.height += -dy;
+					client->geom.width += dx;
+					break;
+				case HANDLE_BOTTOM_LEFT:
+					client->geom.x += dx;
+					client->geom.width += -dx;
+					client->geom.height += dy;
+					break;
+				case HANDLE_BOTTOM_RIGHT:
+					client->geom.width += dx;
+					client->geom.height += dy;
+					break;
+				}
+				resize_window_absolute(client->window, client->geom.width, client->geom.height);
+				teleport_window(client->window, client->geom.x, client->geom.y);
+				xcb_flush(conn);
+			}
+			lx = e->root_x;
+			ly = e->root_y;
+		} else if (resp == XCB_BUTTON_RELEASE) {
+
+			grabbing = false;
+		} else {
+			if (events[resp] != NULL)
+				(events[resp])(ev);
+		}
+	} while (grabbing && grabbed != NULL);
+	free(ev);
+
+	xcb_ungrab_pointer(conn, XCB_CURRENT_TIME);
+}
+
+static void
 usage(char *name)
 {
 	fprintf(stderr, "Usage: %s [-h|-v|-c CONFIG_PATH]\n", name);
@@ -2978,7 +3316,12 @@ load_defaults(void)
 	conf.sticky_windows  = STICKY_WINDOWS;
 	conf.borders         = BORDERS;
 	conf.last_window_focusing = LAST_WINDOW_FOCUSING;
-	conf.apply_settings = APPLY_SETTINGS;
+	conf.apply_settings       = APPLY_SETTINGS;
+	conf.pointer_actions[BUTTON_LEFT]   = DEFAULT_LEFT_BUTTON_ACTION;
+	conf.pointer_actions[BUTTON_MIDDLE] = DEFAULT_MIDDLE_BUTTON_ACTION;
+	conf.pointer_actions[BUTTON_RIGHT]  = DEFAULT_RIGHT_BUTTON_ACTION;
+	conf.pointer_modifier = POINTER_MODIFIER;
+	conf.click_to_focus = CLICK_TO_FOCUS_BUTTON;
 }
 
 static void
