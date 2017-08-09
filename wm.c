@@ -244,8 +244,11 @@ setup(void)
 		ewmh->_NET_WM_ICON_NAME            , ewmh->_NET_WM_WINDOW_TYPE          ,
 		ewmh->_NET_WM_WINDOW_TYPE_DOCK     , ewmh->_NET_WM_PID                  ,
 		ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR  , ewmh->_NET_WM_WINDOW_TYPE_DESKTOP  ,
+		ewmh->_NET_SUPPORTING_WM_CHECK     ,
 	};
 	xcb_ewmh_set_supported(ewmh, scrno, sizeof(supported_atoms) / sizeof(xcb_atom_t), supported_atoms);
+
+	xcb_ewmh_set_supporting_wm_check(ewmh, scr->root, scr->root);
 
 	/* send requests */
 	xcb_flush(conn);
