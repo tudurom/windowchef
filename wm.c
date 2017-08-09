@@ -9,12 +9,15 @@
 #include <assert.h>
 #include <err.h>
 #include <getopt.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <tgmath.h>
 #include <unistd.h>
+
+#include <sys/wait.h>
 
 #include "common.h"
 #include "config.h"
@@ -2989,6 +2992,14 @@ load_config(char *config_path)
 	}
 }
 
+void
+handle_child(int sig)
+{
+	if (sig == SIGCHLD) {
+		wait(NULL);
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	int opt;
@@ -3024,6 +3035,9 @@ int main(int argc, char *argv[])
 			snprintf(config_path, MAXLEN * sizeof(char), "%s/%s/%s/%s", getenv("HOME"), ".config",
 					__NAME__, __CONFIG_NAME__);
 	}
+
+	signal(SIGCHLD, handle_child);
+
 	/* execute config file */
 	load_config(config_path);
 	run();
