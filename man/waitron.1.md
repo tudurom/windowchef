@@ -32,6 +32,15 @@ anything on `stdout`.
 * `DIRECTION`:
 	`up` | `down` | `left` | `right` | `north` | `south` | `west` | `east`
 
+* `POINTER_ACTION`:
+	`nothing` | `focus` | `move` | `resize_corner` | `resize_side`
+
+* `POINTER_MODIFIER`:
+	`alt` | `super`
+
+* `MOUSE_BUTTON`:
+	`any` | `none` | `left` | `middle` | `right`
+
 ## COMMANDS
 
 * `window_move` <x> <y>:
@@ -206,6 +215,16 @@ are:
 	If true, then some settings will be applied on all windows instead of newly created windows.
 	True by default.
 
+* `pointer_actions` <POINTER_ACTION> <POINTER_ACTION> <POINTER_ACTION>:
+	Sets the action that should be done whenever the modifier key and the corresponding button
+	are clicked at the same time on the window. There are 3 actions for three mouse buttons:
+	left, middle and right.
+
+* `pointer_modifier` <POINTER_MODIFIER>:
+	Set the modifier for pointer actions.
+
+* `click_to_focus` <MOUSE_BUTTON>:
+	Set the mouse button that focuses the hovered window when clicked.
 ## SEE ALSO
 
 windowchef(1), sxhkd(1), wmutils(1), pfw(1), lsw(1), chwb2(1), lemonbar(1)

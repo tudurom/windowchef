@@ -55,6 +55,9 @@ enum IPCConfig {
 	IPCConfigEnableBorders,
 	IPCConfigEnableLastWindowFocusing,
 	IPCConfigApplySettings,
+	IPCConfigPointerActions,
+	IPCConfigPointerModifier,
+	IPCConfigClickToFocus,
 	NR_IPC_CONFIGS
 };
 

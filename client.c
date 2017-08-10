@@ -29,6 +29,9 @@ static bool fn_hex(uint32_t *, int, char **);
 static bool fn_position(uint32_t *, int, char **);
 static bool fn_gap(uint32_t *, int, char **);
 static bool fn_direction(uint32_t *, int, char **);
+static bool fn_pac(uint32_t *, int, char **);
+static bool fn_mod(uint32_t *, int, char **);
+static bool fn_button(uint32_t *, int, char **);
 
 static void usage(char *, int);
 static void version(void);
@@ -43,6 +46,7 @@ struct Command {
 struct ConfigEntry {
 	char *key;
 	enum IPCConfig config;
+	int argc;
 	bool (*handler)(uint32_t *, int, char **);
 };
 
@@ -79,19 +83,22 @@ static struct Command c[] = {
 };
 
 static struct ConfigEntry configs[] = {
-	{ "border_width"        , IPCConfigBorderWidth       , fn_naturals },
-	{ "color_focused"       , IPCConfigColorFocused      , fn_hex      },
-	{ "color_unfocused"     , IPCConfigColorUnfocused    , fn_hex      },
-	{ "gap_width"           , IPCConfigGapWidth          , fn_gap      },
-	{ "grid_gap_width"      , IPCConfigGridGapWidth      , fn_naturals },
-	{ "cursor_position"     , IPCConfigCursorPosition    , fn_position },
-	{ "groups_nr"           , IPCConfigGroupsNr          , fn_naturals },
-	{ "enable_sloppy_focus" , IPCConfigEnableSloppyFocus , fn_bool     },
-	{ "enable_resize_hints" , IPCConfigEnableResizeHints , fn_bool     },
-	{ "sticky_windows"      , IPCConfigStickyWindows     , fn_bool     },
-	{ "enable_borders"      , IPCConfigEnableBorders     , fn_bool     },
-	{ "enable_last_window_focusing", IPCConfigEnableLastWindowFocusing, fn_bool },
-	{ "apply_settings"      , IPCConfigApplySettings     , fn_bool     },
+	{ "border_width"        , IPCConfigBorderWidth       , 1 , fn_naturals },
+	{ "color_focused"       , IPCConfigColorFocused      , 1 , fn_hex      },
+	{ "color_unfocused"     , IPCConfigColorUnfocused    , 1 , fn_hex      },
+	{ "gap_width"           , IPCConfigGapWidth          , 2 , fn_gap      },
+	{ "grid_gap_width"      , IPCConfigGridGapWidth      , 1 , fn_naturals },
+	{ "cursor_position"     , IPCConfigCursorPosition    , 1 , fn_position },
+	{ "groups_nr"           , IPCConfigGroupsNr          , 1 , fn_naturals },
+	{ "enable_sloppy_focus" , IPCConfigEnableSloppyFocus , 1 , fn_bool     },
+	{ "enable_resize_hints" , IPCConfigEnableResizeHints , 1 , fn_bool     },
+	{ "sticky_windows"      , IPCConfigStickyWindows     , 1 , fn_bool     },
+	{ "enable_borders"      , IPCConfigEnableBorders     , 1 , fn_bool     },
+	{ "enable_last_window_focusing", IPCConfigEnableLastWindowFocusing, 1 , fn_bool },
+	{ "apply_settings"      , IPCConfigApplySettings     , 1 , fn_bool     },
+	{ "pointer_actions"     , IPCConfigPointerActions    , 3 , fn_pac      },
+	{ "pointer_modifier"    , IPCConfigPointerModifier   , 1 , fn_mod      },
+	{ "click_to_focus"      , IPCConfigClickToFocus      , 1 , fn_button   },
 };
 
 /*
@@ -171,6 +178,8 @@ fn_config(uint32_t *data, int argc, char **argv) {
 		i++;
 
 	if (i < NR_IPC_CONFIGS) {
+		if (configs[i].argc != argc - 1)
+			errx(EXIT_FAILURE, "too many or not enough arguments. Want: %d", configs[i].argc);
 		data[0] = configs[i].config;
 		status = (configs[i].handler)(data + 1, argc - 1, argv + 1);
 
@@ -217,6 +226,62 @@ fn_direction(uint32_t *data, int argc, char **argv)
 
 	(void)(argc);
 	data[0] = dir_sel;
+
+	return true;
+}
+
+static bool
+fn_pac(uint32_t *data, int argc, char **argv)
+{
+	for (int i = 0; i < argc; i++) {
+		char *pac = argv[i];
+		if (strcasecmp(pac, "nothing") == 0)
+			data[i] = POINTER_ACTION_NOTHING;
+		else if (strcasecmp(pac, "focus") == 0)
+			data[i] = POINTER_ACTION_FOCUS;
+		else if (strcasecmp(pac, "move") == 0)
+			data[i] = POINTER_ACTION_MOVE;
+		else if (strcasecmp(pac, "resize_corner") == 0)
+			data[i] = POINTER_ACTION_RESIZE_CORNER;
+		else if (strcasecmp(pac, "resize_side") == 0)
+			data[i] = POINTER_ACTION_RESIZE_SIDE;
+		else
+			return false;
+	}
+
+	return true;
+}
+static bool
+fn_mod(uint32_t *data, int argc, char **argv)
+{
+	(void)(argc);
+	if (strcasecmp(argv[0], "alt") == 0)
+		data[0] = XCB_MOD_MASK_1;
+	else if (strcasecmp(argv[0], "super") == 0)
+		data[0] = XCB_MOD_MASK_4;
+	else
+		return false;
+
+	return true;
+}
+static bool
+fn_button(uint32_t *data, int argc, char **argv)
+{
+	char *btn = argv[0];
+	(void)(argc);
+
+	if (strcasecmp(btn, "left") == 0)
+		data[0] = 1;
+	else if (strcasecmp(btn, "middle") == 0)
+		data[0] = 2;
+	else if (strcasecmp(btn, "right") == 0)
+		data[0] = 3;
+	else if (strcasecmp(btn, "none") == 0)
+		data[0] = UINT32_MAX;
+	else if (strcasecmp(btn, "any") == 0)
+		data[0] = 0;
+	else
+		return false;
 
 	return true;
 }

@@ -199,6 +199,8 @@ static void window_grab_button(xcb_window_t, uint8_t, uint16_t);
 static bool pointer_grab(enum pointer_action);
 static enum resize_handle get_handle(struct client *, xcb_point_t, enum pointer_action);
 static void track_pointer(struct client *, enum pointer_action, xcb_point_t);
+static void grab_buttons(void);
+static void ungrab_buttons(void);
 
 static void usage(char *);
 static void version(void);
@@ -214,6 +216,7 @@ cleanup(void)
 {
 	xcb_set_input_focus(conn, XCB_NONE, XCB_INPUT_FOCUS_POINTER_ROOT,
 			XCB_CURRENT_TIME);
+	ungrab_buttons();
 	if (ewmh != NULL)
 		xcb_ewmh_connection_wipe(ewmh);
 	if (win_list != NULL)
@@ -2993,6 +2996,26 @@ ipc_wm_config(uint32_t *d)
 	case IPCConfigApplySettings:
 		conf.apply_settings = d[1];
 		break;
+	case IPCConfigPointerActions:
+		for (int i = 0; i < NR_BUTTONS; i++) {
+			conf.pointer_actions[i] = d[i + 1];
+		}
+		ungrab_buttons();
+		grab_buttons();
+		break;
+	case IPCConfigPointerModifier:
+		conf.pointer_modifier = d[1];
+		ungrab_buttons();
+		grab_buttons();
+		break;
+	case IPCConfigClickToFocus:
+		if (d[1] == UINT32_MAX)
+			conf.click_to_focus = -1;
+		else
+			conf.click_to_focus = d[1];
+		ungrab_buttons();
+		grab_buttons();
+		break;
 	default:
 		DMSG("!!! unhandled config key %d\n", key);
 		break;
@@ -3110,13 +3133,13 @@ pointer_grab(enum pointer_action pac)
 	if (client == NULL)
 		return true;
 
+	raise_window(client->window);
 	if (pac == POINTER_ACTION_FOCUS) {
 		DMSG("grabbing pointer to focus on 0x%08x\n", client->window);
 		if (client != focused_win) {
 			set_focused(client);
 			return true;
 		}
-		raise_window(client->window);
 		return false;
 	}
 
@@ -3182,12 +3205,6 @@ get_handle(struct client *client, xcb_point_t pos, enum pointer_action pac)
 				handle = HANDLE_BOTTOM_LEFT;
 			else
 				handle = HANDLE_BOTTOM_RIGHT;
-		}
-		switch (handle) {
-		case HANDLE_TOP_LEFT: DMSG("top left\n"); break;
-		case HANDLE_TOP_RIGHT: DMSG("top right\n"); break;
-		case HANDLE_BOTTOM_LEFT: DMSG("bottom left\n"); break;
-		case HANDLE_BOTTOM_RIGHT: DMSG("bottom right\n"); break;
 		}
 	} else {
 		handle = HANDLE_TOP_LEFT;
@@ -3281,6 +3298,30 @@ track_pointer(struct client *client, enum pointer_action pac, xcb_point_t pos)
 	free(ev);
 
 	xcb_ungrab_pointer(conn, XCB_CURRENT_TIME);
+}
+
+static void
+grab_buttons(void)
+{
+	struct list_item *item;
+	struct client *client;
+
+	for (item = win_list; item != NULL; item = item->next) {
+		client = item->data;
+		window_grab_buttons(client->window);
+	}
+}
+
+static void
+ungrab_buttons(void)
+{
+	struct list_item *item;
+	struct client *client;
+
+	for (item = win_list; item != NULL; item = item->next) {
+		client = item->data;
+		xcb_ungrab_button(conn, XCB_BUTTON_INDEX_ANY, client->window, XCB_MOD_MASK_ANY);
+	}
 }
 
 static void

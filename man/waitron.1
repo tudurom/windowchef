@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "WAITRON" "1" "July 2017" "Windowchef" "Windowchef Manual"
+.TH "WAITRON" "1" "August 2017" "Windowchef" "Windowchef Manual"
 .
 .SH "NAME"
 \fBwaitron\fR \- A client for windowchef(1)
@@ -38,6 +38,18 @@ false values: \fBfalse\fR | \fBf\fR | \fBno\fR | \fBn\fR | \fB0\fR
 .TP
 \fBDIRECTION\fR
 \fBup\fR | \fBdown\fR | \fBleft\fR | \fBright\fR | \fBnorth\fR | \fBsouth\fR | \fBwest\fR | \fBeast\fR
+.
+.TP
+\fBPOINTER_ACTION\fR
+\fBnothing\fR | \fBfocus\fR | \fBmove\fR | \fBresize_corner\fR | \fBresize_side\fR
+.
+.TP
+\fBPOINTER_MODIFIER\fR
+\fBalt\fR | \fBsuper\fR
+.
+.TP
+\fBMOUSE_BUTTON\fR
+\fBany\fR | \fBnone\fR | \fBleft\fR | \fBmiddle\fR | \fBright\fR
 .
 .SH "COMMANDS"
 .
@@ -234,7 +246,22 @@ If true, when the currently focused window is unmapped or closed, \fBwindowchef\
 \fBapply_settings\fR \fIBOOL\fR
 If true, then some settings will be applied on all windows instead of newly created windows\. True by default\.
 .
+.TP
+\fBpointer_actions\fR \fIPOINTER_ACTION\fR \fIPOINTER_ACTION\fR \fIPOINTER_ACTION\fR
+Sets the action that should be done whenever the modifier key and the corresponding button are clicked at the same time on the window\. There are 3 actions for three mouse buttons: left, middle and right\.
+.
+.TP
+\fBpointer_modifier\fR \fIPOINTER_MODIFIER\fR
+Set the modifier for pointer actions\.
+.
+.TP
+\fBclick_to_focus\fR \fIMOUSE_BUTTON\fR
+Set the mouse button that focuses the hovered window when clicked\.
+.
 .SH "SEE ALSO"
+
+.
+.P
 windowchef(1), sxhkd(1), wmutils(1), pfw(1), lsw(1), chwb2(1), lemonbar(1)
 .
 .SH "REPORTING BUGS"

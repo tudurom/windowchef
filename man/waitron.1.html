@@ -103,6 +103,9 @@ anything on <code>stdout</code>.</p>
 
 <p>  false values: <code>false</code> | <code>f</code> | <code>no</code> | <code>n</code> | <code>0</code></p></dd>
 <dt><code>DIRECTION</code></dt><dd><p>  <code>up</code> | <code>down</code> | <code>left</code> | <code>right</code> | <code>north</code> | <code>south</code> | <code>west</code> | <code>east</code></p></dd>
+<dt><code>POINTER_ACTION</code></dt><dd><p>  <code>nothing</code> | <code>focus</code> | <code>move</code> | <code>resize_corner</code> | <code>resize_side</code></p></dd>
+<dt><code>POINTER_MODIFIER</code></dt><dd><p>  <code>alt</code> | <code>super</code></p></dd>
+<dt><code>MOUSE_BUTTON</code></dt><dd><p>  <code>any</code> | <code>none</code> | <code>left</code> | <code>middle</code> | <code>right</code></p></dd>
 </dl>
 
 
@@ -204,10 +207,15 @@ are:</p>
   previously focused window. See the <code>window_focus_last</code> command.</p></dd>
 <dt><code>apply_settings</code> <var>BOOL</var></dt><dd><p>  If true, then some settings will be applied on all windows instead of newly created windows.
   True by default.</p></dd>
+<dt><code>pointer_actions</code> <var>POINTER_ACTION</var> <var>POINTER_ACTION</var> <var>POINTER_ACTION</var></dt><dd><p>  Sets the action that should be done whenever the modifier key and the corresponding button
+  are clicked at the same time on the window. There are 3 actions for three mouse buttons:
+  left, middle and right.</p></dd>
+<dt><code>pointer_modifier</code> <var>POINTER_MODIFIER</var></dt><dd><p>  Set the modifier for pointer actions.</p></dd>
+<dt><code>click_to_focus</code> <var>MOUSE_BUTTON</var></dt><dd><p>  Set the mouse button that focuses the hovered window when clicked.</p>
+
+<h2 id="SEE-ALSO">SEE ALSO</h2></dd>
 </dl>
 
-
-<h2 id="SEE-ALSO">SEE ALSO</h2>
 
 <p><span class="man-ref">windowchef<span class="s">(1)</span></span>, <span class="man-ref">sxhkd<span class="s">(1)</span></span>, <span class="man-ref">wmutils<span class="s">(1)</span></span>, <span class="man-ref">pfw<span class="s">(1)</span></span>, <span class="man-ref">lsw<span class="s">(1)</span></span>, <span class="man-ref">chwb2<span class="s">(1)</span></span>, <span class="man-ref">lemonbar<span class="s">(1)</span></span></p>
 
@@ -222,7 +230,7 @@ are:</p>
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>Windowchef</li>
-    <li class='tc'>July 2017</li>
+    <li class='tc'>August 2017</li>
     <li class='tr'>waitron(1)</li>
   </ol>
 
