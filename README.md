@@ -60,12 +60,12 @@ Dependencies
 * `xcb-randr`
 * `xcb-util-wm`
 * `xcb-keysyms`
-* `libX11` (headers only)
+* `xproto`
 
 Windowchef depends on `xcb` to communicate with the X11 server, `xcb-randr` to
 gather information about connected displays and `xcb-util-wm` for ewmh and icccm helper functions.
 
-`xcb-keysyms` and the headers of `libX11` are required for mouse support.
+`xcb-keysyms` and `xproto` are required for mouse support.
 
 I couldn't find compiled documentation for `xcb-util-wm` so I compiled it and
 put it on my website [here](https://tudorr.xyz/res/).
