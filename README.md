@@ -60,7 +60,7 @@ Dependencies
 * `xcb-randr`
 * `xcb-util-wm`
 * `xcb-keysyms`
-* `xproto`
+* `xproto` (compile-time dependency)
 
 Windowchef depends on `xcb` to communicate with the X11 server, `xcb-randr` to
 gather information about connected displays and `xcb-util-wm` for ewmh and icccm helper functions.
