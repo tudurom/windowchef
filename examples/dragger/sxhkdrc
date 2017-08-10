@@ -1,6 +1,0 @@
-super + ~button1
-	  echo drag > /tmp/dragger.fifo
-
-~button1
-	echo close > /tmp/dragger.fifo; \
-	waitron window_focus $(xqp)
