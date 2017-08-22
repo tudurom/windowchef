@@ -3216,7 +3216,7 @@ static void
 track_pointer(struct client *client, enum pointer_action pac, xcb_point_t pos)
 {
 	enum resize_handle handle = get_handle(client, pos, pac);
-	uint16_t lx = pos.x, ly = pos.y;
+	struct window_geom geom = client->geom;
 
 	xcb_generic_event_t *ev = NULL;
 
@@ -3234,59 +3234,88 @@ track_pointer(struct client *client, enum pointer_action pac, xcb_point_t pos)
 
 		if (resp == XCB_MOTION_NOTIFY) {
 			xcb_motion_notify_event_t *e = (xcb_motion_notify_event_t *)ev;
-			DMSG("tracking window by mouse root_x = %d  root_y = %d  lx = %d  ly = %d\n", e->root_x, e->root_y, lx, ly);
-			int16_t dx = e->root_x - lx;
-			int16_t dy = e->root_y - ly;
+			DMSG("tracking window by mouse root_x = %d  root_y = %d  posx = %d  posy = %d\n", e->root_x, e->root_y, pos.x, pos.y);
+			int16_t dx = e->root_x - pos.x;
+			int16_t dy = e->root_y - pos.y;
+			int32_t x = client->geom.x, y = client->geom.y,
+				width = client->geom.width, height = client->geom.height;
 
 			if (pac == POINTER_ACTION_MOVE) {
-				client->geom.x += dx;
-				client->geom.y += dy;
+				client->geom.x = geom.x + dx;
+				client->geom.y = geom.y + dy;
 				teleport_window(client->window, client->geom.x, client->geom.y);
 			} else if (pac == POINTER_ACTION_RESIZE_SIDE || pac == POINTER_ACTION_RESIZE_CORNER) {
+
+				DMSG("dx: %d\tdy: %d\n", dx, dy);
+				if (conf.resize_hints) {
+					dx /= client->width_inc;
+					dx *= client->width_inc;
+
+					dy /= client->width_inc;
+					dy *= client->width_inc;
+					DMSG("we have resize hints\tdx: %d\tdy: %d\n", dx, dy);
+				}
 				/* oh boy */
 				switch (handle) {
 				case HANDLE_LEFT:
-					client->geom.x += dx;
-					client->geom.width += -dx;
+					x = geom.x + dx;
+					width = geom.width - dx;
 					break;
 				case HANDLE_BOTTOM:
-					client->geom.height += dy;
+					height  = geom.height + dy;
 					break;
 				case HANDLE_TOP:
-					client->geom.y += dy;
-					client->geom.height += -dy;
+					y = geom.y + dy;
+					height = geom.height - dy;
 					break;
 				case HANDLE_RIGHT:
-					client->geom.width += dx;
+					width = geom.width + dx;
 					break;
 
 				case HANDLE_TOP_LEFT:
-					client->geom.y += dy;
-					client->geom.height += -dy;
-					client->geom.x += dx;
-					client->geom.width += -dx;
+					y = geom.y + dy;
+					height = geom.height - dy;
+					x = geom.x + dx;
+					width = geom.width - dx;
 					break;
 				case HANDLE_TOP_RIGHT:
-					client->geom.y += dy;
-					client->geom.height += -dy;
-					client->geom.width += dx;
+					y = geom.y + dy;
+					height = geom.height - dy;
+					width = geom.width + dx;
 					break;
 				case HANDLE_BOTTOM_LEFT:
-					client->geom.x += dx;
-					client->geom.width += -dx;
-					client->geom.height += dy;
+					x = geom.x + dx;
+					width = geom.width - dx;
+					height = geom.height + dy;
 					break;
 				case HANDLE_BOTTOM_RIGHT:
-					client->geom.width += dx;
-					client->geom.height += dy;
+					width = geom.width + dx;
+					height = geom.height + dy;
 					break;
 				}
+
+				/* check for overflow */
+				if (width < client->min_width) {
+					width = client->min_width;
+					x = client->geom.x;
+				}
+
+				if (height < client->min_height) {
+					height = client->min_height;
+					y = client->geom.y;
+				}
+
+				DMSG("moving by %d %d\n", x - geom.x, y - geom.y);
+				DMSG("resizing by %d %d\n", width - geom.width, height - geom.height);
+				client->geom.x = x;
+				client->geom.width = width;
+				client->geom.height = height;
+				client->geom.y = y;
+
 				resize_window_absolute(client->window, client->geom.width, client->geom.height);
 				teleport_window(client->window, client->geom.x, client->geom.y);
 				xcb_flush(conn);
 			}
-			lx = e->root_x;
-			ly = e->root_y;
 		} else if (resp == XCB_BUTTON_RELEASE) {
 
 			grabbing = false;
