@@ -107,6 +107,9 @@ Features
 	* Activate/Deactivate/Toggle a group
 	* groups can be "sticky": windows are assigned to the currently
 		selected group automatically
+* Mouse support
+	* Focus, move and resize windows with the mouse
+	* Supports window resize hints
 * Respects window resize hints.
 * Simple and stylish solid-color border. Width can be configured
 * Gaps around the monitor and around the cells of the virtual grid(s).
@@ -114,7 +117,7 @@ Features
 	used for configuration with waitron.
 * 100% compatible with window management utilities (e.g. [wmutils](https://github.com/wmutils/)). Windowchef will update its internal state if programs attempt to manage windows. It also applies the correct window decorations when a program focuses a window. This makes it possible to use it as a "backend" with wm utilities.
 
-Many of the featurs listed above are optional and can be disabled.
+Many of the features listed above are optional and can be disabled.
 
 ### Soon to come
 
@@ -156,15 +159,28 @@ grid and put my window in the cell at `x = 0`, `y = 2`:
 Using the mouse
 ---------------
 
-Windowchef doesn't offer any mouse moving/resizing features. You can emulate
-that with `xmmv(1)` and `xmrs(1)` from wmutils' `opt`.
+~~Windowchef doesn't offer any mouse moving/resizing features. You can emulate
+that with `xmmv(1)` and `xmrs(1)` from wmutils' `opt`.~~
 
-`.sxhkdrc`:
+It does now!
 
-```
-super + {_,alt +} t
-	{xmmv,xmrs}
-```
+You can do 4 actions:
+
+* focus windows
+* move windows
+* resize windows
+	* from the corners
+	* from the sides
+
+All actions (besides focusing windows) require pressing a modifier key
+(`super` or `alt`, you choose) while doing it. You can configure all the mouse buttons for each action. The modifier key can be changed but it's the same for all actions.
+
+You can also configure windowchef to require pressing the modifier key to focus
+windows.
+
+When resizing, you don't need to put the pointer exactly in the corner/on the
+side of the window (like on windows or GNOME). It will work as long as it's
+in the right quarter of the window.
 
 Bars and panels
 ---------------
