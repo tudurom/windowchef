@@ -2214,11 +2214,11 @@ event_configure_request(xcb_generic_event_t *ev)
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH
 				&& !client->maxed && !client->monocled && !client->hmaxed)
-			client->geom.width = e->width - conf.resize_hints * (e->width % client->width_inc);
+			client->geom.width = e->width;
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT
 				&& !client->maxed && !client->monocled && !client->vmaxed)
-			client->geom.height = e->height - conf.resize_hints * (e->height % client->height_inc);
+			client->geom.height = e->height;
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_STACK_MODE) {
 			values[0] = e->stack_mode;
