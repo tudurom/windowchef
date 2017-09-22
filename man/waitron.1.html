@@ -207,6 +207,9 @@ are:</p>
   previously focused window. See the <code>window_focus_last</code> command.</p></dd>
 <dt><code>apply_settings</code> <var>BOOL</var></dt><dd><p>  If true, then some settings will be applied on all windows instead of newly created windows.
   True by default.</p></dd>
+<dt><code>replay_click_on_focus</code> <var>BOOL</var></dt><dd><p>  If true, when clicking on an unfocused with the intent to focus it, windowchef will also send
+  the click event to the target window. If false, the window will receive the click event only
+  if it's already focused.</p></dd>
 <dt><code>pointer_actions</code> <var>POINTER_ACTION</var> <var>POINTER_ACTION</var> <var>POINTER_ACTION</var></dt><dd><p>  Sets the action that should be done whenever the modifier key and the corresponding button
   are clicked at the same time on the window. There are 3 actions for three mouse buttons:
   left, middle and right.</p></dd>
@@ -230,7 +233,7 @@ are:</p>
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>Windowchef</li>
-    <li class='tc'>August 2017</li>
+    <li class='tc'>September 2017</li>
     <li class='tr'>waitron(1)</li>
   </ol>
 

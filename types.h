@@ -98,6 +98,7 @@ struct conf {
 	bool borders;
 	bool last_window_focusing;
 	bool apply_settings;
+	bool replay_click_on_focus;
 	enum pointer_action pointer_actions[3];
 	uint16_t pointer_modifier;
 	int8_t click_to_focus;

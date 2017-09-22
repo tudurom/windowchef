@@ -215,6 +215,11 @@ are:
 	If true, then some settings will be applied on all windows instead of newly created windows.
 	True by default.
 
+* `replay_click_on_focus` <BOOL>:
+	If true, when clicking on an unfocused with the intent to focus it, windowchef will also send
+	the click event to the target window. If false, the window will receive the click event only
+	if it's already focused.
+
 * `pointer_actions` <POINTER_ACTION> <POINTER_ACTION> <POINTER_ACTION>:
 	Sets the action that should be done whenever the modifier key and the corresponding button
 	are clicked at the same time on the window. There are 3 actions for three mouse buttons:

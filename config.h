@@ -40,6 +40,9 @@
 /* if true, apply settings on windows when they are set (like border color, border width) */
 #define APPLY_SETTINGS true
 
+/* When clicking a window to focus it, send the click to it too. */
+#define REPLAY_CLICK_ON_FOCUS true
+
 /* default pointer actions */
 #define DEFAULT_LEFT_BUTTON_ACTION POINTER_ACTION_MOVE
 #define DEFAULT_MIDDLE_BUTTON_ACTION POINTER_ACTION_RESIZE_SIDE

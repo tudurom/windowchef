@@ -2996,6 +2996,9 @@ ipc_wm_config(uint32_t *d)
 	case IPCConfigApplySettings:
 		conf.apply_settings = d[1];
 		break;
+	case IPCConfigReplayClickOnFocus:
+		conf.replay_click_on_focus = d[1];
+		break;
 	case IPCConfigPointerActions:
 		for (int i = 0; i < NR_BUTTONS; i++) {
 			conf.pointer_actions[i] = d[i + 1];
@@ -3138,7 +3141,8 @@ pointer_grab(enum pointer_action pac)
 		DMSG("grabbing pointer to focus on 0x%08x\n", client->window);
 		if (client != focused_win) {
 			set_focused(client);
-			return true;
+			if (!conf.replay_click_on_focus)
+				return true;
 		}
 		return false;
 	}
@@ -3387,6 +3391,7 @@ load_defaults(void)
 	conf.borders         = BORDERS;
 	conf.last_window_focusing = LAST_WINDOW_FOCUSING;
 	conf.apply_settings       = APPLY_SETTINGS;
+	conf.replay_click_on_focus = REPLAY_CLICK_ON_FOCUS;
 	conf.pointer_actions[BUTTON_LEFT]   = DEFAULT_LEFT_BUTTON_ACTION;
 	conf.pointer_actions[BUTTON_MIDDLE] = DEFAULT_MIDDLE_BUTTON_ACTION;
 	conf.pointer_actions[BUTTON_RIGHT]  = DEFAULT_RIGHT_BUTTON_ACTION;

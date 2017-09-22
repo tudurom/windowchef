@@ -96,6 +96,7 @@ static struct ConfigEntry configs[] = {
 	{ "enable_borders"      , IPCConfigEnableBorders     , 1 , fn_bool     },
 	{ "enable_last_window_focusing", IPCConfigEnableLastWindowFocusing, 1 , fn_bool },
 	{ "apply_settings"      , IPCConfigApplySettings     , 1 , fn_bool     },
+	{ "replay_click_on_focus" , IPCConfigReplayClickOnFocus, 1, fn_bool    },
 	{ "pointer_actions"     , IPCConfigPointerActions    , 3 , fn_pac      },
 	{ "pointer_modifier"    , IPCConfigPointerModifier   , 1 , fn_mod      },
 	{ "click_to_focus"      , IPCConfigClickToFocus      , 1 , fn_button   },
