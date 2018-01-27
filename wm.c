@@ -118,6 +118,7 @@ static bool is_in_valid_direction(uint32_t, float, float);
 static bool is_in_cardinal_direction(uint32_t , struct client *, struct client *);
 static void save_original_size(struct client *);
 static xcb_atom_t get_atom(char *);
+static void update_desktop_viewport(void);
 static bool get_pointer_location(xcb_window_t *, int16_t *, int16_t *);
 static void center_pointer(struct client *);
 static struct client * find_client(xcb_window_t *);
@@ -268,6 +269,7 @@ setup(void)
 	xcb_ewmh_set_wm_name(ewmh, scr->root, strlen(__NAME__), __NAME__);
 	xcb_ewmh_set_current_desktop(ewmh, 0, 0);
 	xcb_ewmh_set_number_of_desktops(ewmh, 0, GROUPS);
+	update_desktop_viewport();
 
 	xcb_atom_t supported_atoms[] = {
 		ewmh->_NET_SUPPORTED               , ewmh->_NET_WM_DESKTOP              ,
@@ -278,7 +280,7 @@ setup(void)
 		ewmh->_NET_WM_ICON_NAME            , ewmh->_NET_WM_WINDOW_TYPE          ,
 		ewmh->_NET_WM_WINDOW_TYPE_DOCK     , ewmh->_NET_WM_PID                  ,
 		ewmh->_NET_WM_WINDOW_TYPE_TOOLBAR  , ewmh->_NET_WM_WINDOW_TYPE_DESKTOP  ,
-		ewmh->_NET_SUPPORTING_WM_CHECK     ,
+		ewmh->_NET_SUPPORTING_WM_CHECK     , ewmh->_NET_DESKTOP_VIEWPORT        ,
 	};
 	xcb_ewmh_set_supported(ewmh, scrno, sizeof(supported_atoms) / sizeof(xcb_atom_t), supported_atoms);
 
@@ -1568,6 +1570,17 @@ get_atom(char *name)
 		return XCB_ATOM_STRING;
 
 	return reply->atom;
+}
+
+/*
+ * Update _NET_DESKTOP_VIEWPORT root property.
+ */
+
+static void
+update_desktop_viewport(void)
+{
+	xcb_ewmh_coordinates_t coord = {0, 0};
+	xcb_ewmh_set_desktop_viewport(ewmh, scrno, 1, &coord);
 }
 
 /*
