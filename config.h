@@ -5,10 +5,13 @@
 #define _CONFIG_H
 
 #define BORDER_WIDTH 5
+#define INTERNAL_BORDER_WIDTH 0
 
 /* colors are HTML colors that start in "0x" instead of "#" */
 #define COLOR_FOCUS 0x97a293
 #define COLOR_UNFOCUS 0x393638
+#define INTERNAL_COLOR_FOCUS 0x393638
+#define INTERNAL_COLOR_UNFOCUS 0x97a293
 
 /* gap between the window and the edge of the monitor
  * when snapping or vertically/horizontally maximizing window */
