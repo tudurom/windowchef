@@ -176,6 +176,16 @@ are:
 	<color> is a hexadecimal value that may or may not start with `0x`
 	prefix. Example: `0x1234ef`.
 
+* `internal_border_width` <width>:
+	Make the first <width> pixels from the interior to the exterior of the
+	border of another color, so you get two borders.
+	The width of the external border is `border_width -
+	internal_border_width`.
+
+* `internal_color_focused`, `internal_color_unfocused` <color>:
+	Like `color_focused` and `color_unfocused`, but for the internal
+	border.
+
 * `gap_width` <POSITION> <width>:
 	Sets the window gap at <POSITION> to <width>. <POSITION> can be equal to
 	`all` to set all gaps to <POSITION>.

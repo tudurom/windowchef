@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "WAITRON" "1" "September 2017" "Windowchef" "Windowchef Manual"
+.TH "WAITRON" "1" "February 2018" "Windowchef" "Windowchef Manual"
 .
 .SH "NAME"
 \fBwaitron\fR \- A client for windowchef(1)
@@ -205,6 +205,14 @@ Sets the border width to \fIwidth\fR pixels\.
 .TP
 \fBcolor_focused\fR, \fBcolor_unfocused\fR \fIcolor\fR
 Sets the border color to \fIcolor\fR for the focused and unfocused state respectively\. \fIcolor\fR is a hexadecimal value that may or may not start with \fB0x\fR prefix\. Example: \fB0x1234ef\fR\.
+.
+.TP
+\fBinternal_border_width\fR \fIwidth\fR
+Make the first \fIwidth\fR pixels from the interior to the exterior of the border of another color, so you get two borders\. The width of the external border is \fBborder_width \- internal_border_width\fR\.
+.
+.TP
+\fBinternal_color_focused\fR, \fBinternal_color_unfocused\fR \fIcolor\fR
+Like \fBcolor_focused\fR and \fBcolor_unfocused\fR, but for the internal border\.
 .
 .TP
 \fBgap_width\fR \fIPOSITION\fR \fIwidth\fR
