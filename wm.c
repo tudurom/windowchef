@@ -1060,6 +1060,8 @@ maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mo
 	if (is_maxed(client))
 		unmaximize_window(client);
 
+	client->maxed = true;
+
 	/* maximized windows don't have borders */
 	values[0] = 0;
 	if (client->geom.width != mon_width || client->geom.height != mon_height)
@@ -1074,7 +1076,6 @@ maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mo
 
 	teleport_window(client->window, client->geom.x, client->geom.y);
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
-	client->maxed = true;
 	set_focused_no_raise(client);
 
 	update_ewmh_wm_state(client);
