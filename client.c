@@ -32,6 +32,7 @@ static bool fn_direction(uint32_t *, int, char **);
 static bool fn_pac(uint32_t *, int, char **);
 static bool fn_mod(uint32_t *, int, char **);
 static bool fn_button(uint32_t *, int, char **);
+static bool fn_hack(uint32_t *, int, char **);
 
 static void usage(char *, int);
 static void version(void);
@@ -62,7 +63,7 @@ static struct Command c[] = {
 	{ "window_ver_maximize"       , IPCWindowVerMaximize     ,  0 , NULL        } ,
 	{ "window_monocle"            , IPCWindowMonocle         ,  0 , NULL        } ,
 	{ "window_close"              , IPCWindowClose           ,  0 , NULL        } ,
-	{ "window_put_in_grid"        , IPCWindowPutInGrid       ,  4 , fn_naturals } ,
+	{ "window_put_in_grid"        , IPCWindowPutInGrid       ,  6 , fn_hack     } ,
 	{ "window_snap"               , IPCWindowSnap            ,  1 , fn_position } ,
 	{ "window_cycle"              , IPCWindowCycle           ,  0 , NULL        } ,
 	{ "window_rev_cycle"          , IPCWindowRevCycle        ,  0 , NULL        } ,
@@ -144,8 +145,7 @@ fn_naturals(uint32_t *data, int argc, char **argv)
 
 	if (errno != 0)
 		return false;
-	else
-		return true;
+	return true;
 }
 
 static bool
@@ -287,6 +287,32 @@ fn_button(uint32_t *data, int argc, char **argv)
 	else
 		return false;
 
+	return true;
+}
+
+/*
+ * Kinda like fn_naturals, but each two numbers are put as 16-bit numbers
+ * in one uint32_t.
+ */
+static bool
+fn_hack(uint32_t *data, int argc, char **argv)
+{
+	int i = 0, j = 0;
+	unsigned long d;
+	do {
+		errno = 0;
+		d = strtoul(argv[i], NULL, 10);
+		if (i % 2 == 0) {
+			data[j] = d << 16U;
+		} else {
+			data[j] |= d;
+			j++;
+		}
+		i++;
+	} while (i < argc && errno == 0);
+
+	if (i % 2 == 1 || errno != 0)
+		return false;
 	return true;
 }
 

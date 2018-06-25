@@ -147,7 +147,7 @@ static void update_ewmh_wm_state(struct client *);
 static void handle_wm_state(struct client *, xcb_atom_t, unsigned int);
 
 static void snap_window(struct client *, enum position);
-static void grid_window(struct client *, uint32_t, uint32_t, uint32_t, uint32_t);
+static void grid_window(struct client *, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t);
 
 static void register_event_handlers(void);
 static void event_configure_request(xcb_generic_event_t *);
@@ -2232,15 +2232,17 @@ snap_window(struct client *client, enum position pos)
  */
 
 static void
-grid_window(struct client *client, uint32_t grid_width, uint32_t grid_height, uint32_t grid_x, uint32_t grid_y)
+grid_window(struct client *client, uint16_t grid_width, uint16_t grid_height, uint16_t grid_x, uint16_t grid_y, uint16_t occ_w, uint16_t occ_h)
 {
 	int16_t mon_x, mon_y;
+	uint16_t base_w, base_h;
 	uint16_t new_w, new_h;
 	uint16_t mon_w, mon_h;
 
 	if (client == NULL || grid_x >= grid_width || grid_y >= grid_height)
 		return;
 
+	DMSG("Gridding window in grid of size (%d, %d) pos (%d, %d) window size (%d, %d)\n", grid_width, grid_height, grid_x, grid_y, occ_w, occ_h);
 	if (is_maxed(client)) {
 		unmaximize_window(client);
 		set_focused(client);
@@ -2248,20 +2250,22 @@ grid_window(struct client *client, uint32_t grid_width, uint32_t grid_height, ui
 
 	get_monitor_size(client, &mon_x, &mon_y, &mon_w, &mon_h);
 
-	/* calculate new window size */
-	new_w = (mon_w - conf.gap_left - conf.gap_right - (grid_width - 1) * conf.grid_gap
+	base_w = (mon_w - conf.gap_left - conf.gap_right - (grid_width - 1) * conf.grid_gap
 			- grid_width * 2 * conf.border_width) / grid_width;
-
-	new_h = (mon_h - conf.gap_up - conf.gap_down - (grid_height - 1) * conf.grid_gap
+	base_h = (mon_h - conf.gap_up - conf.gap_down - (grid_height - 1) * conf.grid_gap
 			- grid_height * 2 * conf.border_width) / grid_height;
+	/* calculate new window size */
+	new_w = base_w * occ_w + (occ_w - 1) * (conf.grid_gap + 2 * conf.border_width);
+
+	new_h = base_h * occ_h + (occ_h - 1) * (conf.grid_gap + 2 * conf.border_width);
 
 	client->geom.width = new_w;
 	client->geom.height = new_h;
 
 	client->geom.x = mon_x + conf.gap_left + grid_x
-		* (conf.border_width + new_w + conf.border_width + conf.grid_gap);
+		* (conf.border_width + base_w + conf.border_width + conf.grid_gap);
 	client->geom.y = mon_y + conf.gap_up + grid_y
-		* (conf.border_width + new_h + conf.border_width + conf.grid_gap);
+		* (conf.border_width + base_h + conf.border_width + conf.grid_gap);
 
 	DMSG("w: %d\th: %d\n", new_w, new_h);
 
@@ -2914,18 +2918,23 @@ ipc_window_close(uint32_t *d)
 static void
 ipc_window_put_in_grid(uint32_t *d)
 {
-	uint32_t grid_width, grid_height;
-	uint32_t grid_x, grid_y;
+	uint16_t grid_width, grid_height;
+	uint16_t grid_x, grid_y;
+	uint16_t occ_w, occ_h;
+	const uint16_t m1 = 16U, m2 = 0xffffU;
 
-	grid_width  = d[0];
-	grid_height = d[1];
-	grid_x      = d[2];
-	grid_y      = d[3];
+	DMSG("data[4] = %d\n", d[4]);
+	grid_width  = d[0] >> m1;
+	grid_height = d[0] & m2;
+	grid_x      = d[1] >> m1;
+	grid_y      = d[1] & m2;
+	occ_w       = d[2] >> m1;
+	occ_h       = d[2] & m2;
 
 	if (focused_win == NULL || grid_x >= grid_width || grid_y >= grid_height)
 		return;
 
-	grid_window(focused_win, grid_width, grid_height, grid_x, grid_y);
+	grid_window(focused_win, grid_width, grid_height, grid_x, grid_y, occ_w, occ_h);
 }
 
 static void
