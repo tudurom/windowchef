@@ -1954,7 +1954,6 @@ group_activate(uint32_t group) {
 	group_in_use[group] = true;
 	last_group = group;
 	update_group_list();
-	update_current_desktop(focused_win);
 }
 
 static void
@@ -2483,6 +2482,7 @@ event_map_request(xcb_generic_event_t *ev)
 
 	if (!client->maxed)
 		set_borders(client, conf.focus_color, conf.internal_focus_color);
+	update_current_desktop(client);
 }
 
 static void
@@ -2550,8 +2550,10 @@ event_configure_notify(xcb_generic_event_t *ev)
 		}
 	} else {
 		client = find_client(&e->window);
-		if (client != NULL)
+		if (client != NULL) {
 			client->monitor = find_monitor_by_coord(client->geom.x, client->geom.y);
+			update_current_desktop(client);
+		}
 	}
 }
 
