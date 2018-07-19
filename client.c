@@ -170,12 +170,11 @@ fn_bool(uint32_t *data, int argc, char **argv) {
 
 static bool
 fn_config(uint32_t *data, int argc, char **argv) {
-	char *key, *value;
+	char *key;
 	bool status;
 	int i;
 
 	key = argv[0];
-	value = argv[1];
 
 	i = 0;
 	while (i < NR_IPC_CONFIGS && strcmp(key, configs[i].key) != 0)

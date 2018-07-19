@@ -743,6 +743,9 @@ set_focused_no_raise(struct client *client)
 	if (client == NULL)
 		return;
 
+	/* show window if hidden */
+	xcb_map_window(conn, client->window);
+
 	if (!client->maxed)
 		set_borders(client, conf.focus_color, conf.internal_focus_color);
 
@@ -794,6 +797,8 @@ set_focused_last_best()
 	struct client *client;
 
 	focused_item = focus_list->next;
+	if (focused_item == NULL)
+		focused_item = focus_list;
 
 	while (focused_item != NULL) {
 		client = focused_item->data;
@@ -827,6 +832,9 @@ close_window(struct client *client)
 {
 	if (client == NULL)
 		return;
+
+	if (focused_win == client)
+		focused_win = NULL;
 
 	if (conf.last_window_focusing && client != NULL && client == focused_win)
 	    set_focused_last_best();
@@ -1160,7 +1168,7 @@ unmaximize_window(struct client *client)
 	client->geom.y = client->orig_geom.y;
 	client->geom.width = client->orig_geom.width;
 	client->geom.height = client->orig_geom.height;
-	client->maxed = client->maxed = client->hmaxed
+	client->maxed = client->hmaxed
 		= client->vmaxed = client->monocled = false;
 
 	teleport_window(client->window, client->geom.x, client->geom.y);
@@ -2601,6 +2609,9 @@ event_client_message(xcb_generic_event_t *ev)
 			DMSG("got _NET_WM_STATE for 0x%08x\n", client->window);
 			handle_wm_state(client, e->data.data32[1], e->data.data32[0]);
 			handle_wm_state(client, e->data.data32[2], e->data.data32[0]);
+		} else if (e->type == ewmh->_NET_ACTIVE_WINDOW) {
+			DMSG("got _NET_ACTIVE_WINDOW for 0x%08x\n", client->window);
+			set_focused(client);
 		}
 	}
 }
@@ -2912,7 +2923,6 @@ ipc_window_close(uint32_t *d)
 {
 	(void)(d);
 	close_window(focused_win);
-	focused_win = NULL;
 }
 
 static void
