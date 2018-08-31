@@ -80,10 +80,12 @@ anything on `stdout`.
 * `window_close`:
 	Closes the focused window.
 
-* `window_put_in_grid` <grid_width> <grid_height> <cell_x> <cell_y>:
+* `window_put_in_grid` <grid_width> <grid_height> <cell_x> <cell_y> <cell_width> <cell_height>:
 	Moves and resizes the focused windows accordingly to fit in a cell defined
-	by the <cell_x> and <cell_y> coordinates in a virtual grid with width
+	by the <cell_x> and <cell_y> coordinates, measuring <cell_width> in width
+	and <cell_height> in height, in a virtual grid with width
 	<grid_width> and height <grid_height> on the current monitor.
+	<cell_width> and <cell_height> are expressed in grid cells.
 	Gaps around the windows in the grid can be added along with monitor gaps.
 
 * `window_snap` <POSITION>:

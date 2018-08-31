@@ -129,9 +129,11 @@ anything on <code>stdout</code>.</p>
 <dt><code>window_monocle</code></dt><dd><p>  Puts the window in the "monocled" state: full screen but with borders
   visible. Monocle mode respects gaps.</p></dd>
 <dt><code>window_close</code></dt><dd><p>  Closes the focused window.</p></dd>
-<dt><code>window_put_in_grid</code> <var>grid_width</var> <var>grid_height</var> <var>cell_x</var> <var>cell_y</var></dt><dd><p>  Moves and resizes the focused windows accordingly to fit in a cell defined
-  by the <var>cell_x</var> and <var>cell_y</var> coordinates in a virtual grid with width
+<dt><code>window_put_in_grid</code> <var>grid_width</var> <var>grid_height</var> <var>cell_x</var> <var>cell_y</var> <var>cell_width</var> <var>cell_height</var></dt><dd><p>  Moves and resizes the focused windows accordingly to fit in a cell defined
+  by the <var>cell_x</var> and <var>cell_y</var> coordinates, measuring <var>cell_width</var> in width
+  and <var>cell_height</var> in height, in a virtual grid with width
   <var>grid_width</var> and height <var>grid_height</var> on the current monitor.
+  <var>cell_width</var> and <var>cell_height</var> are expressed in grid cells.
   Gaps around the windows in the grid can be added along with monitor gaps.</p></dd>
 <dt><code>window_snap</code> <var>POSITION</var></dt><dd><p>  Snap the window on the screen in a position defined by <var>POSITION</var>.</p></dd>
 <dt><code>window_cycle</code></dt><dd><p>  Cycle through mapped windows.</p></dd>
@@ -239,7 +241,7 @@ are:</p>
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>Windowchef</li>
-    <li class='tc'>February 2018</li>
+    <li class='tc'>August 2018</li>
     <li class='tr'>waitron(1)</li>
   </ol>
 
