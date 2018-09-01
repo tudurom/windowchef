@@ -329,7 +329,9 @@ fn_position(uint32_t *data, int argc, char **argv)
 		snap_pos = BOTTOM_LEFT;
 	else if (strcasecmp(pos, "bottomright") == 0)
 		snap_pos = BOTTOM_RIGHT;
-	else if (strcasecmp(pos, "middle") == 0)
+	else if (strcasecmp(pos, "middle") == 0 ||
+			strcasecmp(pos, "center") == 0 ||
+			strcasecmp(pos, "centre") == 0)
 		snap_pos = CENTER;
 	else if (strcasecmp(pos, "left") == 0)
 		snap_pos = LEFT;

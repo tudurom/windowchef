@@ -105,7 +105,9 @@ anything on <code>stdout</code>.</p>
 <dt><code>DIRECTION</code></dt><dd><p>  <code>up</code> | <code>down</code> | <code>left</code> | <code>right</code> | <code>north</code> | <code>south</code> | <code>west</code> | <code>east</code></p></dd>
 <dt><code>POINTER_ACTION</code></dt><dd><p>  <code>nothing</code> | <code>focus</code> | <code>move</code> | <code>resize_corner</code> | <code>resize_side</code></p></dd>
 <dt><code>POINTER_MODIFIER</code></dt><dd><p>  <code>alt</code> | <code>super</code></p></dd>
-<dt><code>MOUSE_BUTTON</code></dt><dd><p>  <code>any</code> | <code>none</code> | <code>left</code> | <code>middle</code> | <code>right</code></p></dd>
+<dt><code>MOUSE_BUTTON</code></dt><dd><p>  <code>any</code> | <code>none</code> | <code>left</code> | <code>middle</code> | <code>centre</code> | <code>center</code> | <code>right</code></p>
+
+<p>  <code>middle</code>, <code>centre</code>, and <code>center</code> are synonyms and have the same behaviour.</p></dd>
 </dl>
 
 
@@ -208,8 +210,10 @@ are:</p>
 <dt><code>sticky_windows</code> <var>BOOL</var></dt><dd><p>  If <var>sticky_windows</var> is true, new windows will be assigned to the last
   activated group automatically. Recommended for people who like using
   workspaces over groups.</p></dd>
-<dt><code>enable_borders</code> <var>BOOL</var></dt><dd><p>  If true, border colors will be set each time a window gets/loses focus.
-  Setting it to false is useful when using another program to draw the borders
+<dt><code>enable_borders</code> <var>BOOL</var></dt><dd><p>  If true, the border will be fully managed by the window manager. Border colors will
+  be set each time a window gets/loses focus. Setting it to false lets
+  the user manage the border of every window using external
+  tools.
   (example: <code>chwb2</code> from wmutils).</p></dd>
 <dt><code>enable_last_window_focusing</code> <var>BOOL</var></dt><dd><p>  If true, when the currently focused window is unmapped or closed, <code>windowchef</code> will focus the
   previously focused window. See the <code>window_focus_last</code> command.</p></dd>
@@ -241,7 +245,7 @@ are:</p>
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>Windowchef</li>
-    <li class='tc'>August 2018</li>
+    <li class='tc'>September 2018</li>
     <li class='tr'>waitron(1)</li>
   </ol>
 

@@ -1699,19 +1699,19 @@ get_geometry(xcb_window_t *win, int16_t *x, int16_t *y, uint16_t *width, uint16_
 static void
 set_borders(struct client *client, uint32_t color, uint32_t internal_color)
 {
-	if (client == NULL)
+	if (client == NULL || conf.borders == false)
 		return;
 	uint32_t values[1];
 	values[0] = conf.border_width;
 	xcb_configure_window(conn, client->window,
 			XCB_CONFIG_WINDOW_BORDER_WIDTH, values);
 
-	if (conf.borders == true && conf.internal_border_width == 0) {
+	if (conf.internal_border_width == 0) {
 		values[0] = color;
 		xcb_change_window_attributes(conn, client->window, XCB_CW_BORDER_PIXEL, values);
 	}
 
-	if (conf.borders == true && conf.internal_border_width != 0) {
+	if (conf.internal_border_width != 0) {
 		uint32_t calc_iborder = conf.border_width - conf.internal_border_width;
 		xcb_rectangle_t rect_inner[] = {
 			{
@@ -2344,14 +2344,18 @@ event_configure_request(xcb_generic_event_t *ev)
 					XCB_CONFIG_WINDOW_STACK_MODE, values);
 		}
 
+		if (e->value_mask & XCB_CONFIG_WINDOW_BORDER_WIDTH) {
+			values[0] = e->border_width;
+			xcb_configure_window(conn, e->window,
+					XCB_CONFIG_WINDOW_BORDER_WIDTH, values);
+		}
+
 		if (!client->maxed) {
 			fit_on_screen(client);
 		}
 
 		teleport_window(client->window, client->geom.x, client->geom.y);
 		resize_window_absolute(client->window, client->geom.width, client->geom.height);
-		if (!client->maxed)
-			set_borders(client, conf.focus_color, conf.internal_focus_color);
 	} else {
 		if (e->value_mask & XCB_CONFIG_WINDOW_X) {
 			values[i] = e->x;
@@ -2380,6 +2384,11 @@ event_configure_request(xcb_generic_event_t *ev)
 
 		if (e->value_mask & XCB_CONFIG_WINDOW_STACK_MODE) {
 			values[i] = e->stack_mode;
+			i++;
+		}
+
+		if (e->value_mask & XCB_CONFIG_WINDOW_BORDER_WIDTH) {
+			values[i] = e->border_width;
 			i++;
 		}
 

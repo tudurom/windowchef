@@ -17,6 +17,7 @@
  * when snapping or vertically/horizontally maximizing window */
 #define GAP 0
 
+/* gap between windows when laid in grid */
 #define GRID_GAP 0
 
 /* where to place the cursor when moving/resizing the window */

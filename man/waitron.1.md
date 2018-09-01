@@ -39,7 +39,9 @@ anything on `stdout`.
 	`alt` | `super`
 
 * `MOUSE_BUTTON`:
-	`any` | `none` | `left` | `middle` | `right`
+	`any` | `none` | `left` | `middle` | `centre` | `center` | `right`
+
+	`middle`, `centre`, and `center` are synonyms and have the same behaviour.
 
 ## COMMANDS
 
@@ -215,8 +217,10 @@ are:
 	workspaces over groups.
 
 * `enable_borders` <BOOL>:
-	If true, border colors will be set each time a window gets/loses focus.
-	Setting it to false is useful when using another program to draw the borders
+	If true, the border will be fully managed by the window manager. Border colors will
+	be set each time a window gets/loses focus. Setting it to false lets
+	the user manage the border of every window using external
+	tools.
 	(example: `chwb2` from wmutils).
 
 * `enable_last_window_focusing` <BOOL>:
