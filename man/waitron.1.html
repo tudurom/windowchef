@@ -175,10 +175,21 @@ X properties of the root window. Example:</p>
 <pre><code>xprop -root WINDOWCHEF_ACTIVE_GROUPS
 </code></pre>
 
+<p>Information about the current state of each managed window is made available
+through X properties of the window. Example:</p>
+
+<pre><code>xprop -id 0x02c00009 WINDOWCHEF_STATUS
+</code></pre>
+
 <p>Here is a list of exposed properties:</p>
 
 <dl>
-<dt><code>WINDOWCHEF_ACTIVE_GROUPS</code></dt><dd>  An integer list of currently active groups.</dd>
+<dt><code>WINDOWCHEF_ACTIVE_GROUPS</code></dt><dd>  On the root window. An integer list of currently active groups.</dd>
+<dt><code>WINDOWCHEF_STATUS</code></dt><dd>  On each managed window. Contains information about the window.
+  Notable properties:
+  <code>group</code> is -1 if the window is not in a group.
+  <code>state</code> can have one of the following values: <code>normal</code>, <code>maxed</code>, <code>vmaxed</code>,
+  <code>hmaxed</code>, <code>monocled</code>.</dd>
 </dl>
 
 

@@ -192,11 +192,28 @@ xprop \-root WINDOWCHEF_ACTIVE_GROUPS
 .IP "" 0
 .
 .P
+Information about the current state of each managed window is made available through X properties of the window\. Example:
+.
+.IP "" 4
+.
+.nf
+
+xprop \-id 0x02c00009 WINDOWCHEF_STATUS
+.
+.fi
+.
+.IP "" 0
+.
+.P
 Here is a list of exposed properties:
 .
 .TP
 \fBWINDOWCHEF_ACTIVE_GROUPS\fR
-An integer list of currently active groups\.
+On the root window\. An integer list of currently active groups\.
+.
+.TP
+\fBWINDOWCHEF_STATUS\fR
+On each managed window\. Contains information about the window\. Notable properties: \fBgroup\fR is \-1 if the window is not in a group\. \fBstate\fR can have one of the following values: \fBnormal\fR, \fBmaxed\fR, \fBvmaxed\fR, \fBhmaxed\fR, \fBmonocled\fR\.
 .
 .SH "CONFIGURING"
 Configuring is done using the \fBwm_config\fR command\. Possible configuration keys are:

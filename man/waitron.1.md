@@ -162,10 +162,23 @@ X properties of the root window. Example:
 xprop -root WINDOWCHEF_ACTIVE_GROUPS
 ```
 
+Information about the current state of each managed window is made available
+through X properties of the window. Example:
+
+```
+xprop -id 0x02c00009 WINDOWCHEF_STATUS
+```
+
 Here is a list of exposed properties:
 
 * `WINDOWCHEF_ACTIVE_GROUPS`:
-	An integer list of currently active groups.
+	On the root window. An integer list of currently active groups.
+* `WINDOWCHEF_STATUS`:
+	On each managed window. Contains information about the window.
+	Notable properties:
+	`group` is -1 if the window is not in a group.
+	`state` can have one of the following values: `normal`, `maxed`, `vmaxed`,
+	`hmaxed`, `monocled`.
 
 ## CONFIGURING
 
