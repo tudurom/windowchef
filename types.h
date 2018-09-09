@@ -1,8 +1,8 @@
 /* Copyright (c) 2016, 2017 Tudor Ioan Roman. All rights reserved. */
 /* Licensed under the ISC License. See the LICENSE file in the project root for full license information. */
 
-#ifndef _TYPES_H
-#define _TYPES_H
+#ifndef WM_TYPES_H
+#define WM_TYPES_H
 
 #include <xcb/randr.h>
 #include <stdbool.h>

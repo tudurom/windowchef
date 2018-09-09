@@ -5,7 +5,7 @@ NAME_DEFINES = -D__NAME__=\"$(__NAME__)\"                 \
 			   -D__THIS_VERSION__=\"$(__THIS_VERSION__)\" \
 			   -D__CONFIG_NAME__=\"$(__CONFIG_NAME__)\"   \
 
-SRC = list.c wm.c client.c
+SRC = helpers.c wm.c client.c
 OBJ = $(SRC:.c=.o)
 BIN = $(__NAME__) $(__NAME_CLIENT__)
 CFLAGS += $(NAME_DEFINES)
@@ -15,7 +15,7 @@ all: $(BIN)
 debug: CFLAGS += -O0 -g -DD
 debug: $(__NAME__) $(__NAME_CLIENT__)
 
-$(__NAME__): wm.o list.o
+$(__NAME__): wm.o helpers.o
 	@echo $@
 	@$(CC) -o $@ $^ $(LDFLAGS)
 
@@ -27,7 +27,7 @@ $(__NAME_CLIENT__): client.o
 	@echo $@
 	@$(CC) -o $@ -c $(CFLAGS) $<
 
-$(OBJ): common.h list.h ipc.h types.h config.h
+$(OBJ): common.h helpers.h ipc.h types.h config.h
 
 install: all
 	mkdir -p "$(DESTDIR)$(PREFIX)/bin"

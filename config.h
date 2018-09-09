@@ -1,8 +1,8 @@
 /* Copyright (c) 2016, 2017 Tudor Ioan Roman. All rights reserved. */
 /* Licensed under the ISC License. See the LICENSE file in the project root for full license information. */
 
-#ifndef _CONFIG_H
-#define _CONFIG_H
+#ifndef WM_CONFIG_H
+#define WM_CONFIG_H
 
 #define BORDER_WIDTH 5
 #define INTERNAL_BORDER_WIDTH 0

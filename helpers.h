@@ -1,10 +1,14 @@
-/* Copyright (c) 2016, 2017 Tudor Ioan Roman. All rights reserved. */
+/* Copyright (c) 2016-2018 Tudor Ioan Roman. All rights reserved. */
 /* Licensed under the ISC License. See the LICENSE file in the project root for full license information. */
 
-#ifndef _LIST_H
-#define _LIST_H
+#ifndef WCHF_HELPERS_H
+#define WCHF_HELPERS_H
 
 #include <stdbool.h>
+#include <stdarg.h>
+
+int asprintf(char **, const char *, ...);
+int vasprintf(char **, const char *, va_list);
 
 struct list_item {
 	void *data;

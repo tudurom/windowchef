@@ -24,7 +24,7 @@
 #include "common.h"
 #include "config.h"
 #include "ipc.h"
-#include "list.h"
+#include "helpers.h"
 #include "types.h"
 
 #define EVENT_MASK(ev) (((ev) & ~0x80))
@@ -34,7 +34,7 @@
 #define PI 3.14159265
 
 /* atoms identifiers */
-enum { WM_DELETE_WINDOW, WINDOWCHEF_ACTIVE_GROUPS, _IPC_ATOM_COMMAND, NR_ATOMS };
+enum { WM_DELETE_WINDOW, WINDOWCHEF_ACTIVE_GROUPS, _IPC_ATOM_COMMAND, WINDOWCHEF_STATUS, NR_ATOMS };
 
 /* button identifiers */
 enum { BUTTON_LEFT, BUTTON_MIDDLE, BUTTON_RIGHT, NR_BUTTONS };
@@ -68,6 +68,7 @@ static char *atom_names[NR_ATOMS] = {
 	"WM_DELETE_WINDOW",
 	"WINDOWCHEF_ACTIVE_GROUPS",
 	ATOM_COMMAND,
+	"WINDOWCHEF_STATUS",
 };
 static xcb_atom_t ATOMS[NR_ATOMS];
 /* function handlers for ipc commands */
@@ -131,6 +132,7 @@ static void add_to_client_list(xcb_window_t);
 static void update_client_list(void);
 static void update_wm_desktop(struct client *);
 static void update_current_desktop(struct client *);
+static void update_window_status(struct client *);
 
 static void group_add_window(struct client *, uint32_t);
 static void group_remove_window(struct client *);
@@ -429,7 +431,7 @@ get_outputs(xcb_randr_output_t *outputs, int len, xcb_timestamp_t timestamp)
 
 					if (client->monitor == mon) {
 						if (client->monitor->item->next)
-							// If at end, take from the beginning
+							/* If at end, take from the beginning */
 							if (mon_list == NULL)
 								client->monitor = NULL;
 							else
@@ -724,6 +726,7 @@ setup_window(xcb_window_t win)
 		client->height_inc = hints.height_inc;
 	}
 
+	update_window_status(client);
 	DMSG("new window was born 0x%08x\n", client->window);
 
 	return client;
@@ -896,6 +899,7 @@ teleport_window(xcb_window_t win, int16_t x, int16_t y)
 		return;
 
 	xcb_configure_window(conn, win, XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y, values);
+	update_window_status(find_client(&win));
 
 	xcb_flush(conn);
 }
@@ -936,8 +940,8 @@ resize_window_absolute(xcb_window_t win, uint16_t w, uint16_t h)
 	val[1] = h;
 
 	xcb_configure_window(conn, win, mask, val);
+	update_window_status(find_client(&win));
 	refresh_borders();
-
 }
 
 /*
@@ -1087,6 +1091,7 @@ maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mo
 	set_focused_no_raise(client);
 
 	update_ewmh_wm_state(client);
+	update_window_status(client);
 }
 
 static void
@@ -1108,6 +1113,7 @@ hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width)
 	client->hmaxed = true;
 
 	update_ewmh_wm_state(client);
+	update_window_status(client);
 }
 
 static void
@@ -1130,6 +1136,7 @@ vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height)
 	client->vmaxed = true;
 
 	update_ewmh_wm_state(client);
+	update_window_status(client);
 }
 
 static void
@@ -1155,6 +1162,7 @@ monocle_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mon
 	set_focused_no_raise(client);
 
 	update_ewmh_wm_state(client);
+	update_window_status(client);
 }
 
 static void
@@ -1177,6 +1185,7 @@ unmaximize_window(struct client *client)
 
 	xcb_change_property(conn, XCB_PROP_MODE_REPLACE, client->window,
 			ewmh->_NET_WM_STATE, ewmh->_NET_WM_STATE, 32, 2, state);
+	update_window_status(client);
 }
 
 static bool
@@ -1902,6 +1911,54 @@ update_current_desktop(struct client *client)
 		xcb_ewmh_set_current_desktop(ewmh, 0, client->group);
 }
 
+static void update_window_status(struct client *client)
+{
+	/* it really shouldn't happen */
+	if (client == NULL)
+		return;
+	int size = 0;
+	char *str = NULL;
+	char *state;
+	if (client->maxed) state = "maxed";
+	else if (client->hmaxed) state = "hmaxed";
+	else if (client->vmaxed) state = "vmaxed";
+	else if (client->monocled) state = "monocled";
+	else state = "normal";
+	/* this is going to be fun */
+#define _BOOL_VALUE(value) ((value) ? "true" : "false")
+	size = asprintf(&str,
+	"{"
+		"\"window\":\"0x%08x\","
+		"\"geom\":{"
+			"\"x\":%d,"
+			"\"y\":%d,"
+			"\"width\":%d,"
+			"\"height\":%d,"
+			"\"set_by_user\":%s"
+		"},"
+		"\"state\":\"%s\","
+		"\"min_width\":%d,"
+		"\"min_height\":%d,"
+		"\"max_width\":%d,"
+		"\"max_height\":%d,"
+		"\"width_inc\":%d,"
+		"\"height_inc\":%d,"
+		"\"mapped\":%s,"
+		"\"group\":%d"
+	"}", client->window, client->geom.x, client->geom.y, client->geom.width,
+	client->geom.height, _BOOL_VALUE(client->geom.set_by_user), state,
+	client->min_width, client->min_height, client->max_width, client->max_height,
+	client->width_inc, client->height_inc, _BOOL_VALUE(client->mapped), client->group);
+#undef _BOOL_VALUE
+	if (size == -1) {
+		DMSG("asprintf returned -1\n");
+		return;
+	}
+	xcb_change_property(conn, XCB_PROP_MODE_REPLACE, client->window,
+			ATOMS[WINDOWCHEF_STATUS], XCB_ATOM_STRING, 8, size, str);
+	free(str);
+}
+
 static void
 group_add_window(struct client *client, uint32_t group)
 {
@@ -1911,6 +1968,7 @@ group_add_window(struct client *client, uint32_t group)
 		update_wm_desktop(client);
 		update_group_list();
 		update_current_desktop(client);
+		update_window_status(client);
 	}
 }
 
@@ -1922,6 +1980,7 @@ group_remove_window(struct client *client)
 		update_wm_desktop(client);
 		update_group_list();
 		update_current_desktop(client);
+		update_window_status(client);
 	}
 }
 
@@ -2515,6 +2574,7 @@ event_map_notify(xcb_generic_event_t *ev)
 	if (client != NULL) {
 		client->mapped = true;
 		set_focused(client);
+		update_window_status(client);
 	}
 }
 
@@ -2540,6 +2600,7 @@ event_unmap_notify(xcb_generic_event_t *ev)
 	}
 
 	update_client_list();
+	update_window_status(client);
 }
 
 /*

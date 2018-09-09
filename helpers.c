@@ -1,9 +1,44 @@
-/* Copyright (c) 2016, 2017 Tudor Ioan Roman. All rights reserved. */
+/* Copyright (c) 2016-2018 Tudor Ioan Roman. All rights reserved. */
 /* Licensed under the ISC License. See the LICENSE file in the project root for full license information. */
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
 
-#include "list.h"
+#include "helpers.h"
+
+int
+asprintf(char **buf, const char *fmt, ...)
+{
+	int size = 0;
+	va_list args;
+	va_start(args, fmt);
+	size = vasprintf(buf, fmt, args);
+	va_end(args);
+	return size;
+}
+
+int
+vasprintf(char **buf, const char *fmt, va_list args)
+{
+	va_list tmp;
+	va_copy(tmp, args);
+	int size = vsnprintf(NULL, 0, fmt, tmp);
+	va_end(tmp);
+
+	if (size < 0) {
+		return -1;
+	}
+
+	*buf = malloc(size + 1);
+
+	if (*buf == NULL) {
+		return -1;
+	}
+
+	size = vsprintf(*buf, fmt, args);
+	return size;
+}
 
 /*
  * Move list item to the beginning (head) of the list.
