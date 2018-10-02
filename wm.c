@@ -1344,7 +1344,6 @@ cardinal_focus(uint32_t dir)
 	struct win_position focus_win_pos = get_window_position(CENTER, focused_win);
 
 	float closest_distance = -1;
-	float closest_angle = -360;
 
 	win = win_list;
 
@@ -1429,7 +1428,6 @@ cardinal_focus(uint32_t dir)
 
 		if (closest_distance == -1 || (cur_distance < closest_distance)) {
 			closest_distance = cur_distance;
-			closest_angle = cur_angle;
 			desired_window = win;
 		}
 
@@ -3186,6 +3184,7 @@ ipc_wm_config(uint32_t *d)
 		break;
 	case IPCConfigGridGapWidth:
 		conf.grid_gap = d[1];
+		break;
 	case IPCConfigCursorPosition:
 		conf.cursor_position = d[1];
 		break;
@@ -3197,6 +3196,7 @@ ipc_wm_config(uint32_t *d)
 		break;
 	case IPCConfigEnableResizeHints:
 		conf.resize_hints = d[1];
+		break;
 	case IPCConfigStickyWindows:
 		conf.sticky_windows = d[1];
 		break;
