@@ -76,6 +76,7 @@ struct client {
 	uint16_t width_inc, height_inc;
 	bool mapped;
 	uint32_t group;
+	uint8_t depth;
 };
 
 struct monitor {

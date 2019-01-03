@@ -123,7 +123,7 @@ static void update_desktop_viewport(void);
 static bool get_pointer_location(xcb_window_t *, int16_t *, int16_t *);
 static void center_pointer(struct client *);
 static struct client * find_client(xcb_window_t *);
-static bool get_geometry(xcb_window_t *, int16_t *, int16_t *, uint16_t *, uint16_t *);
+static bool get_geometry(xcb_window_t *, int16_t *, int16_t *, uint16_t *, uint16_t *, uint8_t *);
 static void set_borders(struct client *client, uint32_t, uint32_t);
 static bool is_mapped(xcb_window_t);
 static void free_window(struct client *);
@@ -707,7 +707,7 @@ setup_window(xcb_window_t win)
 	client->mapped  = false;
 	client->group   = NULL_GROUP;
 	get_geometry(&client->window, &client->geom.x, &client->geom.y,
-			&client->geom.width, &client->geom.height);
+			&client->geom.width, &client->geom.height, &client->depth);
 
 	xcb_icccm_get_wm_normal_hints_reply(conn,
 			xcb_icccm_get_wm_normal_hints_unchecked(conn, win),
@@ -917,7 +917,7 @@ move_window(xcb_window_t win, int16_t x, int16_t y)
 	if (!is_mapped(win) || win == scr->root)
 		return;
 
-	get_geometry(&win, &win_x, &win_y, &win_w, &win_h);
+	get_geometry(&win, &win_x, &win_y, &win_w, &win_h, NULL);
 
 	win_x += x;
 	win_y += y;
@@ -1680,7 +1680,7 @@ find_client(xcb_window_t *win)
  */
 
 static bool
-get_geometry(xcb_window_t *win, int16_t *x, int16_t *y, uint16_t *width, uint16_t *height)
+get_geometry(xcb_window_t *win, int16_t *x, int16_t *y, uint16_t *width, uint16_t *height, uint8_t *depth)
 {
 	xcb_get_geometry_reply_t *reply = xcb_get_geometry_reply(conn, xcb_get_geometry(conn, *win), NULL);
 
@@ -1694,6 +1694,8 @@ get_geometry(xcb_window_t *win, int16_t *x, int16_t *y, uint16_t *width, uint16_
 		*width = reply->width;
 	if (height != NULL)
 		*height = reply->height;
+	if (depth != NULL)
+		*depth = reply->depth;
 
 	free(reply);
 	return true;
@@ -1784,7 +1786,7 @@ set_borders(struct client *client, uint32_t color, uint32_t internal_color)
 		};
 
 		xcb_pixmap_t pmap = xcb_generate_id(conn);
-		xcb_create_pixmap(conn, scr->root_depth, pmap, scr->root,
+		xcb_create_pixmap(conn, client->depth, pmap, scr->root,
 			client->geom.width + (conf.border_width * 2),
 			client->geom.height + (conf.border_width * 2)
 		);
