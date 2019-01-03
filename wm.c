@@ -3620,11 +3620,14 @@ load_defaults(void)
 static void
 load_config(char *config_path)
 {
-	if (fork() == 0) {
+	int f = fork();
+	if (f == 0) {
 		setsid();
 		DMSG("loading %s\n", config_path);
 		execl(config_path, config_path, NULL);
-		errx(EXIT_FAILURE, "couldn't load config file");
+		err(EXIT_FAILURE, "couldn't load config file");
+	} else if (f == -1) {
+		err(EXIT_FAILURE, NULL);
 	}
 }
 
