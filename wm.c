@@ -2670,7 +2670,7 @@ event_client_message(xcb_generic_event_t *ev)
 		ipc_command = data[0];
 		if (ipc_handlers[ipc_command] != NULL)
 			(ipc_handlers[ipc_command])(data + 1);
-		DMSG("IPC Command %u with arguments %u %u %u\n", data[1], data[2], data[3], data[4]);
+		DMSG("IPC Command %u with arguments %u %u %u\n", ipc_command, data[1], data[2], data[3]);
 	} else {
 		client = find_client(&e->window);
 		if (client == NULL)
