@@ -64,6 +64,8 @@ static struct Command c[] = {
 	{ "window_monocle"            , IPCWindowMonocle         ,  0 , NULL        } ,
 	{ "window_close"              , IPCWindowClose           ,  0 , NULL        } ,
 	{ "window_put_in_grid"        , IPCWindowPutInGrid       ,  6 , fn_hack     } ,
+	{ "window_move_in_grid"       , IPCWindowMoveInGrid      ,  2 , fn_offset   } ,
+	{ "window_resize_in_grid"     , IPCWindowResizeInGrid    ,  2 , fn_offset   } ,
 	{ "window_snap"               , IPCWindowSnap            ,  1 , fn_position } ,
 	{ "window_cycle"              , IPCWindowCycle           ,  0 , NULL        } ,
 	{ "window_rev_cycle"          , IPCWindowRevCycle        ,  0 , NULL        } ,

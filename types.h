@@ -63,11 +63,18 @@ struct window_geom {
 	bool set_by_user;
 };
 
+struct grid {
+	int16_t gx, gy;
+	int16_t px, py;
+	int16_t sx, sy;
+};
+
 struct client {
 	xcb_window_t window;
 	struct window_geom geom;
 	struct window_geom orig_geom;
-	bool maxed, hmaxed, vmaxed, monocled;
+	struct grid grid;
+	bool maxed, hmaxed, vmaxed, monocled, gridded;
 	struct list_item *item;
 	struct list_item *focus_item;
 	struct monitor *monitor;
