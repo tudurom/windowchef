@@ -117,7 +117,6 @@ static struct win_position get_window_position(uint32_t, struct client *);
 static bool is_overlapping(struct client *, struct client *);
 static bool is_in_valid_direction(uint32_t, float, float);
 static bool is_in_cardinal_direction(uint32_t , struct client *, struct client *);
-static void save_original_size(struct client *);
 static xcb_atom_t get_atom(char *);
 static void update_desktop_viewport(void);
 static bool get_pointer_location(xcb_window_t *, int16_t *, int16_t *);
@@ -1077,7 +1076,7 @@ maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mo
 	/* maximized windows don't have borders */
 	values[0] = 0;
 	if (client->geom.width != mon_width || client->geom.height != mon_height)
-		save_original_size(client);
+		client->orig_geom = client->geom;
 	xcb_configure_window(conn, client->window, XCB_CONFIG_WINDOW_BORDER_WIDTH,
 			values);
 
@@ -1104,7 +1103,7 @@ hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width)
 		unmaximize_window(client);
 
 	if (client->geom.width != mon_width)
-		save_original_size(client);
+		client->orig_geom = client->geom;
 	client->geom.x = mon_x + conf.gap_left;
 	client->geom.width = mon_width - conf.gap_left - conf.gap_right - 2 * conf.border_width;
 
@@ -1126,7 +1125,7 @@ vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height)
 		unmaximize_window(client);
 
 	if (client->geom.height != mon_height)
-		save_original_size(client);
+		client->orig_geom = client->geom;
 
 	client->geom.y = mon_y + conf.gap_up;
 	client->geom.height = mon_height - conf.gap_up - conf.gap_down - 2 * conf.border_width;
@@ -1148,7 +1147,7 @@ monocle_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mon
 	if (is_maxed(client))
 		unmaximize_window(client);
 
-	save_original_size(client);
+	client->orig_geom = client->geom;
 
 	client->geom.x = mon_x + conf.gap_left;
 	client->geom.y = mon_y + conf.gap_up;
@@ -1563,15 +1562,6 @@ get_distance_between_windows(struct client *a, struct client *b)
 
 	float distance = hypot((float)(b_pos.x - a_pos.x), (float)(b_pos.y - a_pos.y));
 	return distance;
-}
-
-static void
-save_original_size(struct client *client)
-{
-	client->orig_geom.x = client->geom.x;
-	client->orig_geom.y = client->geom.y;
-	client->orig_geom.width = client->geom.width;
-	client->orig_geom.height = client->geom.height;
 }
 
 /*
@@ -2670,7 +2660,7 @@ event_client_message(xcb_generic_event_t *ev)
 		ipc_command = data[0];
 		if (ipc_handlers[ipc_command] != NULL)
 			(ipc_handlers[ipc_command])(data + 1);
-		DMSG("IPC Command %u with arguments %u %u %u\n", data[1], data[2], data[3], data[4]);
+		DMSG("IPC Command %u with arguments %u %u %u\n", ipc_command, data[1], data[2], data[3]);
 	} else {
 		client = find_client(&e->window);
 		if (client == NULL)
