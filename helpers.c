@@ -102,6 +102,9 @@ list_delete_item(struct list_item **list, struct list_item *item)
 
 	if (*list == item) {
 		*list = item->next;
+		if (*list != NULL) {
+			(*list)->prev = NULL;
+		}
 	} else {
 		item->prev->next = item->next;
 		if (item->next != NULL)
