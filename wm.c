@@ -1,4 +1,4 @@
-/* Copyright (c) 2016, 2017 Tudor Ioan Roman. All rights reserved. */
+/* Copyright (c) 2016-2019 Tudor Ioan Roman. All rights reserved. */
 /* Licensed under the ISC License. See the LICENSE file in the project root for full license information. */
 
 #include <xcb/randr.h>
@@ -3573,7 +3573,7 @@ usage(char *name)
 static void version(void)
 {
 	fprintf(stderr, "%s %s\n", __NAME__, __THIS_VERSION__);
-	fprintf(stderr, "Copyright (c) 2016-2017 Tudor Ioan Roman\n");
+	fprintf(stderr, "Copyright (c) 2016-2019 Tudor Ioan Roman\n");
 	fprintf(stderr, "Released under the ISC License\n");
 
 	exit(EXIT_SUCCESS);
