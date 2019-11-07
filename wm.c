@@ -2961,9 +2961,10 @@ ipc_window_unmaximize(uint32_t *d)
 	if (focused_win == NULL)
 		return;
 
-	unmaximize_window(focused_win);
-
-	set_focused(focused_win);
+	if (is_special(focused_win)) {
+		reset_window(focused_win);
+		set_focused(focused_win);
+	}
 
 	xcb_flush(conn);
 }
