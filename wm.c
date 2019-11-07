@@ -2781,7 +2781,7 @@ ipc_window_move(uint32_t *d)
 
 	x = d[2];
 	y = d[3];
-if (d[0])
+	if (d[0])
 		x = -x;
 	if (d[1])
 		y = -y;
