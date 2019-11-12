@@ -2324,6 +2324,8 @@ grid_window(struct client *client, uint16_t grid_width, uint16_t grid_height, ui
 
 	new_h = base_h * occ_h + (occ_h - 1) * (conf.grid_gap + 2 * conf.border_width);
 
+	client->orig_geom = client->geom;
+
 	client->geom.width = new_w;
 	client->geom.height = new_h;
 
