@@ -104,8 +104,8 @@ static void maximize_window(struct client *, int16_t, int16_t, uint16_t, uint16_
 static void hmaximize_window(struct client *, int16_t, uint16_t);
 static void vmaximize_window(struct client *, int16_t, uint16_t);
 static void monocle_window(struct client *, int16_t, int16_t, uint16_t, uint16_t);
-static void unmaximize_window(struct client *);
-static bool is_maxed(struct client *);
+static void reset_window(struct client *);
+static bool is_special(struct client *);
 static void cycle_window(struct client *);
 static void rcycle_window(struct client *);
 static void cycle_window_in_group(struct client *);
@@ -149,6 +149,8 @@ static void handle_wm_state(struct client *, xcb_atom_t, unsigned int);
 
 static void snap_window(struct client *, enum position);
 static void grid_window(struct client *, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t, uint16_t);
+static void move_grid_window(struct client *, uint16_t, uint16_t);
+static void resize_grid_window(struct client *, uint16_t, uint16_t);
 
 static void register_event_handlers(void);
 static void event_configure_request(xcb_generic_event_t *);
@@ -176,6 +178,8 @@ static void ipc_window_ver_maximize(uint32_t *);
 static void ipc_window_monocle(uint32_t *);
 static void ipc_window_close(uint32_t *);
 static void ipc_window_put_in_grid(uint32_t *);
+static void ipc_window_move_in_grid(uint32_t *);
+static void ipc_window_resize_in_grid(uint32_t *);
 static void ipc_window_snap(uint32_t *);
 static void ipc_window_cycle(uint32_t *);
 static void ipc_window_rev_cycle(uint32_t *);
@@ -699,9 +703,11 @@ setup_window(xcb_window_t win)
 	client->geom.x = client->geom.y = client->geom.width
 				   = client->geom.height
 				   = client->min_width = client->min_height = 0;
+	client->grid.gx = client->grid.gy = client->grid.px
+		= client->grid.py = client->grid.sx = client->grid.sy = 0;
 	client->width_inc = client->height_inc = 1;
 	client->maxed  = client->hmaxed = client->vmaxed
-		= client->monocled = client->geom.set_by_user = false;
+		= client->monocled = client->gridded = client->geom.set_by_user = false;
 	client->monitor = NULL;
 	client->mapped  = false;
 	client->group   = NULL_GROUP;
@@ -1068,8 +1074,8 @@ maximize_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mo
 	if (client == NULL)
 		return;
 
-	if (is_maxed(client))
-		unmaximize_window(client);
+	if (is_special(client))
+		reset_window(client);
 
 	client->maxed = true;
 
@@ -1099,8 +1105,8 @@ hmaximize_window(struct client *client, int16_t mon_x, uint16_t mon_width)
 	if (client == NULL)
 		return;
 
-	if (is_maxed(client))
-		unmaximize_window(client);
+	if (is_special(client))
+		reset_window(client);
 
 	if (client->geom.width != mon_width)
 		client->orig_geom = client->geom;
@@ -1121,8 +1127,8 @@ vmaximize_window(struct client *client, int16_t mon_y, uint16_t mon_height)
 	if (client == NULL)
 		return;
 
-	if (is_maxed(client))
-		unmaximize_window(client);
+	if (is_special(client))
+		reset_window(client);
 
 	if (client->geom.height != mon_height)
 		client->orig_geom = client->geom;
@@ -1144,8 +1150,8 @@ monocle_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mon
 	if (client == NULL)
 		return;
 
-	if (is_maxed(client))
-		unmaximize_window(client);
+	if (is_special(client))
+		reset_window(client);
 
 	client->orig_geom = client->geom;
 
@@ -1165,7 +1171,7 @@ monocle_window(struct client *client, int16_t mon_x, int16_t mon_y, uint16_t mon
 }
 
 static void
-unmaximize_window(struct client *client)
+reset_window(struct client *client)
 {
 	xcb_atom_t state[] = {
 		XCB_ICCCM_WM_STATE_NORMAL,
@@ -1176,7 +1182,7 @@ unmaximize_window(struct client *client)
 	client->geom.width = client->orig_geom.width;
 	client->geom.height = client->orig_geom.height;
 	client->maxed = client->hmaxed
-		= client->vmaxed = client->monocled = false;
+		= client->vmaxed = client->monocled = client->gridded = false;
 
 	teleport_window(client->window, client->geom.x, client->geom.y);
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
@@ -1188,7 +1194,7 @@ unmaximize_window(struct client *client)
 }
 
 static bool
-is_maxed(struct client *client)
+is_special(struct client *client)
 {
 	if (client == NULL)
 		return false;
@@ -1196,7 +1202,8 @@ is_maxed(struct client *client)
 	return client->maxed
 		|| client->vmaxed
 		|| client->hmaxed
-		|| client->monocled;
+		|| client->monocled
+		|| client->gridded;
 }
 
 static void
@@ -1913,6 +1920,7 @@ static void update_window_status(struct client *client)
 	else if (client->hmaxed) state = "hmaxed";
 	else if (client->vmaxed) state = "vmaxed";
 	else if (client->monocled) state = "monocled";
+	else if (client->gridded) state = "gridded";
 	else state = "normal";
 	/* this is going to be fun */
 #define _BOOL_VALUE(value) ((value) ? "true" : "false")
@@ -2182,11 +2190,11 @@ handle_wm_state(struct client *client, xcb_atom_t state, unsigned int action)
 		if (action == XCB_EWMH_WM_STATE_ADD) {
 			maximize_window(client, mon_x, mon_y, mon_w, mon_h);
 		} else if (action == XCB_EWMH_WM_STATE_REMOVE && client->maxed) {
-			unmaximize_window(client);
+			reset_window(client);
 			set_focused(client);
 		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
 			if (client->maxed) {
-				unmaximize_window(client);
+				reset_window(client);
 				set_focused(client);
 			} else {
 				maximize_window(client, mon_x, mon_y, mon_w, mon_h);
@@ -2197,10 +2205,10 @@ handle_wm_state(struct client *client, xcb_atom_t state, unsigned int action)
 			vmaximize_window(client, mon_y, mon_h);
 		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
 			if (client->vmaxed)
-				unmaximize_window(client);
+				reset_window(client);
 		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
 			if (client->vmaxed)
-				unmaximize_window(client);
+				reset_window(client);
 			else
 				vmaximize_window(client, mon_y, mon_h);
 		}
@@ -2209,10 +2217,10 @@ handle_wm_state(struct client *client, xcb_atom_t state, unsigned int action)
 			hmaximize_window(client, mon_y, mon_h);
 		} else if (action == XCB_EWMH_WM_STATE_REMOVE) {
 			if (client->hmaxed)
-				unmaximize_window(client);
+				reset_window(client);
 		} else if (action == XCB_EWMH_WM_STATE_TOGGLE) {
 			if (client->hmaxed)
-				unmaximize_window(client);
+				reset_window(client);
 			else
 				hmaximize_window(client, mon_x, mon_w);
 		}
@@ -2232,8 +2240,8 @@ snap_window(struct client *client, enum position pos)
 	if (client == NULL)
 		return;
 
-	if (is_maxed(client)) {
-		unmaximize_window(client);
+	if (is_special(client)) {
+		reset_window(client);
 		set_focused(client);
 	}
 
@@ -2300,8 +2308,8 @@ grid_window(struct client *client, uint16_t grid_width, uint16_t grid_height, ui
 		return;
 
 	DMSG("Gridding window in grid of size (%d, %d) pos (%d, %d) window size (%d, %d)\n", grid_width, grid_height, grid_x, grid_y, occ_w, occ_h);
-	if (is_maxed(client)) {
-		unmaximize_window(client);
+	if (is_special(client)) {
+		reset_window(client);
 		set_focused(client);
 	}
 
@@ -2324,12 +2332,58 @@ grid_window(struct client *client, uint16_t grid_width, uint16_t grid_height, ui
 	client->geom.y = mon_y + conf.gap_up + grid_y
 		* (conf.border_width + base_h + conf.border_width + conf.grid_gap);
 
+	client->gridded = true;
+	client->grid.gx = grid_width;
+	client->grid.gy = grid_height;
+	client->grid.px = grid_x;
+	client->grid.py = grid_y;
+	client->grid.sx = occ_w;
+	client->grid.sy = occ_h;
+
 	DMSG("w: %d\th: %d\n", new_w, new_h);
 
 	teleport_window(client->window, client->geom.x, client->geom.y);
 	resize_window_absolute(client->window, client->geom.width, client->geom.height);
 
 	xcb_flush(conn);
+}
+
+static void
+move_grid_window(struct client *client, uint16_t x, uint16_t y)
+{
+
+	int16_t new_px, new_py;
+
+	new_px = client->grid.px + x;
+	new_py = client->grid.py + y;
+
+	if (!client->gridded
+			|| client->grid.gx < new_px + client->grid.sx
+			|| client->grid.gy < new_py + client->grid.sy
+			|| new_px < 0
+			|| new_py < 0)
+		return;
+
+	grid_window(client, client->grid.gx, client->grid.gy, new_px, new_py, client->grid.sx, client->grid.sy);
+}
+
+static void
+resize_grid_window(struct client *client, uint16_t x, uint16_t y)
+{
+
+	int16_t new_sx, new_sy;
+
+	new_sx = client->grid.sx + x;
+	new_sy = client->grid.sy + y;
+
+	if (!client->gridded
+			|| client->grid.gx < new_sx + client->grid.px
+			|| client->grid.gy < new_sy + client->grid.py
+			|| new_sx < 1
+			|| new_sy < 1)
+		return;
+
+	grid_window(client, client->grid.gx, client->grid.gy, client->grid.px, client->grid.py, new_sx, new_sy);
 }
 
 /*
@@ -2747,6 +2801,8 @@ register_ipc_handlers(void)
 	ipc_handlers[IPCWindowMonocle]         = ipc_window_monocle;
 	ipc_handlers[IPCWindowClose]           = ipc_window_close;
 	ipc_handlers[IPCWindowPutInGrid]       = ipc_window_put_in_grid;
+	ipc_handlers[IPCWindowMoveInGrid]      = ipc_window_move_in_grid;
+	ipc_handlers[IPCWindowResizeInGrid]    = ipc_window_resize_in_grid;
 	ipc_handlers[IPCWindowSnap]            = ipc_window_snap;
 	ipc_handlers[IPCWindowCycle]           = ipc_window_cycle;
 	ipc_handlers[IPCWindowRevCycle]        = ipc_window_rev_cycle;
@@ -2774,14 +2830,14 @@ ipc_window_move(uint32_t *d)
 	if (focused_win == NULL)
 		return;
 
-	if (is_maxed(focused_win)) {
-		unmaximize_window(focused_win);
+	if (is_special(focused_win)) {
+		reset_window(focused_win);
 		set_focused(focused_win);
 	}
 
 	x = d[2];
 	y = d[3];
-if (d[0])
+	if (d[0])
 		x = -x;
 	if (d[1])
 		y = -y;
@@ -2801,8 +2857,8 @@ ipc_window_move_absolute(uint32_t *d)
 	if (focused_win == NULL)
 		return;
 
-	if (is_maxed(focused_win)) {
-		unmaximize_window(focused_win);
+	if (is_special(focused_win)) {
+		reset_window(focused_win);
 		set_focused(focused_win);
 	}
 
@@ -2829,8 +2885,8 @@ ipc_window_resize(uint32_t *d)
 	if (focused_win == NULL)
 		return;
 
-	if (is_maxed(focused_win)) {
-		unmaximize_window(focused_win);
+	if (is_special(focused_win)) {
+		reset_window(focused_win);
 		set_focused(focused_win);
 	}
 
@@ -2854,8 +2910,8 @@ ipc_window_resize_absolute(uint32_t *d)
 	if (focused_win == NULL)
 		return;
 
-	if (is_maxed(focused_win)) {
-		unmaximize_window(focused_win);
+	if (is_special(focused_win)) {
+		reset_window(focused_win);
 		set_focused(focused_win);
 	}
 
@@ -2886,7 +2942,7 @@ ipc_window_maximize(uint32_t *d)
 		return;
 
 	if (focused_win->maxed) {
-		unmaximize_window(focused_win);
+		reset_window(focused_win);
 	} else {
 		get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
 		maximize_window(focused_win, mon_x, mon_y, mon_w, mon_h);
@@ -2905,9 +2961,10 @@ ipc_window_unmaximize(uint32_t *d)
 	if (focused_win == NULL)
 		return;
 
-	unmaximize_window(focused_win);
-
-	set_focused(focused_win);
+	if (is_special(focused_win)) {
+		reset_window(focused_win);
+		set_focused(focused_win);
+	}
 
 	xcb_flush(conn);
 }
@@ -2923,7 +2980,7 @@ ipc_window_hor_maximize(uint32_t *d)
 		return;
 
 	if (focused_win->hmaxed) {
-		unmaximize_window(focused_win);
+		reset_window(focused_win);
 	} else {
 		get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, NULL);
 		hmaximize_window(focused_win, mon_x, mon_w);
@@ -2945,7 +3002,7 @@ ipc_window_ver_maximize(uint32_t *d)
 		return;
 
 	if (focused_win->vmaxed) {
-		unmaximize_window(focused_win);
+		reset_window(focused_win);
 	} else {
 		get_monitor_size(focused_win, &mon_x, &mon_y, NULL, &mon_h);
 		vmaximize_window(focused_win, mon_y, mon_h);
@@ -2967,7 +3024,7 @@ ipc_window_monocle(uint32_t *d)
 		return;
 
 	if (focused_win->monocled) {
-		unmaximize_window(focused_win);
+		reset_window(focused_win);
 	} else {
 		get_monitor_size(focused_win, &mon_x, &mon_y, &mon_w, &mon_h);
 		monocle_window(focused_win, mon_x, mon_y, mon_w, mon_h);
@@ -3005,6 +3062,44 @@ ipc_window_put_in_grid(uint32_t *d)
 		return;
 
 	grid_window(focused_win, grid_width, grid_height, grid_x, grid_y, occ_w, occ_h);
+}
+
+static void
+ipc_window_move_in_grid(uint32_t *d)
+{
+	uint16_t x, y;
+
+	if (focused_win == NULL)
+		return;
+
+	x = d[2];
+	y = d[3];
+
+	if (d[0] == IPC_MUL_MINUS)
+		x = -x;
+	if (d[1] == IPC_MUL_MINUS)
+		y = -y;
+
+	move_grid_window(focused_win, x, y);
+}
+
+static void
+ipc_window_resize_in_grid(uint32_t *d)
+{
+	uint16_t x, y;
+
+	if (focused_win == NULL)
+		return;
+
+	x = d[2];
+	y = d[3];
+
+	if (d[0] == IPC_MUL_MINUS)
+		x = -x;
+	if (d[1] == IPC_MUL_MINUS)
+		y = -y;
+
+	resize_grid_window(focused_win, x, y);
 }
 
 static void
@@ -3352,7 +3447,7 @@ pointer_grab(enum pointer_action pac)
 		return false;
 	}
 
-	if (is_maxed(client)) {
+	if (is_special(client)) {
 		return true;
 	}
 

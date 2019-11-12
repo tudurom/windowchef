@@ -90,6 +90,12 @@ anything on `stdout`.
 	<cell_width> and <cell_height> are expressed in grid cells.
 	Gaps around the windows in the grid can be added along with monitor gaps.
 
+* `window_move_in_grid` <x> <y>:
+        Move a gridded window by <x> and <y> grid spaces.
+
+* `window_resize_in_grid` <x> <y>:
+        Resize a gridded window by <x> and <y> grid spaces.
+
 * `window_snap` <POSITION>:
 	Snap the window on the screen in a position defined by <POSITION>.
 
