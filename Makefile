@@ -38,11 +38,13 @@ install: all
 	cp -fR examples "$(DESTDIR)$(DOCPREFIX)/$(__NAME__)/"
 	cp -f README.md LICENSE "$(DESTDIR)$(DOCPREFIX)/$(__NAME__)/"
 	cd ./man; $(MAKE) install
+	install -D windowchef.desktop "$(DESTDIR)$(XSESSIONS)/"windowchef.desktop
 
 uninstall:
 	rm -f "$(DESTDIR)$(PREFIX)/bin/$(__NAME__)"
 	rm -f "$(DESTDIR)$(PREFIX)/bin/$(__NAME_CLIENT__)"
 	rm -rf "$(DESTDIR)$(DOCPREFIX)/$(__NAME__)"
+	rm -rf "$(DESTDIR)$(XSESSIONS)/"windowchef.desktop"
 	cd ./man; $(MAKE) uninstall
 
 clean:

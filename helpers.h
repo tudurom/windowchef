@@ -6,6 +6,7 @@
 
 #include <stdbool.h>
 #include <stdarg.h>
+#include <stdint.h>
 
 int asprintf(char **, const char *, ...);
 int vasprintf(char **, const char *, va_list);
@@ -20,5 +21,7 @@ void list_move_to_head(struct list_item **, struct list_item *);
 struct list_item* list_add_item(struct list_item **);
 void list_delete_item(struct list_item **, struct list_item *);
 void list_delete_all_items(struct list_item **, bool);
+
+uint32_t get_color_pixel(uint32_t);
 
 #endif

@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=windowchef
+Content=Simple stacking window manager
+Exec=windowchef
+Type=Application
