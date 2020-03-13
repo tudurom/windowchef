@@ -841,11 +841,11 @@ close_window(struct client *client)
 	if (client == NULL)
 		return;
 
-	if (focused_win == client)
-		focused_win = NULL;
-
 	if (conf.last_window_focusing && client != NULL && client == focused_win)
 	    set_focused_last_best();
+
+	if (focused_win == client)
+		focused_win = NULL;
 
 	xcb_window_t win = client->window;
 	xcb_get_property_cookie_t cookie =
