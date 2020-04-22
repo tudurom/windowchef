@@ -11,3 +11,12 @@
 * Windows can be focused by others (_NET_ACTIVE_WINDOW)
 * Windowchef respects chwbb, again. (#51)
 * Borders render correctly in some programs (#49)
+
+## v0.5.1
+
+* Fixed [#49 Internal border causes black/transparent border on termite](https://github.com/tudurom/windowchef/issues/49).
+* Windowchef will print the cause of error when loading of the config file fails.
+* Last window focusing works correctly
+* Fixed [#62 'waitron window_rev_cycle' crash report](https://github.com/tudurom/windowchef/issues/62)
+* [Added grid movement and resizing
+  functions](https://github.com/tudurom/windowchef/pull/64) thanks to @vxid.
