@@ -123,10 +123,10 @@ anything on <code>stdout</code>.</p>
   Execute it again after maximizing to revert the state of the window.</p></dd>
 <dt><code>window_unmaximize</code></dt><dd><p>  If the currently focused window is maximized in any way (fully, vertically, horizontally, monocled), return it to normal state.</p></dd>
 <dt><code>window_hor_maximize</code></dt><dd><p>  Horizontally maximize the focused window on the current monitor, preserving
-  its <var>x</var> component. Leaves a gap at the left and right of the monitor that
+  its <var>y</var> component. Leaves a gap at the left and right of the monitor that
   can be configured. Execute it again after maximizing to revert the state of the window.</p></dd>
 <dt><code>window_ver_maximize</code></dt><dd><p>  Vertically maximize the focused window on the current monitor, preserving
-  its <var>y</var> component. Leaves a gap at the top and bottom of the monitor whose
+  its <var>x</var> component. Leaves a gap at the top and bottom of the monitor whose
   width can be configured. Execute it again after maximizing to revert the state of the window.</p></dd>
 <dt><code>window_monocle</code></dt><dd><p>  Puts the window in the "monocled" state: full screen but with borders
   visible. Monocle mode respects gaps.</p></dd>
@@ -137,12 +137,13 @@ anything on <code>stdout</code>.</p>
   <var>grid_width</var> and height <var>grid_height</var> on the current monitor.
   <var>cell_width</var> and <var>cell_height</var> are expressed in grid cells.
   Gaps around the windows in the grid can be added along with monitor gaps.</p></dd>
-<dt><code>window_move_in_grid</code> <var>x</var> <var>y</var></dt><dd><p> Move a gridded window by <var>x</var> and <var>y</var> grid spaces.</p></dd>
-<dt><code>window_resize_in_grid</code> <var>x</var> <var>y</var></dt><dd><p> Resize a gridded window by <var>x</var> and <var>y</var> grid spaces.</p></dd>
+<dt><code>window_move_in_grid</code> <var>x</var> <var>y</var></dt><dd><p>  Move a gridded window by <var>x</var> and <var>y</var> grid spaces.</p></dd>
+<dt><code>window_resize_in_grid</code> <var>x</var> <var>y</var></dt><dd><p>  Resize a gridded window by <var>x</var> and <var>y</var> grid spaces. Positive values grow,
+  negative values shrink.</p></dd>
 <dt><code>window_snap</code> <var>POSITION</var></dt><dd><p>  Snap the window on the screen in a position defined by <var>POSITION</var>.</p></dd>
 <dt><code>window_cycle</code></dt><dd><p>  Cycle through mapped windows.</p></dd>
 <dt><code>window_rev_cycle</code></dt><dd><p>  Reverse cycle through mapped windows.</p></dd>
-<dt><code>window_cycle_in_group</code></dt><dd><p>  Cycle trough mapped windows that belong to the same group as the
+<dt><code>window_cycle_in_group</code></dt><dd><p>  Cycle through mapped windows that belong to the same group as the
   focused window.</p></dd>
 <dt><code>window_rev_cycle_in_group</code></dt><dd><p>  Reverse cycle through mapped windows that belong to the same group as the
   focused window.</p></dd>
@@ -150,7 +151,7 @@ anything on <code>stdout</code>.</p>
   <a href="https://github.com/wmutils/core/">wmutils</a>.</p></dd>
 <dt><code>window_focus_last</code></dt><dd><p>  Focus the window that was focused before the currently focused window.</p></dd>
 <dt><code>window_cardinal_focus</code> <var>DIRECTION</var></dt><dd><p>  Focus the closest window in a direction, relative to the currently
-  currently focused window. Does nothing if there is no window focused.</p></dd>
+  focused window. Does nothing if there is no window focused.</p></dd>
 <dt><code>group_add_window</code> <var>group_nr</var></dt><dd><p>  Add the focused window to the <var>group_nr</var> group.</p>
 
 <p>  Group numbers start from 0 and end at <var>GROUPS_NO</var> - 1.</p></dd>
@@ -161,23 +162,19 @@ anything on <code>stdout</code>.</p>
 <dt><code>group_toggle</code> <var>group_nr</var></dt><dd><p>  Toggle the <var>group_nr</var> group.</p></dd>
 <dt><code>group_activate_specific</code> <var>group_nr</var></dt><dd><p>  Activate group <var>group_nr</var> and deactivate the rest.</p></dd>
 <dt><code>wm_quit</code> <var>exit_status</var></dt><dd><p>  Quit windowchef with exit_status <var>exit_status</var>.</p></dd>
-<dt><code>wm_change_number_of_groups</code> <var>number_of_groups</var></dt><dd><p>  Change the number of maximum groups to <var>number_of_groups</var>.</p>
-
-<p>  Windows that belong to a group that has a <var>group_nr</var> greater or equal to
-  <var>number_of_groups</var> will become orphaned.</p></dd>
 <dt><code>wm_config</code> <var>key</var> [<var>values</var>...]</dt><dd><p>  See <a href="#CONFIGURING" title="CONFIGURING" data-bare-link="true">CONFIGURING</a>.</p></dd>
 </dl>
 
 
 <h2 id="QUERYING">QUERYING</h2>
 
-<p>Information about the current state of windowchef is made available through
+<p>Information about the current state of windowchef is available through
 X properties of the root window. Example:</p>
 
 <pre><code>xprop -root WINDOWCHEF_ACTIVE_GROUPS
 </code></pre>
 
-<p>Information about the current state of each managed window is made available
+<p>Information about the current state of each managed window is available
 through X properties of the window. Example:</p>
 
 <pre><code>xprop -id 0x02c00009 WINDOWCHEF_STATUS
@@ -218,7 +215,8 @@ are:</p>
 <dt><code>groups_nr</code> <var>nr</var></dt><dd><p>  Sets the number of groups to <var>nr</var>. If <var>nr</var> is less than the current number
   of groups, window that belong to groups whose numbers are greater than <var>nr</var>
   will be mapped to screen and assigned to the null group.</p></dd>
-<dt><code>enable_resize_hints</code> <var>BOOL</var></dt><dd><p>  If true, <code>windowchef</code> will respect window resize hints as defined by ICCCM. Most terminal emulators should have this feature.</p></dd>
+<dt><code>enable_resize_hints</code> <var>BOOL</var></dt><dd><p>  If true, <code>windowchef</code> will respect window resize hints as defined by ICCCM.
+  Most terminal emulators should have this feature.</p></dd>
 <dt><code>enable_sloppy_focus</code> <var>BOOL</var></dt><dd><p>  Enable sloppy focus.</p></dd>
 <dt><code>sticky_windows</code> <var>BOOL</var></dt><dd><p>  If <var>sticky_windows</var> is true, new windows will be assigned to the last
   activated group automatically. Recommended for people who like using
@@ -230,7 +228,7 @@ are:</p>
   (example: <code>chwb2</code> from wmutils).</p></dd>
 <dt><code>enable_last_window_focusing</code> <var>BOOL</var></dt><dd><p>  If true, when the currently focused window is unmapped or closed, <code>windowchef</code> will focus the
   previously focused window. See the <code>window_focus_last</code> command.</p></dd>
-<dt><code>apply_settings</code> <var>BOOL</var></dt><dd><p>  If true, then some settings will be applied on all windows instead of newly created windows.
+<dt><code>apply_settings</code> <var>BOOL</var></dt><dd><p>  If true, some settings will be applied on all windows instead of newly created windows.
   True by default.</p></dd>
 <dt><code>replay_click_on_focus</code> <var>BOOL</var></dt><dd><p>  If true, when clicking on an unfocused with the intent to focus it, windowchef will also send
   the click event to the target window. If false, the window will receive the click event only
@@ -258,7 +256,7 @@ are:</p>
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'>Windowchef</li>
-    <li class='tc'>September 2018</li>
+    <li class='tc'>April 2020</li>
     <li class='tr'>waitron(1)</li>
   </ol>
 

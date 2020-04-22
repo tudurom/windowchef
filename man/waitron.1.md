@@ -67,12 +67,12 @@ anything on `stdout`.
 
 * `window_hor_maximize`:
 	Horizontally maximize the focused window on the current monitor, preserving
-	its <x> component. Leaves a gap at the left and right of the monitor that
+	its <y> component. Leaves a gap at the left and right of the monitor that
 	can be configured. Execute it again after maximizing to revert the state of the window.
 
 * `window_ver_maximize`:
 	Vertically maximize the focused window on the current monitor, preserving
-	its <y> component. Leaves a gap at the top and bottom of the monitor whose
+	its <x> component. Leaves a gap at the top and bottom of the monitor whose
 	width can be configured. Execute it again after maximizing to revert the state of the window.
 
 * `window_monocle`:
@@ -91,10 +91,11 @@ anything on `stdout`.
 	Gaps around the windows in the grid can be added along with monitor gaps.
 
 * `window_move_in_grid` <x> <y>:
-        Move a gridded window by <x> and <y> grid spaces.
+	Move a gridded window by <x> and <y> grid spaces.
 
 * `window_resize_in_grid` <x> <y>:
-        Resize a gridded window by <x> and <y> grid spaces.
+	Resize a gridded window by <x> and <y> grid spaces. Positive values grow,
+	negative values shrink.
 
 * `window_snap` <POSITION>:
 	Snap the window on the screen in a position defined by <POSITION>.
@@ -106,7 +107,7 @@ anything on `stdout`.
 	Reverse cycle through mapped windows.
 
 * `window_cycle_in_group`:
-	Cycle trough mapped windows that belong to the same group as the
+	Cycle through mapped windows that belong to the same group as the
 	focused window.
 
 * `window_rev_cycle_in_group`:
@@ -122,7 +123,7 @@ anything on `stdout`.
 
 * `window_cardinal_focus` <DIRECTION>:
 	Focus the closest window in a direction, relative to the currently
-	currently focused window. Does nothing if there is no window focused.
+	focused window. Does nothing if there is no window focused.
 
 * `group_add_window` <group_nr>:
 	Add the focused window to the <group_nr> group.
@@ -150,25 +151,19 @@ anything on `stdout`.
 * `wm_quit` <exit_status>:
 	Quit windowchef with exit_status <exit_status>.
 
-* `wm_change_number_of_groups` <number_of_groups>:
-	Change the number of maximum groups to <number_of_groups>.
-
-	Windows that belong to a group that has a <group_nr> greater or equal to
-	<number_of_groups> will become orphaned.
-
 * `wm_config` <key> [<values>...]:
 	See [CONFIGURING][].
 
 ## QUERYING
 
-Information about the current state of windowchef is made available through
+Information about the current state of windowchef is available through
 X properties of the root window. Example:
 
 ```
 xprop -root WINDOWCHEF_ACTIVE_GROUPS
 ```
 
-Information about the current state of each managed window is made available
+Information about the current state of each managed window is available
 through X properties of the window. Example:
 
 ```
@@ -225,7 +220,8 @@ are:
 	will be mapped to screen and assigned to the null group.
 
 * `enable_resize_hints` <BOOL>:
-	If true, `windowchef` will respect window resize hints as defined by ICCCM. Most terminal emulators should have this feature.
+	If true, `windowchef` will respect window resize hints as defined by ICCCM.
+	Most terminal emulators should have this feature.
 
 * `enable_sloppy_focus` <BOOL>:
 	Enable sloppy focus.
@@ -247,7 +243,7 @@ are:
 	previously focused window. See the `window_focus_last` command.
 
 * `apply_settings` <BOOL>:
-	If true, then some settings will be applied on all windows instead of newly created windows.
+	If true, some settings will be applied on all windows instead of newly created windows.
 	True by default.
 
 * `replay_click_on_focus` <BOOL>:

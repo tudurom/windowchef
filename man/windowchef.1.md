@@ -29,7 +29,7 @@ overridden with the `-c` flag.
 
 ## SEE ALSO
 
-waitron(1), sxhkd(1), xinit(1), xmmv(1), xmrs(1)
+waitron(1), sxhkd(1), xinit(1)
 
 ## REPORTING BUGS
 
