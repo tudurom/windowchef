@@ -44,7 +44,7 @@ uninstall:
 	rm -f "$(DESTDIR)$(PREFIX)/bin/$(__NAME__)"
 	rm -f "$(DESTDIR)$(PREFIX)/bin/$(__NAME_CLIENT__)"
 	rm -rf "$(DESTDIR)$(DOCPREFIX)/$(__NAME__)"
-	rm -rf "$(DESTDIR)$(XSESSIONS)/"windowchef.desktop"
+	rm -rf "$(DESTDIR)$(XSESSIONS)/windowchef.desktop"
 	cd ./man; $(MAKE) uninstall
 
 clean:

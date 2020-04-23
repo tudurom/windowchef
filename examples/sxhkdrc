@@ -51,5 +51,6 @@ super + alt + ctrl + {1-4}
 
 super + Return
 	xterm
+
 super + {Insert,Prior,Delete,Next,End}
 	waitron window_snap {topleft,topright,bottomleft,bottomright,middle}
