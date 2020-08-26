@@ -2064,11 +2064,10 @@ group_activate_specific(uint32_t group)
 		return;
 
 	for (unsigned int i = 0; i < conf.groups; i++) {
-		if (i == group)
-			group_activate(i);
-		else
+		if (i != group)
 			group_deactivate(i);
 	}
+	group_activate(group);
 	update_group_list();
 }
 
