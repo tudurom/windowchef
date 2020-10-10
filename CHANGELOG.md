@@ -20,3 +20,7 @@
 * Fixed [#62 'waitron window_rev_cycle' crash report](https://github.com/tudurom/windowchef/issues/62)
 * [Added grid movement and resizing
   functions](https://github.com/tudurom/windowchef/pull/64) thanks to @vxid.
+
+## v0.5.2
+
+* Fixed uninstall makefile rule thanks to @xero
