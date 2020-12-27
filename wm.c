@@ -2667,7 +2667,7 @@ event_configure_notify(xcb_generic_event_t *ev)
 	/* The root window changes its geometry when the
 	 * user adds/removes/tilts screens */
 	if (e->window == scr->root) {
-		if (e->window != scr->width_in_pixels
+		if (e->width != scr->width_in_pixels
 				|| e->height != scr->height_in_pixels) {
 			scr->width_in_pixels = e->width;
 			scr->height_in_pixels = e->height;
