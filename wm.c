@@ -2020,6 +2020,7 @@ group_activate(uint32_t group) {
 			set_focused(client);
 		}
 	}
+	xcb_flush(conn);
 	group_in_use[group] = true;
 	last_group = group;
 	update_group_list();
@@ -2039,6 +2040,7 @@ group_deactivate(uint32_t group)
 		if (client->group == group)
 			xcb_unmap_window(conn, client->window);
 	}
+	xcb_flush(conn);
 	group_in_use[group] = false;
 	update_group_list();
 }
