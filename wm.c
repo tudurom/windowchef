@@ -1710,7 +1710,7 @@ set_borders(struct client *client, uint32_t color, uint32_t internal_color)
 	uint32_t values[1];
 
 	color = get_color_pixel(color);
-	internal_color = get_color_pixel(color);
+	internal_color = get_color_pixel(internal_color);
 
 	values[0] = conf.border_width;
 	xcb_configure_window(conn, client->window,
